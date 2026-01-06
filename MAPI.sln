@@ -7,13 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MAPI", "MAPI.csproj", "{8F6
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Universal|Any CPU = Universal|Any CPU
 		Mono|Any CPU = Mono|Any CPU
 		Il2cpp|Any CPU = Il2cpp|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8F6A5C7D-1E3B-4A2F-9C8D-5E6F7A8B9C0D}.Universal|Any CPU.ActiveCfg = Universal|Any CPU
-		{8F6A5C7D-1E3B-4A2F-9C8D-5E6F7A8B9C0D}.Universal|Any CPU.Build.0 = Universal|Any CPU
 		{8F6A5C7D-1E3B-4A2F-9C8D-5E6F7A8B9C0D}.Mono|Any CPU.ActiveCfg = Mono|Any CPU
 		{8F6A5C7D-1E3B-4A2F-9C8D-5E6F7A8B9C0D}.Il2cpp|Any CPU.ActiveCfg = Il2cpp|Any CPU
 		{8F6A5C7D-1E3B-4A2F-9C8D-5E6F7A8B9C0D}.Il2cpp|Any CPU.Build.0 = Il2cpp|Any CPU

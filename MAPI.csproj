@@ -10,7 +10,7 @@
     <NeutralLanguage>en-US</NeutralLanguage>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-    <Configurations>Universal;Mono;Il2cpp</Configurations>
+    <Configurations>Mono;Il2cpp</Configurations>
     <Nullable>enable</Nullable>
     <OutputType>Library</OutputType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -19,15 +19,9 @@
     <Authors>MAPI Contributors</Authors>
     <Description>A universal, game-agnostic Unity modding library providing procedural mesh generation, building construction, and advanced modding utilities.</Description>
     <PackageTags>unity;modding;melon-loader;il2cpp;mono;procedural-mesh;gltf</PackageTags>
-    <RepositoryUrl>https://github.com/yourusername/MAPI</RepositoryUrl>
+    <RepositoryUrl>https://github.com/ifBars/MAPI</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Version>0.1.0</Version>
-  </PropertyGroup>
-
-  <!-- Universal configuration (default - game-agnostic) -->
-  <PropertyGroup Condition="'$(Configuration)'=='Universal'">
-    <DefineConstants>UNIVERSAL</DefineConstants>
-    <AssemblyName>MAPI</AssemblyName>
   </PropertyGroup>
 
   <!-- Mono build for base game mono assemblies -->
@@ -41,67 +35,6 @@
     <DefineConstants>IL2CPP</DefineConstants>
     <AssemblyName>MAPI_Il2cpp</AssemblyName>
   </PropertyGroup>
-  <!-- Universal Unity references (Mono without game-specific assemblies) -->
-  <ItemGroup Condition="'$(Configuration)'=='Universal'">
-    <!-- Core Unity Engine -->
-    <Reference Include="UnityEngine.CoreModule">
-      <HintPath>$(MonoAssembliesPath)\UnityEngine.CoreModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>$(MonoAssembliesPath)\UnityEngine.dll</HintPath>
-    </Reference>
-
-    <!-- Graphics and Rendering -->
-    <Reference Include="UnityEngine.AnimationModule">
-      <HintPath>$(MonoAssembliesPath)\UnityEngine.AnimationModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.AudioModule">
-      <HintPath>$(MonoAssembliesPath)\UnityEngine.AudioModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.ImageConversionModule">
-      <HintPath>$(MonoAssembliesPath)\UnityEngine.ImageConversionModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.IMGUIModule">
-      <HintPath>$(MonoAssembliesPath)\UnityEngine.IMGUIModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.PhysicsModule">
-      <HintPath>$(MonoAssembliesPath)\UnityEngine.PhysicsModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>$(MonoAssembliesPath)\UnityEngine.TextRenderingModule.dll</HintPath>
-    </Reference>
-
-    <!-- UI Systems -->
-    <Reference Include="UnityEngine.UI">
-      <HintPath>$(MonoAssembliesPath)\UnityEngine.UI.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UIModule">
-      <HintPath>$(MonoAssembliesPath)\UnityEngine.UIModule.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.TextMeshPro">
-      <HintPath>$(MonoAssembliesPath)\Unity.TextMeshPro.dll</HintPath>
-    </Reference>
-
-    <!-- Navigation and AI -->
-    <Reference Include="UnityEngine.AIModule">
-      <HintPath>$(MonoAssembliesPath)\UnityEngine.AIModule.dll</HintPath>
-    </Reference>
-
-    <!-- Input Systems -->
-    <Reference Include="UnityEngine.InputLegacyModule">
-      <HintPath>$(MonoAssembliesPath)\UnityEngine.InputLegacyModule.dll</HintPath>
-    </Reference>
-
-    <!-- JSON Parsing -->
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>$(MonoAssembliesPath)\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <!-- FishNet (Mono) -->
-    <Reference Include="FishNet.Runtime">
-      <HintPath>$(MonoAssembliesPath)\FishNet.Runtime.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
 
   <!-- Mono Unity references -->
   <ItemGroup Condition="'$(Configuration)'=='Mono'">
@@ -233,6 +166,9 @@
     <Compile Include="ProceduralMesh\**\*.cs" />
     <Compile Include="Building\**\*.cs" />
     <Compile Include="Gltf\**\*.cs" />
+    <Compile Include="S1\Materials.cs" />
+    <Compile Include="S1\Meshes.cs" />
+    <Compile Include="S1\Prefabs.cs" />
     <Compile Include="Utils\**\*.cs" />
   </ItemGroup>
 

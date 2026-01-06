@@ -3,33 +3,66 @@ using System.Collections.Generic;
 using UnityEngine;
 using MAPI.Core;
 using MAPI.Utils;
+using MAPI.ProceduralMesh.Generators;
 
 namespace MAPI.ProceduralMesh
 {
     /// <summary>
-    /// High-level builder for creating procedural meshes
-    /// Provides fluent API for constructing meshes from basic shapes
+    /// High-level fluent builder for creating procedural meshes.
+    /// Provides a chainable API for constructing meshes from basic and organic shapes.
     /// </summary>
-    public class ProceduralMeshBuilder
+    /// <remarks>
+    /// Use the builder pattern to add shapes, configure materials, then call Build() to create the final mesh.
+    /// All generated meshes are automatically registered with ResourceTracker for cleanup.
+    /// </remarks>
+    public sealed class ProceduralMeshBuilder
     {
-        #region Fields
-        
-        private readonly string _name;
-        private readonly List<Vector3> _vertices = new List<Vector3>();
-        private readonly List<int> _triangles = new List<int>();
-        private readonly List<Vector2> _uvs = new List<Vector2>();
-        private readonly List<Vector3> _normals = new List<Vector3>();
-        private Material? _material;
-        private bool _applyFlatShading = false;
-        
+        #region Internal Members
+
+        /// <summary>
+        /// INTERNAL: The name for the generated mesh.
+        /// </summary>
+        internal readonly string _name;
+
+        /// <summary>
+        /// INTERNAL: Accumulated vertex data.
+        /// </summary>
+        internal readonly List<Vector3> _vertices = new List<Vector3>();
+
+        /// <summary>
+        /// INTERNAL: Accumulated triangle indices.
+        /// </summary>
+        internal readonly List<int> _triangles = new List<int>();
+
+        /// <summary>
+        /// INTERNAL: Accumulated UV coordinates.
+        /// </summary>
+        internal readonly List<Vector2> _uvs = new List<Vector2>();
+
+        /// <summary>
+        /// INTERNAL: Accumulated normal vectors.
+        /// </summary>
+        internal readonly List<Vector3> _normals = new List<Vector3>();
+
+        /// <summary>
+        /// INTERNAL: Material to apply to the generated mesh.
+        /// </summary>
+        internal Material? _material;
+
+        /// <summary>
+        /// INTERNAL: Whether to apply flat shading.
+        /// </summary>
+        internal bool _applyFlatShading = false;
+
         #endregion
 
-        #region Constructors
-        
+        #region Public Members
+
         /// <summary>
-        /// Create a new procedural mesh builder
+        /// Create a new procedural mesh builder.
         /// </summary>
         /// <param name="name">Name for the generated mesh</param>
+        /// <exception cref="ArgumentNullException">Thrown when name is null or empty</exception>
         public ProceduralMeshBuilder(string name)
         {
             if (string.IsNullOrEmpty(name))
@@ -39,66 +72,22 @@ namespace MAPI.ProceduralMesh
 
             _name = name;
         }
-        
-        #endregion
 
-        #region Public API - Basic Shapes
-        
         /// <summary>
-        /// Add a box (cube) to the mesh
+        /// Add a box (cube) to the mesh.
         /// </summary>
         /// <param name="center">Center position of the box</param>
         /// <param name="size">Size of the box</param>
         /// <returns>This builder for method chaining</returns>
         public ProceduralMeshBuilder AddBox(Vector3 center, Vector3 size)
         {
-            int startVertex = _vertices.Count;
-
-            Vector3 halfSize = size * 0.5f;
-
-            // Define 8 corners
-            Vector3[] corners = new Vector3[]
-            {
-                center + new Vector3(-halfSize.x, -halfSize.y, -halfSize.z), // 0
-                center + new Vector3(halfSize.x, -halfSize.y, -halfSize.z),  // 1
-                center + new Vector3(halfSize.x, -halfSize.y, halfSize.z),   // 2
-                center + new Vector3(-halfSize.x, -halfSize.y, halfSize.z),  // 3
-                center + new Vector3(-halfSize.x, halfSize.y, -halfSize.z),  // 4
-                center + new Vector3(halfSize.x, halfSize.y, -halfSize.z),   // 5
-                center + new Vector3(halfSize.x, halfSize.y, halfSize.z),    // 6
-                center + new Vector3(-halfSize.x, halfSize.y, halfSize.z)    // 7
-            };
-
-            _vertices.AddRange(corners);
-
-            // Define 12 triangles (2 per face)
-            int[] boxTriangles = new int[]
-            {
-                // Bottom
-                0, 2, 1, 0, 3, 2,
-                // Top
-                4, 5, 6, 4, 6, 7,
-                // Front
-                0, 1, 5, 0, 5, 4,
-                // Back
-                3, 7, 6, 3, 6, 2,
-                // Left
-                0, 4, 7, 0, 7, 3,
-                // Right
-                1, 2, 6, 1, 6, 5
-            };
-
-            foreach (int tri in boxTriangles)
-            {
-                _triangles.Add(startVertex + tri);
-            }
-
+            BoxGenerator.Generate(_vertices, _triangles, center, size);
             DebugLog.Info($"Added box to mesh: {_name}");
             return this;
         }
 
         /// <summary>
-        /// Add a sphere to the mesh
+        /// Add a sphere to the mesh.
         /// </summary>
         /// <param name="center">Center position of the sphere</param>
         /// <param name="radius">Radius of the sphere</param>
@@ -106,56 +95,13 @@ namespace MAPI.ProceduralMesh
         /// <returns>This builder for method chaining</returns>
         public ProceduralMeshBuilder AddSphere(Vector3 center, float radius, int subdivisions = Constants.Mesh.DefaultSphereSubdivisions)
         {
-            int startVertex = _vertices.Count;
-            int longitudes = subdivisions * 2;
-            int latitudes = subdivisions;
-
-            for (int lat = 0; lat <= latitudes; lat++)
-            {
-                float theta = lat * Mathf.PI / latitudes;
-                float sinTheta = Mathf.Sin(theta);
-                float cosTheta = Mathf.Cos(theta);
-
-                for (int lon = 0; lon <= longitudes; lon++)
-                {
-                    float phi = lon * 2 * Mathf.PI / longitudes;
-                    float sinPhi = Mathf.Sin(phi);
-                    float cosPhi = Mathf.Cos(phi);
-
-                    Vector3 position = new Vector3(
-                        radius * sinTheta * cosPhi,
-                        radius * cosTheta,
-                        radius * sinTheta * sinPhi
-                    );
-
-                    _vertices.Add(center + position);
-                    _uvs.Add(new Vector2((float)lon / longitudes, (float)lat / latitudes));
-                }
-            }
-
-            for (int lat = 0; lat < latitudes; lat++)
-            {
-                for (int lon = 0; lon < longitudes; lon++)
-                {
-                    int current = startVertex + lat * (longitudes + 1) + lon;
-                    int next = current + longitudes + 1;
-
-                    _triangles.Add(current);
-                    _triangles.Add(next);
-                    _triangles.Add(current + 1);
-
-                    _triangles.Add(current + 1);
-                    _triangles.Add(next);
-                    _triangles.Add(next + 1);
-                }
-            }
-
+            SphereGenerator.Generate(_vertices, _triangles, _uvs, center, radius, subdivisions);
             DebugLog.Info($"Added sphere to mesh: {_name}");
             return this;
         }
 
         /// <summary>
-        /// Add a cylinder to the mesh
+        /// Add a cylinder to the mesh.
         /// </summary>
         /// <param name="start">Start position (bottom center)</param>
         /// <param name="end">End position (top center)</param>
@@ -164,75 +110,13 @@ namespace MAPI.ProceduralMesh
         /// <returns>This builder for method chaining</returns>
         public ProceduralMeshBuilder AddCylinder(Vector3 start, Vector3 end, float radius, int segments = Constants.Mesh.DefaultCylinderSegments)
         {
-            int startVertex = _vertices.Count;
-            Vector3 direction = (end - start).normalized;
-            float height = Vector3.Distance(start, end);
-
-            // Create perpendicular vectors for the circular cross-section
-            Vector3 perpendicular = Vector3.Cross(direction, Vector3.up);
-            if (perpendicular.magnitude < 0.001f)
-            {
-                perpendicular = Vector3.Cross(direction, Vector3.right);
-            }
-            perpendicular.Normalize();
-            Vector3 perpendicular2 = Vector3.Cross(direction, perpendicular).normalized;
-
-            // Add center vertices
-            _vertices.Add(start); // Bottom center
-            _vertices.Add(end);   // Top center
-
-            // Add rim vertices
-            for (int i = 0; i <= segments; i++)
-            {
-                float angle = 2 * Mathf.PI * i / segments;
-                float cos = Mathf.Cos(angle);
-                float sin = Mathf.Sin(angle);
-
-                Vector3 offset = (perpendicular * cos + perpendicular2 * sin) * radius;
-
-                _vertices.Add(start + offset); // Bottom rim
-                _vertices.Add(end + offset);   // Top rim
-            }
-
-            // Bottom cap triangles
-            for (int i = 0; i < segments; i++)
-            {
-                _triangles.Add(startVertex); // Bottom center
-                _triangles.Add(startVertex + 2 + i * 2);
-                _triangles.Add(startVertex + 2 + (i + 1) * 2);
-            }
-
-            // Top cap triangles
-            for (int i = 0; i < segments; i++)
-            {
-                _triangles.Add(startVertex + 1); // Top center
-                _triangles.Add(startVertex + 3 + (i + 1) * 2);
-                _triangles.Add(startVertex + 3 + i * 2);
-            }
-
-            // Side triangles
-            for (int i = 0; i < segments; i++)
-            {
-                int bottomCurrent = startVertex + 2 + i * 2;
-                int bottomNext = startVertex + 2 + (i + 1) * 2;
-                int topCurrent = bottomCurrent + 1;
-                int topNext = bottomNext + 1;
-
-                _triangles.Add(bottomCurrent);
-                _triangles.Add(topCurrent);
-                _triangles.Add(bottomNext);
-
-                _triangles.Add(bottomNext);
-                _triangles.Add(topCurrent);
-                _triangles.Add(topNext);
-            }
-
+            CylinderGenerator.Generate(_vertices, _triangles, start, end, radius, segments);
             DebugLog.Info($"Added cylinder to mesh: {_name}");
             return this;
         }
 
         /// <summary>
-        /// Add a capsule to the mesh
+        /// Add a capsule to the mesh.
         /// </summary>
         /// <param name="start">Start position (bottom)</param>
         /// <param name="end">End position (top)</param>
@@ -252,13 +136,9 @@ namespace MAPI.ProceduralMesh
             DebugLog.Info($"Added capsule to mesh: {_name}");
             return this;
         }
-        
-        #endregion
 
-        #region Public API - Material and Properties
-        
         /// <summary>
-        /// Set the material for the generated mesh
+        /// Set the material for the generated mesh.
         /// </summary>
         /// <param name="material">The material to apply</param>
         /// <returns>This builder for method chaining</returns>
@@ -269,7 +149,7 @@ namespace MAPI.ProceduralMesh
         }
 
         /// <summary>
-        /// Set a solid color for the mesh (creates a material internally)
+        /// Set a solid color for the mesh (creates a material internally).
         /// </summary>
         /// <param name="color">The color to apply</param>
         /// <returns>This builder for method chaining</returns>
@@ -280,8 +160,8 @@ namespace MAPI.ProceduralMesh
         }
 
         /// <summary>
-        /// Apply flat shading when building the mesh
-        /// Creates a low-poly aesthetic with hard edges
+        /// Apply flat shading when building the mesh.
+        /// Creates a low-poly aesthetic with hard edges.
         /// </summary>
         /// <returns>This builder for method chaining</returns>
         public ProceduralMeshBuilder ApplyFlatShading()
@@ -289,13 +169,9 @@ namespace MAPI.ProceduralMesh
             _applyFlatShading = true;
             return this;
         }
-        
-        #endregion
 
-        #region Public API - Organic Shapes
-        
         /// <summary>
-        /// Add a segmented organic body to the mesh
+        /// Add a segmented organic body to the mesh.
         /// </summary>
         /// <param name="size">Overall size (x=width, y=height, z=length)</param>
         /// <param name="profile">Body profile defining the shape</param>
@@ -308,7 +184,7 @@ namespace MAPI.ProceduralMesh
         }
 
         /// <summary>
-        /// Add an articulated limb to the mesh
+        /// Add an articulated limb to the mesh.
         /// </summary>
         /// <param name="profile">Limb profile defining joints and radii</param>
         /// <param name="position">Local position offset</param>
@@ -321,7 +197,7 @@ namespace MAPI.ProceduralMesh
         }
 
         /// <summary>
-        /// Add a paw to the mesh
+        /// Add a paw to the mesh.
         /// </summary>
         /// <param name="width">Width of the paw</param>
         /// <param name="height">Height of the paw</param>
@@ -336,7 +212,7 @@ namespace MAPI.ProceduralMesh
         }
 
         /// <summary>
-        /// Add an ear to the mesh
+        /// Add an ear to the mesh.
         /// </summary>
         /// <param name="radius">Size of the ear</param>
         /// <param name="position">Local position offset</param>
@@ -347,13 +223,9 @@ namespace MAPI.ProceduralMesh
             MergeMesh(earMesh, position);
             return this;
         }
-        
-        #endregion
 
-        #region Public API - Build Methods
-        
         /// <summary>
-        /// Build the mesh and return it
+        /// Build the mesh and return it.
         /// </summary>
         /// <returns>The constructed mesh</returns>
         public Mesh BuildMesh()
@@ -392,7 +264,7 @@ namespace MAPI.ProceduralMesh
         }
 
         /// <summary>
-        /// Build a GameObject with the mesh and material applied
+        /// Build a GameObject with the mesh and material applied.
         /// </summary>
         /// <returns>The created GameObject with mesh components</returns>
         public GameObject Build()
@@ -418,13 +290,13 @@ namespace MAPI.ProceduralMesh
             DebugLog.Info($"Built GameObject: {_name}");
             return go;
         }
-        
+
         #endregion
 
-        #region Private Helper Methods
-        
+        #region Private Members
+
         /// <summary>
-        /// Merge another mesh into this builder
+        /// INTERNAL: Merge another mesh into this builder.
         /// </summary>
         private void MergeMesh(Mesh mesh, Vector3 offset = default)
         {
@@ -450,7 +322,7 @@ namespace MAPI.ProceduralMesh
                 _uvs.AddRange(mesh.uv);
             }
         }
-        
+
         #endregion
     }
 }

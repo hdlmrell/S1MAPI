@@ -5,34 +5,78 @@ using MAPI.Utils;
 namespace MAPI.Building
 {
     /// <summary>
-    /// Fluent builder for constructing buildings from Unity primitives
-    /// Based on patterns from PetShopSpawner
+    /// Fluent builder for constructing buildings from Unity primitives.
+    /// Provides a chainable API for creating architectural structures.
     /// </summary>
-    public class BuildingBuilder
+    /// <remarks>
+    /// Use the builder pattern to configure dimensions, colors, and add structural components.
+    /// Call Build() to finalize and position the building in the scene.
+    /// </remarks>
+    public sealed class BuildingBuilder
     {
-        #region Fields
-        
-        private readonly string _name;
-        private readonly GameObject _root;
-        private readonly GameObject _buildingFolder;
-        
-        private Vector3 _footprint = new Vector3(6f, 0f, 9f);
-        private float _height = 6f;
-        private float _scale = 1f;
-        private readonly List<GameObject> _components = new List<GameObject>();
-        
-        // Default colors
-        private Color _floorColor = new Color(0.5f, 0.5f, 0.5f);
-        private Color _wallColor = new Color(0.85f, 0.85f, 0.82f);
-        private Color _trimColor = new Color(0.3f, 0.25f, 0.2f);
-        private Color _roofColor = new Color(0.4f, 0.35f, 0.3f);
-        
+        #region Internal Members
+
+        /// <summary>
+        /// INTERNAL: The name for the building.
+        /// </summary>
+        internal readonly string _name;
+
+        /// <summary>
+        /// INTERNAL: The root GameObject for the building hierarchy.
+        /// </summary>
+        internal readonly GameObject _root;
+
+        /// <summary>
+        /// INTERNAL: The folder containing building components.
+        /// </summary>
+        internal readonly GameObject _buildingFolder;
+
+        /// <summary>
+        /// INTERNAL: Building footprint dimensions (width, 0, depth).
+        /// </summary>
+        internal Vector3 _footprint = new Vector3(6f, 0f, 9f);
+
+        /// <summary>
+        /// INTERNAL: Building height.
+        /// </summary>
+        internal float _height = 6f;
+
+        /// <summary>
+        /// INTERNAL: Global scale multiplier.
+        /// </summary>
+        internal float _scale = 1f;
+
+        /// <summary>
+        /// INTERNAL: List of created building components.
+        /// </summary>
+        internal readonly List<GameObject> _components = new List<GameObject>();
+
+        /// <summary>
+        /// INTERNAL: Floor color.
+        /// </summary>
+        internal Color _floorColor = new Color(0.5f, 0.5f, 0.5f);
+
+        /// <summary>
+        /// INTERNAL: Wall color.
+        /// </summary>
+        internal Color _wallColor = new Color(0.85f, 0.85f, 0.82f);
+
+        /// <summary>
+        /// INTERNAL: Trim/molding color.
+        /// </summary>
+        internal Color _trimColor = new Color(0.3f, 0.25f, 0.2f);
+
+        /// <summary>
+        /// INTERNAL: Roof color.
+        /// </summary>
+        internal Color _roofColor = new Color(0.4f, 0.35f, 0.3f);
+
         #endregion
 
-        #region Constructors
-        
+        #region Public Members
+
         /// <summary>
-        /// Create a new building builder
+        /// Create a new building builder.
         /// </summary>
         /// <param name="name">Name for the building</param>
         public BuildingBuilder(string name)
@@ -41,14 +85,13 @@ namespace MAPI.Building
             _root = BuildingUtilities.CreateFolder(name);
             _buildingFolder = BuildingUtilities.CreateFolder("Building", _root.transform);
         }
-        
-        #endregion
 
-        #region Public API - Configuration
-        
         /// <summary>
-        /// Set the building footprint (width and depth)
+        /// Set the building footprint (width and depth).
         /// </summary>
+        /// <param name="width">Building width</param>
+        /// <param name="depth">Building depth</param>
+        /// <returns>This builder for method chaining</returns>
         public BuildingBuilder SetFootprint(float width, float depth)
         {
             _footprint = new Vector3(width, 0f, depth);
@@ -56,8 +99,10 @@ namespace MAPI.Building
         }
 
         /// <summary>
-        /// Set the building height
+        /// Set the building height.
         /// </summary>
+        /// <param name="height">Building height</param>
+        /// <returns>This builder for method chaining</returns>
         public BuildingBuilder SetHeight(float height)
         {
             _height = height;
@@ -65,8 +110,10 @@ namespace MAPI.Building
         }
 
         /// <summary>
-        /// Set the global scale multiplier
+        /// Set the global scale multiplier.
         /// </summary>
+        /// <param name="scale">Scale factor</param>
+        /// <returns>This builder for method chaining</returns>
         public BuildingBuilder SetScale(float scale)
         {
             _scale = scale;
@@ -74,8 +121,10 @@ namespace MAPI.Building
         }
 
         /// <summary>
-        /// Set the floor color
+        /// Set the floor color.
         /// </summary>
+        /// <param name="color">Floor color</param>
+        /// <returns>This builder for method chaining</returns>
         public BuildingBuilder SetFloorColor(Color color)
         {
             _floorColor = color;
@@ -83,8 +132,10 @@ namespace MAPI.Building
         }
 
         /// <summary>
-        /// Set the wall color
+        /// Set the wall color.
         /// </summary>
+        /// <param name="color">Wall color</param>
+        /// <returns>This builder for method chaining</returns>
         public BuildingBuilder SetWallColor(Color color)
         {
             _wallColor = color;
@@ -92,8 +143,10 @@ namespace MAPI.Building
         }
 
         /// <summary>
-        /// Set the trim/molding color
+        /// Set the trim/molding color.
         /// </summary>
+        /// <param name="color">Trim color</param>
+        /// <returns>This builder for method chaining</returns>
         public BuildingBuilder SetTrimColor(Color color)
         {
             _trimColor = color;
@@ -101,21 +154,21 @@ namespace MAPI.Building
         }
 
         /// <summary>
-        /// Set the roof color
+        /// Set the roof color.
         /// </summary>
+        /// <param name="color">Roof color</param>
+        /// <returns>This builder for method chaining</returns>
         public BuildingBuilder SetRoofColor(Color color)
         {
             _roofColor = color;
             return this;
         }
-        
-        #endregion
 
-        #region Public API - Structure Components
-        
         /// <summary>
-        /// Add a floor to the building
+        /// Add a floor to the building.
         /// </summary>
+        /// <param name="thickness">Floor thickness</param>
+        /// <returns>This builder for method chaining</returns>
         public BuildingBuilder AddFloor(float thickness = 0.1f)
         {
             GameObject floor = PrimitiveBuilder.CreateBox(
@@ -131,9 +184,10 @@ namespace MAPI.Building
         }
 
         /// <summary>
-        /// Add walls to the building (back, left, right)
+        /// Add walls to the building (back, left, right).
         /// </summary>
         /// <param name="thickness">Wall thickness</param>
+        /// <returns>This builder for method chaining</returns>
         public BuildingBuilder AddWalls(float thickness = 0.2f)
         {
             float halfWidth = _footprint.x / 2f;
@@ -177,8 +231,10 @@ namespace MAPI.Building
         }
 
         /// <summary>
-        /// Add a flat roof to the building
+        /// Add a flat roof to the building.
         /// </summary>
+        /// <param name="thickness">Roof thickness</param>
+        /// <returns>This builder for method chaining</returns>
         public BuildingBuilder AddRoof(float thickness = 0.3f)
         {
             GameObject roof = PrimitiveBuilder.CreateBox(
@@ -195,11 +251,12 @@ namespace MAPI.Building
         }
 
         /// <summary>
-        /// Add windows to the front of the building
+        /// Add windows to the front of the building.
         /// </summary>
         /// <param name="count">Number of windows</param>
         /// <param name="windowHeight">Height of each window</param>
         /// <param name="glassColor">Color of the glass</param>
+        /// <returns>This builder for method chaining</returns>
         public BuildingBuilder AddWindows(int count = 4, float windowHeight = 5f, Color? glassColor = null)
         {
             Color glass = glassColor ?? new Color(0.7f, 0.85f, 0.9f);
@@ -275,8 +332,11 @@ namespace MAPI.Building
         }
 
         /// <summary>
-        /// Add base molding around the building
+        /// Add base molding around the building.
         /// </summary>
+        /// <param name="height">Molding height</param>
+        /// <param name="depth">Molding depth</param>
+        /// <returns>This builder for method chaining</returns>
         public BuildingBuilder AddBaseMolding(float height = 0.3f, float depth = 0.1f)
         {
             float halfWidth = _footprint.x / 2f;
@@ -314,13 +374,9 @@ namespace MAPI.Building
 
             return this;
         }
-        
-        #endregion
 
-        #region Public API - Build
-        
         /// <summary>
-        /// Build the complete building GameObject
+        /// Build the complete building GameObject.
         /// </summary>
         /// <param name="position">World position for the building</param>
         /// <param name="rotation">World rotation for the building</param>
@@ -339,27 +395,26 @@ namespace MAPI.Building
         }
 
         /// <summary>
-        /// Build the building at the origin
+        /// Build the building at the origin.
         /// </summary>
-        public GameObject Build()
-        {
-            return Build(Vector3.zero, Quaternion.identity);
-        }
-        
-        #endregion
-
-        #region Public API - Access
-        
-        /// <summary>
-        /// Get the root GameObject (can be used before Build() is called)
-        /// </summary>
-        public GameObject GetRoot() => _root;
+        /// <returns>The root GameObject of the building</returns>
+        public GameObject Build() =>
+            Build(Vector3.zero, Quaternion.identity);
 
         /// <summary>
-        /// Get the building folder GameObject
+        /// Get the root GameObject (can be used before Build() is called).
         /// </summary>
-        public GameObject GetBuildingFolder() => _buildingFolder;
-        
+        /// <returns>The root GameObject</returns>
+        public GameObject GetRoot() =>
+            _root;
+
+        /// <summary>
+        /// Get the building folder GameObject.
+        /// </summary>
+        /// <returns>The building folder GameObject</returns>
+        public GameObject GetBuildingFolder() =>
+            _buildingFolder;
+
         #endregion
     }
 }

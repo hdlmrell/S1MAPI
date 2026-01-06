@@ -4,8 +4,20 @@ using MAPI.Utils;
 
 namespace MAPI.Gltf
 {
+    /// <summary>
+    /// Processes GLTF nodes and builds the Unity GameObject hierarchy.
+    /// Handles coordinate system conversion and mesh attachment.
+    /// </summary>
     public static class GltfNodeProcessor
     {
+        /// <summary>
+        /// Process GLTF nodes and create Unity GameObjects with proper hierarchy.
+        /// </summary>
+        /// <param name="gltf">The parsed GLTF root object</param>
+        /// <param name="root">The root GameObject to attach nodes to</param>
+        /// <param name="meshes">List of processed meshes to attach</param>
+        /// <param name="shader">Shader to use for materials</param>
+        /// <returns>List of created transforms</returns>
         public static List<Transform> ProcessNodes(GltfRoot gltf, GameObject root, List<Mesh> meshes, Shader shader)
         {
             List<Transform> nodes = new List<Transform>();

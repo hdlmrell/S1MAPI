@@ -3,22 +3,25 @@ using UnityEngine;
 namespace MAPI.Utils
 {
     /// <summary>
-    /// Standardized material creation for common use cases
-    /// Provides consistent visual styling across MAPI-generated objects
+    /// Standardized material creation for common use cases.
+    /// Provides consistent visual styling across MAPI-generated objects.
     /// </summary>
     public static class MaterialPresets
     {
-        #region Private Fields
-        
-        private static Shader? _defaultShader;
-        
+        #region Internal Members
+
+        /// <summary>
+        /// INTERNAL: Cached default shader reference.
+        /// </summary>
+        internal static Shader? _defaultShader;
+
         #endregion
 
-        #region Properties
-        
+        #region Public Members
+
         /// <summary>
-        /// Gets or sets the default shader used for material creation
-        /// Falls back to URP Lit, then Standard, then Internal-Colored
+        /// Gets or sets the default shader used for material creation.
+        /// Falls back to URP Lit, then Standard, then Internal-Colored.
         /// </summary>
         public static Shader DefaultShader
         {
@@ -43,15 +46,12 @@ namespace MAPI.Utils
                 }
                 return _defaultShader;
             }
-            set => _defaultShader = value;
+            set =>
+                _defaultShader = value;
         }
-        
-        #endregion
 
-        #region Public API - Basic Materials
-        
         /// <summary>
-        /// Creates a material using a texture found by name (Resources or Memory)
+        /// Creates a material using a texture found by name (Resources or Memory).
         /// </summary>
         /// <param name="textureName">Name or path of the texture</param>
         /// <param name="color">Optional tint color</param>
@@ -110,11 +110,11 @@ namespace MAPI.Utils
         }
 
         /// <summary>
-        /// Finds an existing material in Resources or memory by name
+        /// Finds an existing material in Resources or memory by name.
         /// </summary>
         /// <param name="materialName">Name of the material to find (partial match supported)</param>
         /// <returns>The found material or null</returns>
-        public static Material FindExistingMaterial(string materialName)
+        public static Material? FindExistingMaterial(string materialName)
         {
             // 1. Try direct Resource load
             Material mat = Resources.Load<Material>(materialName);
@@ -136,7 +136,7 @@ namespace MAPI.Utils
         }
 
         /// <summary>
-        /// Creates an opaque material with the specified color
+        /// Creates an opaque material with the specified color.
         /// </summary>
         /// <param name="color">The base color of the material</param>
         /// <param name="shader">Optional shader to use (defaults to Standard shader)</param>
@@ -179,7 +179,7 @@ namespace MAPI.Utils
         }
 
         /// <summary>
-        /// Creates a transparent material with the specified color and alpha
+        /// Creates a transparent material with the specified color and alpha.
         /// </summary>
         /// <param name="color">The base color of the material</param>
         /// <param name="alpha">The alpha transparency (0-1)</param>
@@ -221,7 +221,7 @@ namespace MAPI.Utils
         }
 
         /// <summary>
-        /// Creates a glass-like material with the specified color and transparency
+        /// Creates a glass-like material with the specified color and transparency.
         /// </summary>
         /// <param name="color">The base color tint of the glass</param>
         /// <param name="alpha">The alpha transparency (0-1)</param>
@@ -245,8 +245,8 @@ namespace MAPI.Utils
         }
 
         /// <summary>
-        /// Creates a clear, transparent glass material with minimal tint
-        /// Perfect for windows, display cases, and architectural glass elements
+        /// Creates a clear, transparent glass material with minimal tint.
+        /// Perfect for windows, display cases, and architectural glass elements.
         /// </summary>
         /// <param name="alpha">The alpha transparency (0-1, default 0.3 for visible but clear glass)</param>
         /// <param name="tint">Optional subtle color tint (defaults to very light blue)</param>
@@ -271,7 +271,7 @@ namespace MAPI.Utils
         }
 
         /// <summary>
-        /// Creates a metallic material with the specified color
+        /// Creates a metallic material with the specified color.
         /// </summary>
         /// <param name="color">The base color of the metal</param>
         /// <param name="metallic">The metallic value (0-1, default 0.8)</param>
@@ -295,7 +295,7 @@ namespace MAPI.Utils
         }
 
         /// <summary>
-        /// Creates an emissive (glowing) material with the specified color
+        /// Creates an emissive (glowing) material with the specified color.
         /// </summary>
         /// <param name="color">The emission color</param>
         /// <param name="intensity">The emission intensity (default 1.0)</param>
@@ -313,13 +313,9 @@ namespace MAPI.Utils
 
             return material;
         }
-        
-        #endregion
 
-        #region Public API - Utility Methods
-        
         /// <summary>
-        /// Creates a material from a shader with a base color
+        /// Creates a material from a shader with a base color.
         /// </summary>
         /// <param name="shader">The shader to use</param>
         /// <param name="color">The base color</param>
@@ -343,7 +339,7 @@ namespace MAPI.Utils
         }
 
         /// <summary>
-        /// Apply standard MAPI properties to a material
+        /// Apply standard MAPI properties to a material.
         /// </summary>
         /// <param name="material">The material to configure</param>
         public static void ApplyStandardProperties(Material material)
@@ -363,7 +359,7 @@ namespace MAPI.Utils
                 material.SetFloat("_Glossiness", 0.5f);
             }
         }
-        
+
         #endregion
     }
 }

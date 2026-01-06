@@ -5,26 +5,69 @@ using MAPI.Utils;
 namespace MAPI.Core
 {
     /// <summary>
-    /// Main entry point and initialization for MAPI library
-    /// This class handles library initialization and provides global configuration
+    /// Main entry point and initialization for MAPI library.
+    /// Handles library initialization and provides global configuration.
     /// </summary>
+    /// <remarks>
+    /// Call Initialize() from consuming mods during their initialization phase.
+    /// Call Shutdown() during mod cleanup to properly release resources.
+    /// </remarks>
     public static class MAPICore
     {
-        private static bool _initialized = false;
+        #region Internal Members
 
         /// <summary>
-        /// Gets whether MAPI has been initialized
+        /// INTERNAL: Whether the library has been initialized.
         /// </summary>
-        public static bool IsInitialized => _initialized;
+        internal static bool _initialized = false;
 
         /// <summary>
-        /// Gets the MAPI library version
+        /// INTERNAL: Initialize subsystems.
         /// </summary>
-        public static string Version => Constants.LIBRARY_VERSION;
+        internal static void InitializeSubsystems()
+        {
+            DebugLog.Info("Initializing subsystems...");
+            
+            // Initialize resource management
+            ResourceTracker.Initialize();
+            
+            // Future: Initialize building system
+            // Future: Initialize additional subsystems
+        }
 
         /// <summary>
-        /// Initialize the MAPI library
-        /// This should be called by consuming mods during their initialization
+        /// INTERNAL: Cleanup subsystems.
+        /// </summary>
+        internal static void CleanupSubsystems()
+        {
+            DebugLog.Info("Cleaning up subsystems...");
+            
+            // Cleanup resource management
+            ResourceTracker.Shutdown();
+            
+            // Future: Cleanup building system
+            // Future: Cleanup additional subsystems
+        }
+
+        #endregion
+
+        #region Public Members
+
+        /// <summary>
+        /// Gets whether MAPI has been initialized.
+        /// </summary>
+        public static bool IsInitialized =>
+            _initialized;
+
+        /// <summary>
+        /// Gets the MAPI library version.
+        /// </summary>
+        public static string Version =>
+            Constants.LIBRARY_VERSION;
+
+        /// <summary>
+        /// Initialize the MAPI library.
+        /// This should be called by consuming mods during their initialization.
         /// </summary>
         public static void Initialize()
         {
@@ -53,8 +96,8 @@ namespace MAPI.Core
         }
 
         /// <summary>
-        /// Shutdown the MAPI library
-        /// This should be called by consuming mods during their cleanup
+        /// Shutdown the MAPI library.
+        /// This should be called by consuming mods during their cleanup.
         /// </summary>
         public static void Shutdown()
         {
@@ -81,28 +124,6 @@ namespace MAPI.Core
             }
         }
 
-        private static void InitializeSubsystems()
-        {
-            // Initialize various MAPI subsystems
-            DebugLog.Info("Initializing subsystems...");
-            
-            // Initialize resource management
-            ResourceTracker.Initialize();
-            
-            // Future: Initialize building system
-            // Future: Initialize additional subsystems
-        }
-
-        private static void CleanupSubsystems()
-        {
-            // Cleanup various MAPI subsystems
-            DebugLog.Info("Cleaning up subsystems...");
-            
-            // Cleanup resource management
-            ResourceTracker.Shutdown();
-            
-            // Future: Cleanup building system
-            // Future: Cleanup additional subsystems
-        }
+        #endregion
     }
 }

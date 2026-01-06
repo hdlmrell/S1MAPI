@@ -6,15 +6,15 @@ using MAPI.Utils;
 namespace MAPI.ProceduralMesh
 {
     /// <summary>
-    /// Builder for creating organic shapes like segmented bodies and articulated limbs
-    /// Based on patterns from Mrs. Ming's Authentic Pets MeshGenerator
+    /// Static builder for creating organic shapes like segmented bodies and articulated limbs.
+    /// Based on patterns from Mrs. Ming's Authentic Pets MeshGenerator.
     /// </summary>
     public static class OrganicShapeBuilder
     {
-        #region Public API - Segmented Body
-        
+        #region Public Members
+
         /// <summary>
-        /// Create a segmented body mesh using a body profile
+        /// Create a segmented body mesh using a body profile.
         /// </summary>
         /// <param name="size">Overall size of the body (x=width, y=height, z=length)</param>
         /// <param name="profile">Body profile defining the shape</param>
@@ -96,13 +96,9 @@ namespace MAPI.ProceduralMesh
 
             return mesh;
         }
-        
-        #endregion
 
-        #region Public API - Articulated Limb
-        
         /// <summary>
-        /// Create an articulated limb mesh (leg, arm, tail, etc.)
+        /// Create an articulated limb mesh (leg, arm, tail, etc.).
         /// </summary>
         /// <param name="profile">Limb profile defining joint positions and radii</param>
         /// <param name="name">Name for the mesh</param>
@@ -171,72 +167,15 @@ namespace MAPI.ProceduralMesh
 
             return mesh;
         }
-        
-        #endregion
-
-        #region Private Helper Methods
-        
-        /// <summary>
-        /// Add a ring of vertices with asymmetric scaling
-        /// Based on MeshGenerator.AddRing from the original mod
-        /// </summary>
-        private static void AddRing(List<Vector3> vertices, float z, Vector4 shape, int segments)
-        {
-            float widthRadius = shape.x;
-            float heightRadiusTop = shape.y;
-            float heightRadiusBottom = shape.z;
-            float asymmetry = shape.w;
-
-            for (int i = 0; i < segments; i++)
-            {
-                float angle = (float)i / segments * Mathf.PI * 2f;
-                float x = Mathf.Cos(angle) * widthRadius;
-                float sinAngle = Mathf.Sin(angle);
-                float y;
-
-                if (sinAngle > 0f)
-                {
-                    // Upper half - apply asymmetry
-                    y = sinAngle * heightRadiusTop;
-                    y *= 1f - asymmetry * Mathf.Abs(Mathf.Cos(angle));
-                }
-                else
-                {
-                    // Lower half
-                    y = sinAngle * heightRadiusBottom;
-                }
-
-                vertices.Add(new Vector3(x, y, z));
-            }
-        }
 
         /// <summary>
-        /// Add a ring of vertices for a limb segment (elliptical cross-section)
-        /// Based on MeshGenerator.AddLegRing from the original mod
+        /// Create a low-poly paw mesh with main pad and toe pads.
         /// </summary>
-        private static void AddLegRing(List<Vector3> vertices, Vector3 offset, float radius, int segments, float forwardPush)
-        {
-            for (int i = 0; i < segments; i++)
-            {
-                float angle = (float)i / segments * 2f * Mathf.PI;
-                float x = Mathf.Cos(angle) * radius * 0.8f;  // Elliptical: narrower in X
-                float z = Mathf.Sin(angle) * radius * 1.2f;  // Elliptical: wider in Z
-
-                vertices.Add(new Vector3(
-                    offset.x + x,
-                    offset.y,
-                    offset.z + z + forwardPush
-                ));
-            }
-        }
-        
-        #endregion
-
-        #region Public API - Convenience Methods
-        
-        /// <summary>
-        /// Create a low-poly paw mesh with main pad and toe pads
-        /// </summary>
+        /// <param name="width">Width of the paw</param>
+        /// <param name="height">Height of the paw</param>
+        /// <param name="length">Length of the paw</param>
+        /// <param name="name">Name for the mesh</param>
+        /// <returns>The created mesh</returns>
         public static Mesh CreatePaw(float width, float height, float length, string name = "Paw")
         {
             Mesh mesh = new Mesh { name = name };
@@ -281,8 +220,11 @@ namespace MAPI.ProceduralMesh
         }
 
         /// <summary>
-        /// Create a simple ear mesh
+        /// Create a simple ear mesh.
         /// </summary>
+        /// <param name="radius">Size of the ear</param>
+        /// <param name="name">Name for the mesh</param>
+        /// <returns>The created mesh</returns>
         public static Mesh CreateEar(float radius, string name = "Ear")
         {
             Mesh mesh = new Mesh { name = name };
@@ -314,13 +256,67 @@ namespace MAPI.ProceduralMesh
             ResourceTracker.Register(mesh);
             return mesh;
         }
-        
+
         #endregion
 
-        #region Private Box Helper
-        
+        #region Private Members
+
         /// <summary>
-        /// Add a box to the vertices and triangles lists
+        /// INTERNAL: Add a ring of vertices with asymmetric scaling.
+        /// Based on MeshGenerator.AddRing from the original mod.
+        /// </summary>
+        private static void AddRing(List<Vector3> vertices, float z, Vector4 shape, int segments)
+        {
+            float widthRadius = shape.x;
+            float heightRadiusTop = shape.y;
+            float heightRadiusBottom = shape.z;
+            float asymmetry = shape.w;
+
+            for (int i = 0; i < segments; i++)
+            {
+                float angle = (float)i / segments * Mathf.PI * 2f;
+                float x = Mathf.Cos(angle) * widthRadius;
+                float sinAngle = Mathf.Sin(angle);
+                float y;
+
+                if (sinAngle > 0f)
+                {
+                    // Upper half - apply asymmetry
+                    y = sinAngle * heightRadiusTop;
+                    y *= 1f - asymmetry * Mathf.Abs(Mathf.Cos(angle));
+                }
+                else
+                {
+                    // Lower half
+                    y = sinAngle * heightRadiusBottom;
+                }
+
+                vertices.Add(new Vector3(x, y, z));
+            }
+        }
+
+        /// <summary>
+        /// INTERNAL: Add a ring of vertices for a limb segment (elliptical cross-section).
+        /// Based on MeshGenerator.AddLegRing from the original mod.
+        /// </summary>
+        private static void AddLegRing(List<Vector3> vertices, Vector3 offset, float radius, int segments, float forwardPush)
+        {
+            for (int i = 0; i < segments; i++)
+            {
+                float angle = (float)i / segments * 2f * Mathf.PI;
+                float x = Mathf.Cos(angle) * radius * 0.8f;  // Elliptical: narrower in X
+                float z = Mathf.Sin(angle) * radius * 1.2f;  // Elliptical: wider in Z
+
+                vertices.Add(new Vector3(
+                    offset.x + x,
+                    offset.y,
+                    offset.z + z + forwardPush
+                ));
+            }
+        }
+
+        /// <summary>
+        /// INTERNAL: Add a box to the vertices and triangles lists.
         /// </summary>
         private static void AddBox(List<Vector3> vertices, List<int> triangles, Vector3 center, Vector3 size)
         {
@@ -337,7 +333,7 @@ namespace MAPI.ProceduralMesh
             vertices.Add(center + new Vector3(halfSize.x, halfSize.y, halfSize.z));
             vertices.Add(center + new Vector3(-halfSize.x, halfSize.y, halfSize.z));
 
-            // 12 triangles (6 faces × 2 triangles)
+            // 12 triangles (6 faces x 2 triangles)
             int[] boxTriangles = new int[]
             {
                 0, 2, 1, 0, 3, 2,  // Bottom
@@ -353,7 +349,7 @@ namespace MAPI.ProceduralMesh
                 triangles.Add(startIndex + index);
             }
         }
-        
+
         #endregion
     }
 }

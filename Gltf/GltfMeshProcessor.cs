@@ -5,8 +5,18 @@ using MAPI.Utils;
 
 namespace MAPI.Gltf
 {
+    /// <summary>
+    /// Processes GLTF mesh primitives and converts them to Unity meshes.
+    /// Handles vertex data extraction, coordinate system conversion, and UV flipping.
+    /// </summary>
     public static class GltfMeshProcessor
     {
+        /// <summary>
+        /// Process GLTF meshes and convert them to Unity meshes.
+        /// </summary>
+        /// <param name="gltf">The parsed GLTF root object</param>
+        /// <param name="binaryBuffer">The binary buffer containing mesh data</param>
+        /// <returns>List of Unity meshes</returns>
         public static List<Mesh> ProcessMeshes(GltfRoot gltf, byte[] binaryBuffer)
         {
             List<Mesh> meshes = new List<Mesh>();

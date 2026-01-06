@@ -7,47 +7,35 @@ using MAPI.Utils;
 namespace MAPI.Core
 {
     /// <summary>
-    /// Automatic resource tracking and cleanup system
-    /// Prevents memory leaks by tracking created resources and cleaning them up when needed
+    /// Automatic resource tracking and cleanup system.
+    /// Prevents memory leaks by tracking created resources and cleaning them up when needed.
     /// </summary>
+    /// <remarks>
+    /// Resources registered with this tracker will be automatically destroyed when scenes unload
+    /// or when the application quits. Use RegisterForScene to associate resources with specific scenes.
+    /// </remarks>
     public static class ResourceTracker
     {
-        #region Fields
-        
-        private static readonly HashSet<UnityEngine.Object> _trackedResources = new HashSet<UnityEngine.Object>();
-        private static readonly Dictionary<Scene, HashSet<UnityEngine.Object>> _sceneResources = new Dictionary<Scene, HashSet<UnityEngine.Object>>();
-        private static bool _initialized = false;
-        
-        #endregion
+        #region Internal Members
 
-        #region Events
-        
         /// <summary>
-        /// Event triggered when a scene is being cleaned up
+        /// INTERNAL: Set of all tracked resources.
         /// </summary>
-        public static event Action<Scene> OnSceneCleanup;
+        internal static readonly HashSet<UnityEngine.Object> _trackedResources = new HashSet<UnityEngine.Object>();
 
         /// <summary>
-        /// Event triggered when the application is quitting
+        /// INTERNAL: Resources associated with specific scenes.
         /// </summary>
-        public static event Action OnApplicationQuit;
-        
-        #endregion
+        internal static readonly Dictionary<Scene, HashSet<UnityEngine.Object>> _sceneResources = new Dictionary<Scene, HashSet<UnityEngine.Object>>();
 
-        #region Properties
-        
         /// <summary>
-        /// Gets the total number of tracked resources
+        /// INTERNAL: Whether the tracker has been initialized.
         /// </summary>
-        public static int TrackedResourceCount =>
-            _trackedResources.Count;
-        
-        #endregion
+        internal static bool _initialized = false;
 
-        #region Internal Methods
-        
         /// <summary>
-        /// Initialize the resource tracker
+        /// INTERNAL: Initialize the resource tracker.
+        /// Called by MAPICore during library initialization.
         /// </summary>
         internal static void Initialize()
         {
@@ -65,7 +53,8 @@ namespace MAPI.Core
         }
 
         /// <summary>
-        /// Shutdown the resource tracker
+        /// INTERNAL: Shutdown the resource tracker.
+        /// Called by MAPICore during library shutdown.
         /// </summary>
         internal static void Shutdown()
         {
@@ -82,13 +71,29 @@ namespace MAPI.Core
             _initialized = false;
             DebugLog.Info("ResourceTracker shutdown");
         }
-        
+
         #endregion
 
-        #region Public API
-        
+        #region Public Members
+
         /// <summary>
-        /// Register a resource for tracking
+        /// Event triggered when a scene is being cleaned up.
+        /// </summary>
+        public static event Action<Scene> OnSceneCleanup;
+
+        /// <summary>
+        /// Event triggered when the application is quitting.
+        /// </summary>
+        public static event Action OnApplicationQuit;
+
+        /// <summary>
+        /// Gets the total number of tracked resources.
+        /// </summary>
+        public static int TrackedResourceCount =>
+            _trackedResources.Count;
+
+        /// <summary>
+        /// Register a resource for tracking.
         /// </summary>
         /// <param name="resource">The resource to track</param>
         public static void Register(UnityEngine.Object resource)
@@ -106,7 +111,7 @@ namespace MAPI.Core
         }
 
         /// <summary>
-        /// Register a resource for tracking and associate it with a scene
+        /// Register a resource for tracking and associate it with a scene.
         /// </summary>
         /// <param name="resource">The resource to track</param>
         /// <param name="scene">The scene to associate with</param>
@@ -129,7 +134,7 @@ namespace MAPI.Core
         }
 
         /// <summary>
-        /// Unregister a resource from tracking
+        /// Unregister a resource from tracking.
         /// </summary>
         /// <param name="resource">The resource to unregister</param>
         public static void Unregister(UnityEngine.Object resource)
@@ -152,7 +157,7 @@ namespace MAPI.Core
         }
 
         /// <summary>
-        /// Clean up all tracked resources
+        /// Clean up all tracked resources.
         /// </summary>
         public static void CleanupAll()
         {
@@ -175,7 +180,7 @@ namespace MAPI.Core
         }
 
         /// <summary>
-        /// Clean up resources associated with a specific scene
+        /// Clean up resources associated with a specific scene.
         /// </summary>
         /// <param name="scene">The scene to clean up</param>
         public static void CleanupScene(Scene scene)
@@ -206,28 +211,34 @@ namespace MAPI.Core
         }
 
         /// <summary>
-        /// Check if a resource is being tracked
+        /// Check if a resource is being tracked.
         /// </summary>
         /// <param name="resource">The resource to check</param>
         /// <returns>True if the resource is tracked, false otherwise</returns>
         public static bool IsTracked(UnityEngine.Object resource) =>
             resource != null && _trackedResources.Contains(resource);
-        
+
         #endregion
 
-        #region Event Handlers
-        
+        #region Private Members
+
+        /// <summary>
+        /// INTERNAL: Handler for scene unload events.
+        /// </summary>
         private static void OnSceneUnloaded(Scene scene)
         {
             CleanupScene(scene);
         }
 
+        /// <summary>
+        /// INTERNAL: Handler for application quit event.
+        /// </summary>
         private static void OnApplicationQuitting()
         {
             OnApplicationQuit?.Invoke();
             CleanupAll();
         }
-        
+
         #endregion
     }
 }
