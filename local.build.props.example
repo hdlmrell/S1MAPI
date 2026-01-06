@@ -1,0 +1,37 @@
+ <!-- This file should be placed at the repository root as local.build.props -->
+ <!-- Copy this template to ../local.build.props (repository root) and adjust paths -->
+ <!-- DO NOT commit local.build.props to the repository -->
+
+ <Project>
+   <PropertyGroup>
+     <!-- General Configuration -->
+
+     <!-- Path to MelonLoader assemblies (used for development/testing if needed) -->
+     <!-- Example: D:\SteamLibrary\steamapps\common\Schedule I_alternate\MelonLoader\net6 -->
+     <MelonLoaderAssembliesPath>D:\SteamLibrary\steamapps\common\Schedule I_alternate\MelonLoader\net6</MelonLoaderAssembliesPath>
+
+     <!-- Mono Configuration -->
+
+     <!-- Path to Unity Managed assemblies for Mono builds -->
+     <!-- Example for Schedule I: D:\SteamLibrary\steamapps\common\Schedule I_alternate\Schedule I_Data\Managed -->
+     <MonoAssembliesPath>D:\SteamLibrary\steamapps\common\Schedule I_alternate\Schedule I_Data\Managed</MonoAssembliesPath>
+
+     <!-- Path to deploy built DLLs for testing in a Mono game -->
+     <!-- Example: D:\SteamLibrary\steamapps\common\Schedule I_alternate -->
+     <LocalMonoDeploymentPath>D:\SteamLibrary\steamapps\common\Schedule I_alternate</LocalMonoDeploymentPath>
+
+     <!-- Il2Cpp Configuration -->
+
+     <!-- Path to Il2Cpp interop assemblies for Il2Cpp builds -->
+     <!-- Example for Schedule I: D:\SteamLibrary\steamapps\common\Schedule I_public\MelonLoader\Il2CppAssemblies -->
+     <Il2CppAssembliesPath>D:\SteamLibrary\steamapps\common\Schedule I_public\MelonLoader\Il2CppAssemblies</Il2CppAssembliesPath>
+
+     <!-- Path to deploy built DLLs for testing in an Il2Cpp game -->
+     <!-- Example: D:\SteamLibrary\steamapps\common\Schedule I_public -->
+     <LocalIl2CppDeploymentPath>D:\SteamLibrary\steamapps\common\Schedule I_public</LocalIl2CppDeploymentPath>
+
+     <!-- Path to copy built DLL to UserLibs folder after build -->
+     <!-- Example for Schedule I: D:\SteamLibrary\steamapps\common\Schedule I\UserLibs -->
+     <UserLibsPath>D:\SteamLibrary\steamapps\common\Schedule I_public\UserLibs</UserLibsPath>
+   </PropertyGroup>
+ </Project>

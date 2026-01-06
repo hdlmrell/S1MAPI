@@ -1,0 +1,253 @@
+  <Project Sdk="Microsoft.NET.Sdk">
+   <!-- Import local overrides for contributor paths from repository root -->
+   <Import Project="local.build.props" Condition="Exists('local.build.props')" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>MAPI</RootNamespace>
+    <LangVersion>default</LangVersion>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <Configurations>Universal;Mono;Il2cpp</Configurations>
+    <Nullable>enable</Nullable>
+    <OutputType>Library</OutputType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>MAPI</PackageId>
+    <Title>Modding API for Unity Games</Title>
+    <Authors>MAPI Contributors</Authors>
+    <Description>A universal, game-agnostic Unity modding library providing procedural mesh generation, building construction, and advanced modding utilities.</Description>
+    <PackageTags>unity;modding;melon-loader;il2cpp;mono;procedural-mesh;gltf</PackageTags>
+    <RepositoryUrl>https://github.com/yourusername/MAPI</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <!-- Universal configuration (default - game-agnostic) -->
+  <PropertyGroup Condition="'$(Configuration)'=='Universal'">
+    <DefineConstants>UNIVERSAL</DefineConstants>
+    <AssemblyName>MAPI</AssemblyName>
+  </PropertyGroup>
+
+  <!-- Mono build for base game mono assemblies -->
+  <PropertyGroup Condition="'$(Configuration)'=='Mono'">
+    <DefineConstants>MONO</DefineConstants>
+    <AssemblyName>MAPI_Mono</AssemblyName>
+  </PropertyGroup>
+
+  <!-- Il2Cpp build for MelonLoader net6 assemblies -->
+  <PropertyGroup Condition="'$(Configuration)'=='Il2cpp'">
+    <DefineConstants>IL2CPP</DefineConstants>
+    <AssemblyName>MAPI_Il2cpp</AssemblyName>
+  </PropertyGroup>
+  <!-- Universal Unity references (Mono without game-specific assemblies) -->
+  <ItemGroup Condition="'$(Configuration)'=='Universal'">
+    <!-- Core Unity Engine -->
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.dll</HintPath>
+    </Reference>
+
+    <!-- Graphics and Rendering -->
+    <Reference Include="UnityEngine.AnimationModule">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.AnimationModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.PhysicsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
+
+    <!-- UI Systems -->
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.UIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(MonoAssembliesPath)\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
+
+    <!-- Navigation and AI -->
+    <Reference Include="UnityEngine.AIModule">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.AIModule.dll</HintPath>
+    </Reference>
+
+    <!-- Input Systems -->
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
+
+    <!-- JSON Parsing -->
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(MonoAssembliesPath)\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <!-- FishNet (Mono) -->
+    <Reference Include="FishNet.Runtime">
+      <HintPath>$(MonoAssembliesPath)\FishNet.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Mono Unity references -->
+  <ItemGroup Condition="'$(Configuration)'=='Mono'">
+    <!-- Core Unity Engine -->
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.dll</HintPath>
+    </Reference>
+
+    <!-- Graphics and Rendering -->
+    <Reference Include="UnityEngine.AnimationModule">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.AnimationModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.PhysicsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
+
+    <!-- UI Systems -->
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.UIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(MonoAssembliesPath)\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
+
+    <!-- Navigation and AI -->
+    <Reference Include="UnityEngine.AIModule">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.AIModule.dll</HintPath>
+    </Reference>
+
+    <!-- Input Systems -->
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(MonoAssembliesPath)\UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
+
+    <!-- JSON Parsing -->
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(MonoAssembliesPath)\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <!-- FishNet (Mono) -->
+    <Reference Include="FishNet.Runtime">
+      <HintPath>$(MonoAssembliesPath)\FishNet.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Il2Cpp Unity references -->
+  <ItemGroup Condition="'$(Configuration)'=='Il2cpp'">
+    <!-- Core Unity Engine -->
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.dll</HintPath>
+    </Reference>
+
+    <!-- Graphics and Rendering -->
+    <Reference Include="UnityEngine.AnimationModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.AnimationModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.PhysicsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
+
+    <!-- UI Systems -->
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.UIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(Il2CppAssembliesPath)\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
+
+    <!-- Navigation and AI -->
+    <Reference Include="UnityEngine.AIModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.AIModule.dll</HintPath>
+    </Reference>
+
+    <!-- Input Systems -->
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
+
+    <!-- JSON Parsing -->
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(Il2CppAssembliesPath)\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <!-- FishNet (Il2Cpp) -->
+    <Reference Include="Il2CppFishNet.Runtime">
+      <HintPath>$(Il2CppAssembliesPath)\Il2CppFishNet.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Source Files -->
+  <ItemGroup>
+    <Compile Include="Core\**\*.cs" />
+    <Compile Include="ProceduralMesh\**\*.cs" />
+    <Compile Include="Building\**\*.cs" />
+    <Compile Include="Gltf\**\*.cs" />
+    <Compile Include="Utils\**\*.cs" />
+  </ItemGroup>
+
+   <!-- Embedded Resources -->
+   <ItemGroup>
+     <EmbeddedResource Include="Resources\**\*" />
+   </ItemGroup>
+   <ItemGroup>
+     <None Remove="local.build.props.example" />
+   </ItemGroup>
+
+   <!-- Post-build: Copy to game UserLibs folder -->
+   <Target Name="CopyToUserLibs" AfterTargets="Build" Condition="'$(UserLibsPath)'!=''">
+     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(UserLibsPath)" />
+     <Message Text="Copied $(TargetPath) to $(UserLibsPath)" Importance="high" />
+   </Target>
+
+ </Project>
