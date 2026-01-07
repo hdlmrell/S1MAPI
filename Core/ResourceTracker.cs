@@ -35,7 +35,7 @@ namespace MAPI.Core
 
         /// <summary>
         /// INTERNAL: Initialize the resource tracker.
-        /// Called by MAPICore during library initialization.
+        /// Called by MAPI during library initialization.
         /// </summary>
         internal static void Initialize()
         {
@@ -54,7 +54,7 @@ namespace MAPI.Core
 
         /// <summary>
         /// INTERNAL: Shutdown the resource tracker.
-        /// Called by MAPICore during library shutdown.
+        /// Called by MAPI during library shutdown.
         /// </summary>
         internal static void Shutdown()
         {
