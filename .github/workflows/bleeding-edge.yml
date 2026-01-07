@@ -44,16 +44,6 @@ jobs:
           fetch-depth: 1
         if: steps.cache-assemblies.outputs.cache-hit != 'true'
 
-      # Checkout IL2CPP Assemblies
-      - name: Checkout IL2CPP Assemblies
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ secrets.IL2CPP_ASSEMBLIES_REPO }}
-          token: ${{ secrets.GAME_REPOS_TOKEN }}
-          path: il2cpp-assemblies
-          fetch-depth: 1
-        if: steps.cache-assemblies.outputs.cache-hit != 'true'
-
       - name: Populate Mono Assemblies
         if: steps.cache-assemblies.outputs.cache-hit != 'true'
         run: |
@@ -109,6 +99,16 @@ jobs:
 
       - name: Build Mono
         run: dotnet build MAPI.csproj --no-restore /p:Configuration=Mono -v normal
+
+      # Checkout IL2CPP Assemblies
+      - name: Checkout IL2CPP Assemblies
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.IL2CPP_ASSEMBLIES_REPO }}
+          token: ${{ secrets.GAME_REPOS_TOKEN }}
+          path: il2cpp-assemblies
+          fetch-depth: 1
+        if: steps.cache-assemblies.outputs.cache-hit != 'true'
 
       - name: Populate IL2CPP Assemblies
         if: steps.cache-assemblies.outputs.cache-hit != 'true'
