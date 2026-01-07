@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace MAPI.Gltf
@@ -14,9 +15,10 @@ namespace MAPI.Gltf
         /// <param name="gltf">The parsed GLTF root object</param>
         /// <param name="root">The root GameObject to attach nodes to</param>
         /// <param name="meshes">List of processed meshes to attach</param>
+        /// <param name="textures">List of processed textures</param>
         /// <param name="shader">Shader to use for materials</param>
         /// <returns>List of created transforms</returns>
-        public static List<Transform> ProcessNodes(GltfRoot gltf, GameObject root, List<Mesh> meshes, Shader shader)
+        public static List<Transform> ProcessNodes(GltfRoot gltf, GameObject root, List<GltfMeshResult> meshes, List<Texture2D> textures, Shader shader)
         {
             List<Transform> nodes = new List<Transform>();
             Dictionary<int, Transform> nodeMap = new Dictionary<int, Transform>();
@@ -80,19 +82,62 @@ namespace MAPI.Gltf
                 // Mesh
                 if (node.mesh.HasValue && node.mesh.Value < meshes.Count)
                 {
-                    Mesh mesh = meshes[node.mesh.Value];
+                    GltfMeshResult result = meshes[node.mesh.Value];
                     MeshFilter mf = go.AddComponent<MeshFilter>();
-                    mf.mesh = mesh;
+                    mf.mesh = result.mesh;
                     MeshRenderer mr = go.AddComponent<MeshRenderer>();
                     
                     // Material assignment
-                    // For MAPI v1, we use a default or specified shader. 
-                    // Full material parsing is complex (textures, pbr), we'll do basic color if available or default.
-                    // We need to look up the material from the mesh primitive if we want to be accurate.
-                    // Since we flattened mesh primitives, this is a simplification.
-                    
-                    Material mat = new Material(shader ?? Shader.Find("Standard"));
-                    mr.material = mat;
+                    Material[] materials = new Material[result.mesh.subMeshCount];
+                    Shader matShader = shader ?? Shader.Find("Standard");
+
+                    for (int j = 0; j < result.mesh.subMeshCount; j++)
+                    {
+                        Material mat = new Material(matShader);
+                        int matIndex = (j < result.materialIndices.Length) ? result.materialIndices[j] : -1;
+
+                        if (matIndex >= 0 && gltf.materials != null && matIndex < gltf.materials.Count)
+                        {
+                            GltfMaterial gltfMat = gltf.materials[matIndex];
+                            mat.name = gltfMat.name ?? $"material_{matIndex}";
+
+                            if (gltfMat.pbrMetallicRoughness != null)
+                            {
+                                var pbr = gltfMat.pbrMetallicRoughness;
+
+                                // Base Color
+                                if (pbr.baseColorFactor != null && pbr.baseColorFactor.Length == 4)
+                                {
+                                    mat.color = new Color(pbr.baseColorFactor[0], pbr.baseColorFactor[1], pbr.baseColorFactor[2], pbr.baseColorFactor[3]);
+                                }
+
+                                // Base Texture
+                                if (pbr.baseColorTexture != null && textures != null)
+                                {
+                                    int texIndex = pbr.baseColorTexture.index;
+                                    if (texIndex >= 0 && texIndex < textures.Count)
+                                    {
+                                        mat.mainTexture = textures[texIndex];
+                                    }
+                                }
+
+                                // Metallic/Roughness (Standard shader specific)
+                                if (matShader.name == "Standard")
+                                {
+                                    if (pbr.metallicFactor.HasValue) mat.SetFloat("_Metallic", pbr.metallicFactor.Value);
+                                    if (pbr.roughnessFactor.HasValue) mat.SetFloat("_Glossiness", 1.0f - pbr.roughnessFactor.Value); // Roughness is inverse of smoothness
+                                }
+                            }
+                        }
+                        else
+                        {
+                            mat.name = "DefaultMaterial";
+                        }
+                        
+                        materials[j] = mat;
+                    }
+
+                    mr.materials = materials;
                 }
             }
 
@@ -122,9 +167,6 @@ namespace MAPI.Gltf
                     t.SetParent(root.transform, false);
                 }
             }
-
-            // Skinning would go here (bind poses, bones), but sticking to static meshes for now as per "Phase 4" basics.
-            // Full skinning is quite involved.
 
             return nodes;
         }

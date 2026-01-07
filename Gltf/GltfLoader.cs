@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using MAPI.Utils;
@@ -124,14 +127,17 @@ namespace MAPI.Gltf
                 return null;
             }
 
+            // Process textures
+            List<Texture2D> textures = GltfTextureProcessor.ProcessTextures(root, binaryBuffer);
+
             // Process meshes
-            var meshes = GltfMeshProcessor.ProcessMeshes(root, binaryBuffer);
+            List<GltfMeshResult> meshes = GltfMeshProcessor.ProcessMeshes(root, binaryBuffer);
             
             // Create root object
             GameObject modelRoot = new GameObject("GltfModel");
             
             // Build hierarchy and attach meshes
-            GltfNodeProcessor.ProcessNodes(root, modelRoot, meshes, shader);
+            GltfNodeProcessor.ProcessNodes(root, modelRoot, meshes, textures, shader);
             
             return modelRoot;
         }

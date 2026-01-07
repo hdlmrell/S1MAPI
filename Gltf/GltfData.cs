@@ -20,6 +20,12 @@ namespace MAPI.Gltf
         public List<GltfBufferView> bufferViews;
         /// <summary>Array of accessors for typed data access</summary>
         public List<GltfAccessor> accessors;
+        /// <summary>Array of textures</summary>
+        public List<GltfTexture> textures;
+        /// <summary>Array of images</summary>
+        public List<GltfImage> images;
+        /// <summary>Array of samplers</summary>
+        public List<GltfSampler> samplers;
         /// <summary>Array of materials for rendering</summary>
         public List<GltfMaterial> materials;
         /// <summary>Array of skins for skeletal animation</summary>
@@ -187,6 +193,54 @@ namespace MAPI.Gltf
     {
         /// <summary>Index of the texture</summary>
         public int index;
+    }
+
+    /// <summary>
+    /// Defines a texture, pointing to an image and a sampler.
+    /// </summary>
+    [System.Serializable]
+    public class GltfTexture
+    {
+        /// <summary>Index of the sampler</summary>
+        public int? sampler;
+        /// <summary>Index of the image</summary>
+        public int? source;
+        /// <summary>Name of the texture</summary>
+        public string name;
+    }
+
+    /// <summary>
+    /// Defines an image source.
+    /// </summary>
+    [System.Serializable]
+    public class GltfImage
+    {
+        /// <summary>URI to external image data</summary>
+        public string uri;
+        /// <summary>MIME type of the image (image/jpeg, image/png)</summary>
+        public string mimeType;
+        /// <summary>Index of the buffer view containing the image</summary>
+        public int? bufferView;
+        /// <summary>Name of the image</summary>
+        public string name;
+    }
+
+    /// <summary>
+    /// Defines texture filtering and wrapping modes.
+    /// </summary>
+    [System.Serializable]
+    public class GltfSampler
+    {
+        /// <summary>Magnification filter</summary>
+        public int? magFilter;
+        /// <summary>Minification filter</summary>
+        public int? minFilter;
+        /// <summary>S wrapping mode</summary>
+        public int? wrapS;
+        /// <summary>T wrapping mode</summary>
+        public int? wrapT;
+        /// <summary>Name of the sampler</summary>
+        public string name;
     }
 
     /// <summary>

@@ -1,8 +1,17 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering; // For IndexFormat
 using MAPI.Utils;
 
 namespace MAPI.Gltf
 {
+    public class GltfMeshResult
+    {
+        public Mesh mesh;
+        public int[] materialIndices;
+    }
+
     /// <summary>
     /// Processes GLTF mesh primitives and converts them to Unity meshes.
     /// Handles vertex data extraction, coordinate system conversion, and UV flipping.
@@ -14,84 +23,123 @@ namespace MAPI.Gltf
         /// </summary>
         /// <param name="gltf">The parsed GLTF root object</param>
         /// <param name="binaryBuffer">The binary buffer containing mesh data</param>
-        /// <returns>List of Unity meshes</returns>
-        public static List<Mesh> ProcessMeshes(GltfRoot gltf, byte[] binaryBuffer)
+        /// <returns>List of processed meshes with material indices</returns>
+        public static List<GltfMeshResult> ProcessMeshes(GltfRoot gltf, byte[] binaryBuffer)
         {
-            List<Mesh> meshes = new List<Mesh>();
+            List<GltfMeshResult> results = new List<GltfMeshResult>();
 
-            if (gltf.meshes == null) return meshes;
+            if (gltf.meshes == null) return results;
 
             foreach (GltfMesh gltfMesh in gltf.meshes)
             {
-                // Unity Mesh combines primitives into submeshes, but here we might simplify
-                // For now, let's assume one primitive per mesh or combine them
-                // A robust implementation would handle multiple primitives as submeshes
-                
                 Mesh unityMesh = new Mesh();
                 unityMesh.name = gltfMesh.name ?? "gltf_mesh";
-
-                // We'll process the first primitive for simplicity in this version, 
-                // or merge them if necessary. The analysis showed a simple loop.
-                // Let's implement full multi-primitive support if possible, or just take the first one.
                 
-                if (gltfMesh.primitives != null && gltfMesh.primitives.Count > 0)
+                // Allow large meshes
+                unityMesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+
+                List<Vector3> allVertices = new List<Vector3>();
+                List<Vector3> allNormals = new List<Vector3>();
+                List<Vector2> allUvs = new List<Vector2>();
+                List<Vector4> allTangents = new List<Vector4>();
+                List<BoneWeight> allBoneWeights = new List<BoneWeight>();
+                List<int[]> allSubmeshIndices = new List<int[]>();
+                List<int> materialIndices = new List<int>();
+
+                int vertexOffset = 0;
+
+                if (gltfMesh.primitives != null)
                 {
-                    // For MAPI v1, we focus on the first primitive as most simple models use one.
-                    // Complex multi-material meshes would need submeshes.
-                    GltfPrimitive primitive = gltfMesh.primitives[0];
-
-                    // Positions
-                    if (primitive.attributes.TryGetValue("POSITION", out int posIndex))
+                    foreach (GltfPrimitive primitive in gltfMesh.primitives)
                     {
-                        unityMesh.vertices = ReadVector3Array(gltf, binaryBuffer, posIndex, true);
-                    }
+                        // Positions
+                        int vertexCount = 0;
+                        if (primitive.attributes.TryGetValue("POSITION", out int posIndex))
+                        {
+                            Vector3[] verts = ReadVector3Array(gltf, binaryBuffer, posIndex, true);
+                            vertexCount = verts.Length;
+                            allVertices.AddRange(verts);
+                        }
 
-                    // Normals
-                    if (primitive.attributes.TryGetValue("NORMAL", out int normIndex))
-                    {
-                        unityMesh.normals = ReadVector3Array(gltf, binaryBuffer, normIndex, true);
-                    }
+                        // Normals
+                        if (primitive.attributes.TryGetValue("NORMAL", out int normIndex))
+                        {
+                            allNormals.AddRange(ReadVector3Array(gltf, binaryBuffer, normIndex, true));
+                        }
 
-                    // UVs
-                    if (primitive.attributes.TryGetValue("TEXCOORD_0", out int uvIndex))
-                    {
-                        unityMesh.uv = ReadVector2Array(gltf, binaryBuffer, uvIndex, false); // UVs usually Y-flipped? GLTF is top-left origin?
-                        // GLTF UV origin is top-left (0,0) -> (1,1). Unity is bottom-left. 
-                        // Often requires V = 1 - V.
-                        FlipUVs(unityMesh.uv);
-                    }
+                        // UVs
+                        if (primitive.attributes.TryGetValue("TEXCOORD_0", out int uvIndex))
+                        {
+                            Vector2[] uvs = ReadVector2Array(gltf, binaryBuffer, uvIndex, false);
+                            FlipUVs(uvs);
+                            allUvs.AddRange(uvs);
+                        }
 
-                    // Tangents
-                    if (primitive.attributes.TryGetValue("TANGENT", out int tanIndex))
-                    {
-                        unityMesh.tangents = ReadVector4Array(gltf, binaryBuffer, tanIndex, true);
-                    }
+                        // Tangents
+                        if (primitive.attributes.TryGetValue("TANGENT", out int tanIndex))
+                        {
+                            allTangents.AddRange(ReadVector4Array(gltf, binaryBuffer, tanIndex, true));
+                        }
 
-                    // Indices / Triangles
-                    if (primitive.indices.HasValue)
-                    {
-                        int[] indices = ReadIntArray(gltf, binaryBuffer, primitive.indices.Value);
-                        // GLTF is CCW, Unity is CW? Or handled by X-inversion?
-                        // Since we inverted X, triangle winding usually flips.
-                        // We need to reverse triangle indices to maintain front-face.
-                        FlipTriangles(indices);
-                        unityMesh.triangles = indices;
-                    }
-                    
-                    // Bone Weights (Joints/Weights)
-                    if (primitive.attributes.TryGetValue("JOINTS_0", out int jointsIndex) &&
-                        primitive.attributes.TryGetValue("WEIGHTS_0", out int weightsIndex))
-                    {
-                        unityMesh.boneWeights = ReadBoneWeights(gltf, binaryBuffer, jointsIndex, weightsIndex);
-                    }
+                        // Bone Weights
+                        if (primitive.attributes.TryGetValue("JOINTS_0", out int jointsIndex) &&
+                            primitive.attributes.TryGetValue("WEIGHTS_0", out int weightsIndex))
+                        {
+                            allBoneWeights.AddRange(ReadBoneWeights(gltf, binaryBuffer, jointsIndex, weightsIndex));
+                        }
 
-                    unityMesh.RecalculateBounds();
+                        // Indices
+                        if (primitive.indices.HasValue)
+                        {
+                            int[] indices = ReadIntArray(gltf, binaryBuffer, primitive.indices.Value);
+                            FlipTriangles(indices);
+                            
+                            // Apply offset for combined mesh
+                            if (vertexOffset > 0)
+                            {
+                                for (int k = 0; k < indices.Length; k++)
+                                {
+                                    indices[k] += vertexOffset;
+                                }
+                            }
+                            
+                            allSubmeshIndices.Add(indices);
+                        }
+                        else
+                        {
+                            // Non-indexed geometry not supported in this simplified version
+                             DebugLog.Warning($"Non-indexed primitive in mesh '{unityMesh.name}'. Skipping.");
+                             allSubmeshIndices.Add(new int[0]);
+                        }
+
+                        materialIndices.Add(primitive.material ?? -1); // -1 means default material
+                        vertexOffset += vertexCount;
+                    }
                 }
 
-                meshes.Add(unityMesh);
+                // Assign to Unity Mesh
+                unityMesh.SetVertices(allVertices);
+                if (allNormals.Count > 0) unityMesh.SetNormals(allNormals);
+                if (allUvs.Count > 0) unityMesh.SetUVs(0, allUvs);
+                if (allTangents.Count > 0) unityMesh.SetTangents(allTangents);
+                if (allBoneWeights.Count > 0) unityMesh.boneWeights = allBoneWeights.ToArray();
+
+                unityMesh.subMeshCount = allSubmeshIndices.Count;
+                for (int i = 0; i < allSubmeshIndices.Count; i++)
+                {
+                    unityMesh.SetTriangles(allSubmeshIndices[i], i);
+                }
+
+                unityMesh.RecalculateBounds();
+                
+                results.Add(new GltfMeshResult
+                {
+                    mesh = unityMesh,
+                    materialIndices = materialIndices.ToArray()
+                });
             }
 
-            return meshes;
+            return results;
         }
 
         private static void FlipUVs(Vector2[] uvs)
@@ -189,8 +237,6 @@ namespace MAPI.Gltf
 
                 if (convertCoordinate)
                 {
-                    // Tangents might need inversion similar to rotation/position
-                    // Usually X inverted matches position inversion
                     result[i] = new Vector4(-x, y, z, w);
                 }
                 else
@@ -210,11 +256,6 @@ namespace MAPI.Gltf
             int count = accessor.count;
             int startOffset = view.byteOffset + accessor.byteOffset;
             int[] result = new int[count];
-
-            // Component Type:
-            // 5120 (BYTE), 5121 (UNSIGNED_BYTE)
-            // 5122 (SHORT), 5123 (UNSIGNED_SHORT)
-            // 5125 (UNSIGNED_INT)
 
             int stride = view.byteStride ?? GetComponentSize(accessor.componentType);
 
@@ -243,32 +284,19 @@ namespace MAPI.Gltf
 
         private static BoneWeight[] ReadBoneWeights(GltfRoot gltf, byte[] buffer, int jointsIndex, int weightsIndex)
         {
-            // Read Joints (usually USHORT)
-            // Read Weights (usually FLOAT or normalized types)
-            
-            // This is a simplified implementation assuming standard 4 weights per vertex
-            
             GltfAccessor jAcc = gltf.accessors[jointsIndex];
             GltfAccessor wAcc = gltf.accessors[weightsIndex];
             
-            // Assuming standard count match
             int count = jAcc.count;
             BoneWeight[] weights = new BoneWeight[count];
             
-            // Read all raw values first? No, read per vertex.
-            // Simplified: Assume JOINTS is USHORT vec4, WEIGHTS is FLOAT vec4
-            
             int jStart = gltf.bufferViews[jAcc.bufferView].byteOffset + jAcc.byteOffset;
             int wStart = gltf.bufferViews[wAcc.bufferView].byteOffset + wAcc.byteOffset;
-            
-            // Assuming tight packing for simplicity in this version
             
             for (int i = 0; i < count; i++)
             {
                 BoneWeight bw = new BoneWeight();
                 
-                // Read 4 joints
-                // Careful with component types here. JOINTS is typically 5123 (USHORT) or 5121 (UBYTE)
                 int jOffset = jStart + i * (jAcc.componentType == 5123 ? 8 : 4);
                 
                 if (jAcc.componentType == 5123)
@@ -286,8 +314,6 @@ namespace MAPI.Gltf
                     bw.boneIndex3 = buffer[jOffset + 3];
                 }
 
-                // Read 4 weights
-                // WEIGHTS is typically 5126 (FLOAT)
                 int wOffset = wStart + i * 16; 
                 bw.weight0 = BitConverter.ToSingle(buffer, wOffset);
                 bw.weight1 = BitConverter.ToSingle(buffer, wOffset + 4);
