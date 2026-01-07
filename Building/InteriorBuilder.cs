@@ -1,10 +1,11 @@
 using UnityEngine;
 using MAPI.Utils;
+using MAPI.S1;
 
 namespace MAPI.Building
 {
     /// <summary>
-    /// Fluent builder for creating interior furnishings and decorations
+    /// Fluent builder for creating interior furnishings and decorations using Schedule 1 assets
     /// Based on patterns from PetShopSpawner interior system
     /// </summary>
     public class InteriorBuilder
@@ -13,7 +14,6 @@ namespace MAPI.Building
         
         private readonly string _name;
         private readonly List<GameObject> _furniture = new List<GameObject>();
-        private readonly Color _woodColor = new Color(0.5f, 0.35f, 0.25f);
         
         #endregion
 
@@ -30,230 +30,529 @@ namespace MAPI.Building
         #endregion
 
         #region Public API - Furniture
+
+        /// <summary>
+        /// Add a desk/counter to the interior using S1 desk mesh
+        /// </summary>
+        /// <param name="position">Local position</param>
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddDesk(Vector3 position, Quaternion? rotation = null)
+        {
+            GameObject desk = Meshes.Desk.Instantiate("Desk", position, rotation ?? Quaternion.identity);
+            
+            if (desk != null)
+            {
+                _furniture.Add(desk);
+                BuildingUtilities.AddNavMeshObstacle(desk);
+            }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Desk mesh");
+            }
+            
+            return this;
+        }
+
+        /// <summary>
+        /// Add a locker to the interior using S1 locker shelf mesh
+        /// </summary>
+        /// <param name="position">Local position</param>
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddLocker(Vector3 position, Quaternion? rotation = null)
+        {
+            GameObject locker = Meshes.LockerShelf.Instantiate("Locker", position, rotation ?? Quaternion.identity);
+            
+            if (locker != null)
+            {
+                _furniture.Add(locker);
+                BuildingUtilities.AddNavMeshObstacle(locker);
+            }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Locker mesh");
+            }
+            
+            return this;
+        }
+
+        /// <summary>
+        /// Add a chair to the interior using S1 chair mesh
+        /// </summary>
+        /// <param name="position">Local position</param>
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddChair(Vector3 position, Quaternion? rotation = null)
+        {
+            GameObject chair = Meshes.Chair.Instantiate("Chair", position, rotation ?? Quaternion.identity);
+            
+            if (chair != null)
+            {
+                _furniture.Add(chair);
+                BuildingUtilities.AddNavMeshObstacle(chair);
+            }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Chair mesh");
+            }
+            
+            return this;
+        }
+
+        /// <summary>
+        /// Add an armchair to the interior using S1 armchair mesh
+        /// </summary>
+        /// <param name="position">Local position</param>
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddArmchair(Vector3 position, Quaternion? rotation = null)
+        {
+            GameObject armchair = Meshes.Armchair.Instantiate("Armchair", position, rotation ?? Quaternion.identity);
+            
+            if (armchair != null)
+            {
+                _furniture.Add(armchair);
+                BuildingUtilities.AddNavMeshObstacle(armchair);
+            }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Armchair mesh");
+            }
+            
+            return this;
+        }
+
+        /// <summary>
+        /// Add a table to the interior using S1 coffee table mesh
+        /// </summary>
+        /// <param name="position">Local position</param>
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddTable(Vector3 position, Quaternion? rotation = null)
+        {
+            GameObject table = Meshes.CoffeeTable.Instantiate("Table", position, rotation ?? Quaternion.identity);
+            
+            if (table != null)
+            {
+                _furniture.Add(table);
+                BuildingUtilities.AddNavMeshObstacle(table);
+            }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Table mesh");
+            }
+            
+            return this;
+        }
+
+        /// <summary>
+        /// Add an office table to the interior using S1 office table mesh
+        /// </summary>
+        /// <param name="position">Local position</param>
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddOfficeTable(Vector3 position, Quaternion? rotation = null)
+        {
+            GameObject table = Meshes.OfficeTable.Instantiate("OfficeTable", position, rotation ?? Quaternion.identity);
+            
+            if (table != null)
+            {
+                _furniture.Add(table);
+                BuildingUtilities.AddNavMeshObstacle(table);
+            }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Office Table mesh");
+            }
+            
+            return this;
+        }
+
+        /// <summary>
+        /// Add a bench to the interior using S1 bench mesh
+        /// </summary>
+        /// <param name="position">Local position</param>
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddBench(Vector3 position, Quaternion? rotation = null)
+        {
+            GameObject bench = Meshes.Bench.Instantiate("Bench", position, rotation ?? Quaternion.identity);
+            
+            if (bench != null)
+            {
+                _furniture.Add(bench);
+                BuildingUtilities.AddNavMeshObstacle(bench);
+            }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Bench mesh");
+            }
+            
+            return this;
+        }
+
+        /// <summary>
+        /// Add a bed to the interior using S1 bed mesh
+        /// </summary>
+        /// <param name="position">Local position</param>
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddBed(Vector3 position, Quaternion? rotation = null)
+        {
+            GameObject bed = Meshes.Bed.Instantiate("Bed", position, rotation ?? Quaternion.identity);
+            
+            if (bed != null)
+            {
+                _furniture.Add(bed);
+                BuildingUtilities.AddNavMeshObstacle(bed);
+            }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Bed mesh");
+            }
+            
+            return this;
+        }
+
+        /// <summary>
+        /// Add a fridge to the interior using S1 fridge mesh
+        /// </summary>
+        /// <param name="position">Local position</param>
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddFridge(Vector3 position, Quaternion? rotation = null)
+        {
+            GameObject fridge = Meshes.Fridge.Instantiate("Fridge", position, rotation ?? Quaternion.identity);
+            
+            if (fridge != null)
+            {
+                _furniture.Add(fridge);
+                BuildingUtilities.AddNavMeshObstacle(fridge);
+            }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Fridge mesh");
+            }
+            
+            return this;
+        }
         
-        /// <summary>
-        /// Add a desk/counter to the interior
-        /// </summary>
-        /// <param name="position">Local position</param>
-        /// <param name="size">Size of the desk</param>
-        /// <param name="color">Color of the desk (defaults to wood color)</param>
-        public InteriorBuilder AddDesk(Vector3 position, Vector3 size, Color? color = null)
-        {
-            Color deskColor = color ?? _woodColor;
+        #endregion
 
-            GameObject desk = PrimitiveBuilder.CreateBox(
-                "Desk",
-                position,
-                size,
-                deskColor
-            );
-
-            _furniture.Add(desk);
-            BuildingUtilities.AddNavMeshObstacle(desk);
-            return this;
-        }
+        #region Public API - Containers
 
         /// <summary>
-        /// Add a shelf to the interior
+        /// Add a decorative box/crate using S1 box mesh
         /// </summary>
         /// <param name="position">Local position</param>
-        /// <param name="size">Size of the shelf</param>
-        /// <param name="color">Color of the shelf (defaults to wood color)</param>
-        public InteriorBuilder AddShelf(Vector3 position, Vector3 size, Color? color = null)
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddBox(Vector3 position, Quaternion? rotation = null)
         {
-            Color shelfColor = color ?? _woodColor;
-
-            GameObject shelf = PrimitiveBuilder.CreateBox(
-                "Shelf",
-                position,
-                size,
-                shelfColor
-            );
-
-            _furniture.Add(shelf);
-            BuildingUtilities.AddNavMeshObstacle(shelf);
-            return this;
-        }
-
-        /// <summary>
-        /// Add a chair to the interior
-        /// </summary>
-        /// <param name="position">Local position</param>
-        /// <param name="color">Color of the chair</param>
-        public InteriorBuilder AddChair(Vector3 position, Color? color = null)
-        {
-            Color chairColor = color ?? _woodColor;
-
-            // Seat
-            GameObject seat = PrimitiveBuilder.CreateBox(
-                "Chair_Seat",
-                position + new Vector3(0f, 0.25f, 0f),
-                new Vector3(0.4f, 0.05f, 0.4f),
-                chairColor
-            );
-            _furniture.Add(seat);
-
-            // Backrest
-            GameObject backrest = PrimitiveBuilder.CreateBox(
-                "Chair_Backrest",
-                position + new Vector3(0f, 0.5f, -0.175f),
-                new Vector3(0.4f, 0.5f, 0.05f),
-                chairColor
-            );
-            backrest.transform.SetParent(seat.transform);
-            _furniture.Add(backrest);
-
-            // Legs (4 corners)
-            float legRadius = 0.025f;
-            float legHeight = 0.25f;
-            Vector3[] legPositions = new Vector3[]
+            GameObject box = Meshes.Box.Instantiate("Box", position, rotation ?? Quaternion.identity);
+            
+            if (box != null)
             {
-                new Vector3(-0.175f, 0f, -0.175f),
-                new Vector3(0.175f, 0f, -0.175f),
-                new Vector3(-0.175f, 0f, 0.175f),
-                new Vector3(0.175f, 0f, 0.175f)
-            };
-
-            for (int i = 0; i < 4; i++)
-            {
-                GameObject leg = PrimitiveBuilder.CreateCylinder(
-                    $"Chair_Leg_{i}",
-                    position + legPositions[i],
-                    new Vector3(legRadius * 2f, legHeight, legRadius * 2f),
-                    chairColor
-                );
-                leg.transform.SetParent(seat.transform);
-                _furniture.Add(leg);
+                _furniture.Add(box);
             }
-
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Box mesh");
+            }
+            
             return this;
         }
 
         /// <summary>
-        /// Add a table to the interior
+        /// Add a barrel using S1 barrel mesh
         /// </summary>
         /// <param name="position">Local position</param>
-        /// <param name="size">Size of the table</param>
-        /// <param name="color">Color of the table</param>
-        public InteriorBuilder AddTable(Vector3 position, Vector3 size, Color? color = null)
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddBarrel(Vector3 position, Quaternion? rotation = null)
         {
-            Color tableColor = color ?? _woodColor;
-
-            // Table top
-            GameObject tabletop = PrimitiveBuilder.CreateBox(
-                "Table_Top",
-                position + new Vector3(0f, size.y * 0.9f, 0f),
-                new Vector3(size.x, size.y * 0.1f, size.z),
-                tableColor
-            );
-            _furniture.Add(tabletop);
-            BuildingUtilities.AddNavMeshObstacle(tabletop);
-
-            // Legs
-            float legRadius = 0.05f;
-            float legHeight = size.y * 0.85f;
-            Vector3[] legOffsets = new Vector3[]
+            GameObject barrel = Meshes.Barrel.Instantiate("Barrel", position, rotation ?? Quaternion.identity);
+            
+            if (barrel != null)
             {
-                new Vector3(-size.x * 0.4f, legHeight / 2f, -size.z * 0.4f),
-                new Vector3(size.x * 0.4f, legHeight / 2f, -size.z * 0.4f),
-                new Vector3(-size.x * 0.4f, legHeight / 2f, size.z * 0.4f),
-                new Vector3(size.x * 0.4f, legHeight / 2f, size.z * 0.4f)
-            };
-
-            for (int i = 0; i < 4; i++)
-            {
-                GameObject leg = PrimitiveBuilder.CreateCylinder(
-                    $"Table_Leg_{i}",
-                    position + legOffsets[i],
-                    new Vector3(legRadius * 2f, legHeight, legRadius * 2f),
-                    tableColor
-                );
-                leg.transform.SetParent(tabletop.transform);
-                _furniture.Add(leg);
+                _furniture.Add(barrel);
             }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Barrel mesh");
+            }
+            
+            return this;
+        }
 
+        /// <summary>
+        /// Add a cabinet using S1 cabinet mesh
+        /// </summary>
+        /// <param name="position">Local position</param>
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddCabinet(Vector3 position, Quaternion? rotation = null)
+        {
+            GameObject cabinet = Meshes.Cabinet.Instantiate("Cabinet", position, rotation ?? Quaternion.identity);
+            
+            if (cabinet != null)
+            {
+                _furniture.Add(cabinet);
+                BuildingUtilities.AddNavMeshObstacle(cabinet);
+            }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Cabinet mesh");
+            }
+            
+            return this;
+        }
+
+        /// <summary>
+        /// Add a drawer using S1 drawer mesh
+        /// </summary>
+        /// <param name="position">Local position</param>
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddDrawer(Vector3 position, Quaternion? rotation = null)
+        {
+            GameObject drawer = Meshes.Drawer.Instantiate("Drawer", position, rotation ?? Quaternion.identity);
+            
+            if (drawer != null)
+            {
+                _furniture.Add(drawer);
+                BuildingUtilities.AddNavMeshObstacle(drawer);
+            }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Drawer mesh");
+            }
+            
+            return this;
+        }
+
+        /// <summary>
+        /// Add a safe using S1 safe mesh
+        /// </summary>
+        /// <param name="position">Local position</param>
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddSafe(Vector3 position, Quaternion? rotation = null)
+        {
+            GameObject safe = Meshes.Safe.Instantiate("Safe", position, rotation ?? Quaternion.identity);
+            
+            if (safe != null)
+            {
+                _furniture.Add(safe);
+                BuildingUtilities.AddNavMeshObstacle(safe);
+            }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Safe mesh");
+            }
+            
+            return this;
+        }
+
+        /// <summary>
+        /// Add a bin/trash can using S1 bin mesh
+        /// </summary>
+        /// <param name="position">Local position</param>
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddBin(Vector3 position, Quaternion? rotation = null)
+        {
+            GameObject bin = Meshes.Bin.Instantiate("Bin", position, rotation ?? Quaternion.identity);
+            
+            if (bin != null)
+            {
+                _furniture.Add(bin);
+            }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Bin mesh");
+            }
+            
             return this;
         }
         
         #endregion
 
         #region Public API - Decorations
-        
+
         /// <summary>
-        /// Add a rug to the interior
+        /// Add a plant decoration using S1 plant mesh
         /// </summary>
         /// <param name="position">Local position</param>
-        /// <param name="size">Size of the rug</param>
-        /// <param name="color">Color of the rug</param>
-        public InteriorBuilder AddRug(Vector3 position, Vector2 size, Color color)
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddPlant(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject rug = PrimitiveBuilder.CreateBox(
-                "Rug",
-                position,
-                new Vector3(size.x, 0.01f, size.y),
-                color
-            );
-
-            _furniture.Add(rug);
-            BuildingUtilities.RemoveColliders(rug); // Rugs shouldn't block movement
+            GameObject plant = Meshes.Plant.Instantiate("Plant", position, rotation ?? Quaternion.identity);
+            
+            if (plant != null)
+            {
+                _furniture.Add(plant);
+            }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Plant mesh");
+            }
+            
             return this;
         }
 
         /// <summary>
-        /// Add a decorative box/crate
+        /// Add a planter using S1 planter mesh
         /// </summary>
         /// <param name="position">Local position</param>
-        /// <param name="size">Size of the box</param>
-        /// <param name="color">Color of the box</param>
-        public InteriorBuilder AddBox(Vector3 position, Vector3 size, Color color)
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddPlanter(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject box = PrimitiveBuilder.CreateBox(
-                "DecorativeBox",
-                position,
-                size,
-                color
-            );
-
-            _furniture.Add(box);
+            GameObject planter = Meshes.Planter.Instantiate("Planter", position, rotation ?? Quaternion.identity);
+            
+            if (planter != null)
+            {
+                _furniture.Add(planter);
+            }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Planter mesh");
+            }
+            
             return this;
         }
 
         /// <summary>
-        /// Add a cylindrical decoration (barrel, pot, etc.)
+        /// Add a vase decoration using S1 vase mesh
         /// </summary>
         /// <param name="position">Local position</param>
-        /// <param name="radius">Radius of the cylinder</param>
-        /// <param name="height">Height of the cylinder</param>
-        /// <param name="color">Color</param>
-        public InteriorBuilder AddCylinder(Vector3 position, float radius, float height, Color color)
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddVase(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject cylinder = PrimitiveBuilder.CreateCylinder(
-                "DecorativeCylinder",
-                position,
-                new Vector3(radius * 2f, height, radius * 2f),
-                color
-            );
-
-            _furniture.Add(cylinder);
+            GameObject vase = Meshes.Vase.Instantiate("Vase", position, rotation ?? Quaternion.identity);
+            
+            if (vase != null)
+            {
+                _furniture.Add(vase);
+            }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Vase mesh");
+            }
+            
             return this;
         }
 
         /// <summary>
-        /// Add a spherical decoration
+        /// Add a painting decoration using S1 paintings mesh
         /// </summary>
         /// <param name="position">Local position</param>
-        /// <param name="radius">Radius of the sphere</param>
-        /// <param name="color">Color</param>
-        public InteriorBuilder AddSphere(Vector3 position, float radius, Color color)
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddPainting(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject sphere = PrimitiveBuilder.CreateSphere(
-                "DecorativeSphere",
-                position,
-                radius,
-                color
-            );
+            GameObject painting = Meshes.Paintings.Instantiate("Painting", position, rotation ?? Quaternion.identity);
+            
+            if (painting != null)
+            {
+                _furniture.Add(painting);
+            }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Painting mesh");
+            }
+            
+            return this;
+        }
 
-            _furniture.Add(sphere);
+        /// <summary>
+        /// Add a clock using S1 clock mesh
+        /// </summary>
+        /// <param name="position">Local position</param>
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddClock(Vector3 position, Quaternion? rotation = null)
+        {
+            GameObject clock = Meshes.Clock.Instantiate("Clock", position, rotation ?? Quaternion.identity);
+            
+            if (clock != null)
+            {
+                _furniture.Add(clock);
+            }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Clock mesh");
+            }
+            
+            return this;
+        }
+
+        /// <summary>
+        /// Add a wall clock using S1 wall clock mesh
+        /// </summary>
+        /// <param name="position">Local position</param>
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddWallClock(Vector3 position, Quaternion? rotation = null)
+        {
+            GameObject wallClock = Meshes.WallClock.Instantiate("WallClock", position, rotation ?? Quaternion.identity);
+            
+            if (wallClock != null)
+            {
+                _furniture.Add(wallClock);
+            }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Wall Clock mesh");
+            }
+            
+            return this;
+        }
+
+        /// <summary>
+        /// Add a toilet using S1 toilet mesh
+        /// </summary>
+        /// <param name="position">Local position</param>
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddToilet(Vector3 position, Quaternion? rotation = null)
+        {
+            GameObject toilet = Meshes.Toilet.Instantiate("Toilet", position, rotation ?? Quaternion.identity);
+            
+            if (toilet != null)
+            {
+                _furniture.Add(toilet);
+                BuildingUtilities.AddNavMeshObstacle(toilet);
+            }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Toilet mesh");
+            }
+            
+            return this;
+        }
+
+        /// <summary>
+        /// Add a computer using S1 computer mesh
+        /// </summary>
+        /// <param name="position">Local position</param>
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddComputer(Vector3 position, Quaternion? rotation = null)
+        {
+            GameObject computer = Meshes.Computer.Instantiate("Computer", position, rotation ?? Quaternion.identity);
+            
+            if (computer != null)
+            {
+                _furniture.Add(computer);
+            }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Computer mesh");
+            }
+            
+            return this;
+        }
+
+        /// <summary>
+        /// Add a screen/monitor using S1 screen mesh
+        /// </summary>
+        /// <param name="position">Local position</param>
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddScreen(Vector3 position, Quaternion? rotation = null)
+        {
+            GameObject screen = Meshes.Screen.Instantiate("Screen", position, rotation ?? Quaternion.identity);
+            
+            if (screen != null)
+            {
+                _furniture.Add(screen);
+            }
+            else
+            {
+                DebugLog.Warning("Failed to instantiate Screen mesh");
+            }
+            
             return this;
         }
         
@@ -262,35 +561,36 @@ namespace MAPI.Building
         #region Public API - Shelving System
         
         /// <summary>
-        /// Add a wall-mounted shelf system
+        /// Add a wall-mounted shelf system using S1 locker shelf meshes
         /// </summary>
         /// <param name="wallPosition">Position along the wall</param>
         /// <param name="tiers">Number of vertical tiers</param>
-        /// <param name="shelfSize">Size of each shelf</param>
         /// <param name="spacing">Vertical spacing between shelves</param>
-        /// <param name="color">Color of shelves</param>
+        /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddWallShelves(
             Vector3 wallPosition,
             int tiers,
-            Vector3 shelfSize,
             float spacing,
-            Color? color = null)
+            Quaternion? rotation = null)
         {
-            Color shelfColor = color ?? _woodColor;
+            Quaternion rot = rotation ?? Quaternion.identity;
 
             for (int tier = 0; tier < tiers; tier++)
             {
                 float shelfY = wallPosition.y + tier * spacing;
+                Vector3 position = new Vector3(wallPosition.x, shelfY, wallPosition.z);
 
-                GameObject shelf = PrimitiveBuilder.CreateBox(
-                    $"WallShelf_Tier{tier}",
-                    new Vector3(wallPosition.x, shelfY, wallPosition.z),
-                    shelfSize,
-                    shelfColor
-                );
+                GameObject shelf = Meshes.LockerShelf.Instantiate($"WallShelf_Tier{tier}", position, rot);
 
-                _furniture.Add(shelf);
-                BuildingUtilities.AddNavMeshObstacle(shelf);
+                if (shelf != null)
+                {
+                    _furniture.Add(shelf);
+                    BuildingUtilities.AddNavMeshObstacle(shelf);
+                }
+                else
+                {
+                    DebugLog.Warning($"Failed to instantiate Wall Shelf tier {tier}");
+                }
             }
 
             return this;
@@ -311,6 +611,29 @@ namespace MAPI.Building
             {
                 gameObject.transform.localPosition = position;
                 _furniture.Add(gameObject);
+            }
+
+            return this;
+        }
+
+        /// <summary>
+        /// Add a custom S1 mesh to the interior
+        /// </summary>
+        /// <param name="meshRef">The S1 MeshRef to instantiate</param>
+        /// <param name="name">Name for the GameObject</param>
+        /// <param name="position">Local position</param>
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        public InteriorBuilder AddCustomMesh(Core.MeshRef meshRef, string name, Vector3 position, Quaternion? rotation = null)
+        {
+            GameObject obj = meshRef.Instantiate(name, position, rotation ?? Quaternion.identity);
+            
+            if (obj != null)
+            {
+                _furniture.Add(obj);
+            }
+            else
+            {
+                DebugLog.Warning($"Failed to instantiate custom mesh: {name}");
             }
 
             return this;

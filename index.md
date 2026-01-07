@@ -36,18 +36,15 @@ Designed for stability, performance, and seamless integration.
 <span class="dot red"></span>
 <span class="dot yellow"></span>
 <span class="dot green"></span>
-<span class="filename">Construction.cs</span>
+<span class="filename">OfficeBuilding.cs</span>
 </div>
-<pre><code class="lang-csharp">MAPI.Initialize();
-
-// Fluent Construction API
-var office = new BuildingBuilder()
+<pre><code class="lang-csharp">var office = new BuildingBuilder()
     .WithWalls(walls => walls
-        .AddRoom(width: 10f, length: 8f, height: 3f)
-        .WithWindow(WallSide.Front, offset: 2f))
+    .AddRoom(width: 10f, length: 8f, height: 3f)
+    .WithWindow(WallSide.Front, offset: 2f))
     .WithInterior(interior => interior
-        .AddDesk(style: FurnitureStyle.Modern)
-        .AddChair(position: new Vector3(2, 0, 2)))
+    .AddDesk(style: FurnitureStyle.Modern)
+    .AddChair(position: new Vector3(2, 0, 2)))
     .Build();</code></pre>
 </div>
 </div>

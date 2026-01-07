@@ -3,7 +3,6 @@
 This document provides practical examples of using MAPI in your Schedule 1 mods. All examples assume you're working with FishNet networking and the Schedule 1 environment.
 
 ## Table of Contents
-- [Initialization](#initialization)
 - [Creating Simple Meshes](#creating-simple-meshes)
 - [Working with Materials](#working-with-materials)
 - [Loading Embedded Resources](#loading-embedded-resources)
@@ -11,54 +10,25 @@ This document provides practical examples of using MAPI in your Schedule 1 mods.
 
 ---
 
-## Initialization
+## No Initialization Required!
 
-Always initialize MAPI in your mod's initialization method:
+MAPI requires **no initialization** - all APIs work immediately. Unity automatically handles resource cleanup on scene unload and application quit. Just start creating!
 
 ```csharp
-using MAPI.Core;
+using MAPI.ProceduralMesh;
+using UnityEngine;
 
 public class YourSchedule1Mod : MelonMod
 {
     public override void OnInitializeMelon()
     {
-        // Initialize MAPI for Schedule 1
-        MAPI.Initialize();
+        // No initialization needed - just use MAPI!
+        GameObject cube = new ProceduralMeshBuilder("MyCube")
+            .AddBox(Vector3.zero, Vector3.one)
+            .SetColor(Color.green)
+            .Build();
         
-        LoggerInstance.Msg("MAPI initialized successfully!");
-    }
-
-    public override void OnApplicationQuit()
-    {
-        // Cleanup MAPI
-        MAPI.Shutdown();
-    }
-}
-```
-
-### Network-Aware Initialization
-
-For multiplayer mods, ensure FishNet is available:
-
-```csharp
-using MAPI.Core;
-using FishNet;
-using FishNet.Managing;
-
-public class NetworkAwareMod : MelonMod
-{
-    public override void OnInitializeMelon()
-    {
-        // Check if FishNet is available (required for Schedule 1)
-        if (NetworkManager.Instance != null)
-        {
-            MAPI.Initialize();
-            LoggerInstance.Msg("MAPI initialized with FishNet support!");
-        }
-        else
-        {
-            LoggerInstance.Error("FishNet not found - MAPI requires FishNet for Schedule 1");
-        }
+        LoggerInstance.Msg("Created a green cube!");
     }
 }
 ```
@@ -70,11 +40,11 @@ public class NetworkAwareMod : MelonMod
 ### Create a Colored Box
 
 ```csharp
-using MAPI.Core;
+using MAPI.ProceduralMesh;
 using UnityEngine;
 
 // Create a red box at the origin
-GameObject box = MAPI.CreateMesh("MyBox")
+GameObject box = new ProceduralMeshBuilder("MyBox")
     .AddBox(Vector3.zero, new Vector3(1f, 1f, 1f))
     .SetColor(Color.red)
     .Build();
@@ -84,7 +54,7 @@ GameObject box = MAPI.CreateMesh("MyBox")
 
 ```csharp
 // Create a blue low-poly sphere with flat shading
-GameObject sphere = MAPI.CreateMesh("MySphere")
+GameObject sphere = new ProceduralMeshBuilder("MySphere")
     .AddSphere(Vector3.zero, 0.5f, subdivisions: 4)
     .SetColor(Color.blue)
     .ApplyFlatShading()
@@ -98,7 +68,7 @@ GameObject sphere = MAPI.CreateMesh("MySphere")
 Vector3 start = new Vector3(0, 0, 0);
 Vector3 end = new Vector3(0, 2, 0);
 
-GameObject cylinder = MAPI.CreateMesh("MyCylinder")
+GameObject cylinder = new ProceduralMeshBuilder("MyCylinder")
     .AddCylinder(start, end, radius: 0.3f, segments: 12)
     .SetColor(Color.green)
     .Build();
@@ -108,7 +78,7 @@ GameObject cylinder = MAPI.CreateMesh("MyCylinder")
 
 ```csharp
 // Create a complex object from multiple primitives
-GameObject complex = MAPI.CreateMesh("ComplexObject")
+GameObject complex = new ProceduralMeshBuilder("ComplexObject")
     .AddBox(Vector3.zero, new Vector3(1f, 0.2f, 1f))  // Base
     .AddCylinder(
         new Vector3(0, 0.1f, 0), 

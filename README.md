@@ -9,29 +9,26 @@
 1. Download the latest release from the [releases page](https://github.com/ifBars/MAPI/releases)
 2. Add the appropriate `MAPI_Mono.dll` or `MAPI_Il2cpp.dll` as a reference in your mod project
 3. Ensure FishNet.Runtime is available in your mod environment
-4. Initialize MAPI in your mod's initialization code
+4. Start using MAPI - no initialization required!
 
 ## Quick Start
 
 ```csharp
-using MAPI.Core;
 using MAPI.ProceduralMesh;
 using MAPI.Building;
+using UnityEngine;
 
 public class YourMod : MelonMod
 {
     public override void OnInitializeMelon()
     {
-        // Initialize MAPI
-        MAPI.Initialize();
+        // MAPI requires no initialization - just use it!
+        GameObject cube = new ProceduralMeshBuilder("MyCube")
+            .AddBox(Vector3.zero, Vector3.one)
+            .SetColor(Color.blue)
+            .Build();
 
-        LoggerInstance.Msg("MAPI initialized successfully!");
-    }
-
-    public override void OnApplicationQuit()
-    {
-        // Cleanup MAPI
-        MAPI.Shutdown();
+        LoggerInstance.Msg("Created a blue cube with MAPI!");
     }
 }
 ```
@@ -79,11 +76,12 @@ public class YourMod : MelonMod
 
 MAPI is designed with the following principles:
 
-1. **Update Resilience**: Avoids Schedule 1 Assembly-CSharp types to survive game updates
-2. **Schedule 1 Integration**: Leverages FishNet networking and Unity primitives
-3. **Performance**: Optimized for runtime mesh generation and building in multiplayer environments
-4. **Maintainability**: Clean architecture with clear separation of concerns
-5. **Developer Experience**: Well-documented APIs with sensible defaults
+1. **Zero Ceremony**: No initialization required - just use it!
+2. **Update Resilience**: Avoids Schedule 1 Assembly-CSharp types to survive game updates
+3. **Schedule 1 Integration**: Leverages FishNet networking and Unity primitives
+4. **Performance**: Optimized for runtime mesh generation and building in multiplayer environments
+5. **Maintainability**: Clean architecture with clear separation of concerns
+6. **Developer Experience**: Well-documented APIs with sensible defaults
 
 ## Contributing
 
@@ -97,9 +95,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Phase 1: Core Infrastructure ✅
 - [x] Schedule 1 specific project setup
-- [x] Core initialization system
+- [x] Zero-initialization design
 - [x] Logging utilities
-- [x] Resource management (ResourceTracker)
+- [x] Optional resource management (ResourceTracker)
 - [x] Material presets system
 - [x] Embedded resource loader
 - [x] FishNet.Runtime integration for Mono and IL2CPP
