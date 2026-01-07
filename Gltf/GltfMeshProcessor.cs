@@ -4,6 +4,10 @@ using UnityEngine;
 using UnityEngine.Rendering; // For IndexFormat
 using MAPI.Utils;
 
+#if IL2CPP
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
+#endif
+
 namespace MAPI.Gltf
 {
     public class GltfMeshResult
@@ -118,10 +122,17 @@ namespace MAPI.Gltf
                 }
 
                 // Assign to Unity Mesh
+#if IL2CPP
+                unityMesh.SetVertices(allVertices.ToIl2CppList());
+                if (allNormals.Count > 0) unityMesh.SetNormals(allNormals.ToIl2CppList());
+                if (allUvs.Count > 0) unityMesh.SetUVs(0, allUvs.ToIl2CppList());
+                if (allTangents.Count > 0) unityMesh.SetTangents(allTangents.ToIl2CppList());
+#else
                 unityMesh.SetVertices(allVertices);
                 if (allNormals.Count > 0) unityMesh.SetNormals(allNormals);
                 if (allUvs.Count > 0) unityMesh.SetUVs(0, allUvs);
                 if (allTangents.Count > 0) unityMesh.SetTangents(allTangents);
+#endif
                 if (allBoneWeights.Count > 0) unityMesh.boneWeights = allBoneWeights.ToArray();
 
                 unityMesh.subMeshCount = allSubmeshIndices.Count;
@@ -163,7 +174,11 @@ namespace MAPI.Gltf
         private static Vector3[] ReadVector3Array(GltfRoot gltf, byte[] buffer, int accessorIndex, bool convertCoordinate)
         {
             GltfAccessor accessor = gltf.accessors[accessorIndex];
-            GltfBufferView view = gltf.bufferViews[accessor.bufferView];
+            if (!accessor.bufferView.HasValue)
+            {
+                return new Vector3[accessor.count];
+            }
+            GltfBufferView view = gltf.bufferViews[accessor.bufferView.Value];
             
             int count = accessor.count;
             int startOffset = view.byteOffset + accessor.byteOffset;
@@ -196,7 +211,11 @@ namespace MAPI.Gltf
         private static Vector2[] ReadVector2Array(GltfRoot gltf, byte[] buffer, int accessorIndex, bool flipY)
         {
             GltfAccessor accessor = gltf.accessors[accessorIndex];
-            GltfBufferView view = gltf.bufferViews[accessor.bufferView];
+            if (!accessor.bufferView.HasValue)
+            {
+                return new Vector2[accessor.count];
+            }
+            GltfBufferView view = gltf.bufferViews[accessor.bufferView.Value];
             
             int count = accessor.count;
             int startOffset = view.byteOffset + accessor.byteOffset;
@@ -219,7 +238,11 @@ namespace MAPI.Gltf
         private static Vector4[] ReadVector4Array(GltfRoot gltf, byte[] buffer, int accessorIndex, bool convertCoordinate)
         {
             GltfAccessor accessor = gltf.accessors[accessorIndex];
-            GltfBufferView view = gltf.bufferViews[accessor.bufferView];
+            if (!accessor.bufferView.HasValue)
+            {
+                return new Vector4[accessor.count];
+            }
+            GltfBufferView view = gltf.bufferViews[accessor.bufferView.Value];
             
             int count = accessor.count;
             int startOffset = view.byteOffset + accessor.byteOffset;
@@ -251,7 +274,11 @@ namespace MAPI.Gltf
         private static int[] ReadIntArray(GltfRoot gltf, byte[] buffer, int accessorIndex)
         {
             GltfAccessor accessor = gltf.accessors[accessorIndex];
-            GltfBufferView view = gltf.bufferViews[accessor.bufferView];
+            if (!accessor.bufferView.HasValue)
+            {
+                return new int[accessor.count];
+            }
+            GltfBufferView view = gltf.bufferViews[accessor.bufferView.Value];
             
             int count = accessor.count;
             int startOffset = view.byteOffset + accessor.byteOffset;
@@ -287,11 +314,16 @@ namespace MAPI.Gltf
             GltfAccessor jAcc = gltf.accessors[jointsIndex];
             GltfAccessor wAcc = gltf.accessors[weightsIndex];
             
+            if (!jAcc.bufferView.HasValue || !wAcc.bufferView.HasValue)
+            {
+                return new BoneWeight[jAcc.count];
+            }
+            
             int count = jAcc.count;
             BoneWeight[] weights = new BoneWeight[count];
             
-            int jStart = gltf.bufferViews[jAcc.bufferView].byteOffset + jAcc.byteOffset;
-            int wStart = gltf.bufferViews[wAcc.bufferView].byteOffset + wAcc.byteOffset;
+            int jStart = gltf.bufferViews[jAcc.bufferView.Value].byteOffset + jAcc.byteOffset;
+            int wStart = gltf.bufferViews[wAcc.bufferView.Value].byteOffset + wAcc.byteOffset;
             
             for (int i = 0; i < count; i++)
             {
