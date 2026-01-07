@@ -23,6 +23,11 @@ namespace MAPI.Gltf
             List<Transform> nodes = new List<Transform>();
             Dictionary<int, Transform> nodeMap = new Dictionary<int, Transform>();
 
+            if (gltf.nodes == null)
+            {
+                return nodes;
+            }
+
             // Create GameObjects
             for (int i = 0; i < gltf.nodes.Count; i++)
             {
@@ -151,7 +156,7 @@ namespace MAPI.Gltf
                 {
                     foreach (int childIndex in node.children)
                     {
-                        if (nodeMap.TryGetValue(childIndex, out Transform child))
+                        if (nodeMap.TryGetValue(childIndex, out Transform? child) && child != null)
                         {
                             child.SetParent(parent, false);
                         }

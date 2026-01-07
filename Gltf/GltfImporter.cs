@@ -36,7 +36,7 @@ namespace MAPI.Gltf
         #region Fields
 
         private readonly GltfImportOptions _options;
-        private string _basePath;
+        private string? _basePath;
 
         #endregion
 
@@ -196,7 +196,7 @@ namespace MAPI.Gltf
         /// </summary>
         /// <param name="data">GLB or JSON bytes</param>
         /// <returns>The root GameObject of the imported model, or null on failure</returns>
-        public GameObject Load(byte[] data)
+        public GameObject? Load(byte[] data)
         {
             if (data == null || data.Length < 4)
             {
@@ -221,7 +221,7 @@ namespace MAPI.Gltf
         /// </summary>
         /// <param name="glbBytes">Raw GLB file bytes</param>
         /// <returns>The root GameObject of the imported model, or null on failure</returns>
-        public GameObject LoadGlb(byte[] glbBytes)
+        public GameObject? LoadGlb(byte[] glbBytes)
         {
             if (glbBytes == null || glbBytes.Length < 12)
             {
@@ -229,15 +229,21 @@ namespace MAPI.Gltf
                 return null;
             }
 
-            GltfRoot root;
-            byte[] binaryChunk;
+            GltfRoot? root;
+            byte[]? binaryChunk;
 
             if (!ParseGlbChunks(glbBytes, out root, out binaryChunk))
             {
                 return null;
             }
 
-            GltfBufferResolver resolver = new GltfBufferResolver(binaryChunk);
+            if (root == null)
+            {
+                DebugLog.Error("Failed to parse GLB root");
+                return null;
+            }
+
+            GltfBufferResolver resolver = new GltfBufferResolver(null, binaryChunk);
             return ImportModel(root, resolver);
         }
 
@@ -247,7 +253,7 @@ namespace MAPI.Gltf
         /// </summary>
         /// <param name="filePath">Path to the GLTF/GLB file</param>
         /// <returns>The root GameObject of the imported model, or null on failure</returns>
-        public GameObject LoadFromFile(string filePath)
+        public GameObject? LoadFromFile(string filePath)
         {
             if (string.IsNullOrEmpty(filePath))
             {
@@ -287,7 +293,7 @@ namespace MAPI.Gltf
         /// <param name="json">GLTF JSON string</param>
         /// <param name="basePath">Base path for resolving external resources</param>
         /// <returns>The root GameObject of the imported model, or null on failure</returns>
-        public GameObject LoadGltfJson(string json, string basePath)
+        public GameObject? LoadGltfJson(string json, string? basePath)
         {
             if (string.IsNullOrEmpty(json))
             {
@@ -295,7 +301,7 @@ namespace MAPI.Gltf
                 return null;
             }
 
-            GltfRoot root;
+            GltfRoot? root;
             try
             {
                 root = JsonConvert.DeserializeObject<GltfRoot>(json);
@@ -306,7 +312,13 @@ namespace MAPI.Gltf
                 return null;
             }
 
-            string effectiveBasePath = basePath ?? _basePath;
+            if (root == null)
+            {
+                DebugLog.Error("Deserialized GLTF root is null");
+                return null;
+            }
+
+            string? effectiveBasePath = basePath ?? _basePath;
             GltfBufferResolver resolver = new GltfBufferResolver(effectiveBasePath);
             return ImportModel(root, resolver);
         }
@@ -315,7 +327,7 @@ namespace MAPI.Gltf
 
         #region Private Methods
 
-        private bool ParseGlbChunks(byte[] glbBytes, out GltfRoot root, out byte[] binaryChunk)
+        private bool ParseGlbChunks(byte[] glbBytes, out GltfRoot? root, out byte[]? binaryChunk)
         {
             root = null;
             binaryChunk = null;
@@ -392,7 +404,7 @@ namespace MAPI.Gltf
             }
         }
 
-        private GameObject ImportModel(GltfRoot root, GltfBufferResolver resolver)
+        private GameObject? ImportModel(GltfRoot root, GltfBufferResolver resolver)
         {
             // Resolve all buffers
             if (!resolver.ResolveBuffers(root))
@@ -405,7 +417,7 @@ namespace MAPI.Gltf
             GltfLoadContext context = new GltfLoadContext(root, resolver, _options);
 
             // Process textures first (materials depend on them)
-            List<Texture2D> textures = ProcessTextures(context);
+            List<Texture2D?> textures = ProcessTextures(context);
 
             // Process materials
             List<Material> materials = GltfMaterialProcessor.ProcessMaterials(context);
@@ -453,10 +465,10 @@ namespace MAPI.Gltf
             return modelRoot;
         }
 
-        private List<Texture2D> ProcessTextures(GltfLoadContext context)
+        private List<Texture2D?> ProcessTextures(GltfLoadContext context)
         {
             GltfRoot gltf = context.Root;
-            List<Texture2D> textures = new List<Texture2D>();
+            List<Texture2D?> textures = new List<Texture2D?>();
 
             if (gltf.textures == null)
             {
@@ -465,7 +477,7 @@ namespace MAPI.Gltf
 
             foreach (GltfTexture gltfTex in gltf.textures)
             {
-                Texture2D tex = null;
+                Texture2D? tex = null;
 
                 if (gltfTex.source.HasValue && gltf.images != null && gltfTex.source.Value < gltf.images.Count)
                 {
@@ -494,9 +506,9 @@ namespace MAPI.Gltf
             return textures;
         }
 
-        private Texture2D LoadImage(GltfLoadContext context, GltfImage image)
+        private Texture2D? LoadImage(GltfLoadContext context, GltfImage image)
         {
-            byte[] imageData = null;
+            byte[]? imageData = null;
 
             if (image.bufferView.HasValue)
             {
@@ -584,7 +596,7 @@ namespace MAPI.Gltf
         {
             // Use the existing mesh processor for now
             GltfRoot gltf = context.Root;
-            byte[] binaryBuffer = gltf.buffers?[0]?.Data;
+            byte[]? binaryBuffer = gltf.buffers?[0]?.Data;
 
             List<GltfMeshResult> results = GltfMeshProcessor.ProcessMeshes(gltf, binaryBuffer);
 
@@ -645,7 +657,7 @@ namespace MAPI.Gltf
                 {
                     foreach (int childIndex in node.children)
                     {
-                        if (nodeMap.TryGetValue(childIndex, out Transform child))
+                        if (nodeMap.TryGetValue(childIndex, out Transform? child) && child != null)
                         {
                             child.SetParent(parent, false);
                         }
@@ -717,7 +729,7 @@ namespace MAPI.Gltf
             MeshRenderer mr = go.AddComponent<MeshRenderer>();
 
             Material[] meshMaterials = new Material[meshResult.mesh.subMeshCount];
-            Material defaultMat = null;
+            Material? defaultMat = null;
 
             for (int i = 0; i < meshResult.mesh.subMeshCount; i++)
             {
@@ -733,7 +745,10 @@ namespace MAPI.Gltf
                     {
                         defaultMat = GltfMaterialProcessor.CreateDefaultMaterial(context);
                     }
-                    meshMaterials[i] = defaultMat;
+                    else
+                    {
+                        meshMaterials[i] = defaultMat;
+                    }
                 }
             }
 

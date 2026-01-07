@@ -19,7 +19,7 @@ namespace MAPI.Gltf
         
         private List<Mesh> _meshes;
         private List<Material> _materials;
-        private List<Texture2D> _textures;
+        private List<Texture2D?> _textures;
         private List<AnimationClip> _animations;
         private Dictionary<int, Transform> _nodeTransforms;
 
@@ -60,7 +60,7 @@ namespace MAPI.Gltf
         /// <summary>
         /// Loaded textures indexed by GLTF texture index.
         /// </summary>
-        public IReadOnlyList<Texture2D> Textures =>
+        public IReadOnlyList<Texture2D?> Textures =>
             _textures;
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace MAPI.Gltf
         /// <param name="root">The parsed GLTF root</param>
         /// <param name="bufferResolver">Buffer resolver for binary data</param>
         /// <param name="options">Import options</param>
-        public GltfLoadContext(GltfRoot root, GltfBufferResolver bufferResolver, GltfImportOptions options = null)
+        public GltfLoadContext(GltfRoot root, GltfBufferResolver bufferResolver, GltfImportOptions? options = null)
         {
             _root = root;
             _bufferResolver = bufferResolver;
@@ -93,7 +93,7 @@ namespace MAPI.Gltf
             
             _meshes = new List<Mesh>();
             _materials = new List<Material>();
-            _textures = new List<Texture2D>();
+            _textures = new List<Texture2D?>();
             _animations = new List<AnimationClip>();
             _nodeTransforms = new Dictionary<int, Transform>();
         }
@@ -130,9 +130,13 @@ namespace MAPI.Gltf
         /// Registers a texture and tracks it for resource management.
         /// </summary>
         /// <param name="texture">The texture to register</param>
-        public void RegisterTexture(Texture2D texture)
+        public void RegisterTexture(Texture2D? texture)
         {
-            if (texture == null) return;
+            if (texture == null)
+            {
+                _textures.Add(null);
+                return;
+            }
             
             _textures.Add(texture);
             ResourceTracker.Register(texture);
@@ -165,8 +169,8 @@ namespace MAPI.Gltf
         /// </summary>
         /// <param name="nodeIndex">GLTF node index</param>
         /// <returns>The transform, or null if not found</returns>
-        public Transform GetNodeTransform(int nodeIndex) =>
-            _nodeTransforms.TryGetValue(nodeIndex, out Transform t) ? t : null;
+        public Transform? GetNodeTransform(int nodeIndex) =>
+            _nodeTransforms.TryGetValue(nodeIndex, out Transform? t) ? t : null;
 
         #endregion
 
@@ -177,7 +181,7 @@ namespace MAPI.Gltf
         /// </summary>
         /// <param name="accessorIndex">Index of the accessor</param>
         /// <returns>Raw byte data, or null on failure</returns>
-        public byte[] GetAccessorData(int accessorIndex)
+        public byte[]? GetAccessorData(int accessorIndex)
         {
             if (_root.accessors == null || accessorIndex < 0 || accessorIndex >= _root.accessors.Count)
             {
@@ -185,7 +189,12 @@ namespace MAPI.Gltf
             }
 
             GltfAccessor accessor = _root.accessors[accessorIndex];
-            
+
+            if (accessor.type == null)
+            {
+                return null;
+            }
+
             if (!accessor.bufferView.HasValue)
             {
                 // Accessor with no buffer view returns zero-filled data
@@ -202,7 +211,7 @@ namespace MAPI.Gltf
         /// </summary>
         /// <param name="accessorIndex">Index of the accessor</param>
         /// <returns>The accessor, or null if not found</returns>
-        public GltfAccessor GetAccessor(int accessorIndex)
+        public GltfAccessor? GetAccessor(int accessorIndex)
         {
             if (_root.accessors == null || accessorIndex < 0 || accessorIndex >= _root.accessors.Count)
             {
@@ -217,7 +226,7 @@ namespace MAPI.Gltf
         /// </summary>
         /// <param name="bufferViewIndex">Index of the buffer view</param>
         /// <returns>The buffer view, or null if not found</returns>
-        public GltfBufferView GetBufferView(int bufferViewIndex)
+        public GltfBufferView? GetBufferView(int bufferViewIndex)
         {
             if (_root.bufferViews == null || bufferViewIndex < 0 || bufferViewIndex >= _root.bufferViews.Count)
             {
@@ -238,7 +247,7 @@ namespace MAPI.Gltf
         /// <summary>
         /// Shader to use for materials. If null, uses Standard shader.
         /// </summary>
-        public Shader Shader { get; set; }
+        public Shader? Shader { get; set; }
 
         /// <summary>
         /// Whether to import animations.

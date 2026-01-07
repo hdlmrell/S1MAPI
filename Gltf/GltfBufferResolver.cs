@@ -34,7 +34,7 @@ namespace MAPI.Gltf
         /// Creates a buffer resolver for GLTF files with external buffer references.
         /// </summary>
         /// <param name="basePath">Base directory for resolving relative URIs</param>
-        public GltfBufferResolver(string basePath)
+        public GltfBufferResolver(string? basePath)
         {
             _basePath = basePath;
             _glbBinaryChunk = null;
@@ -45,7 +45,7 @@ namespace MAPI.Gltf
         /// </summary>
         /// <param name="basePath">Base directory for resolving relative URIs</param>
         /// <param name="glbBinaryChunk">Optional binary chunk (for embedded-buffer GLTF or GLB)</param>
-        public GltfBufferResolver(string basePath, byte[] glbBinaryChunk)
+        public GltfBufferResolver(string? basePath, byte[]? glbBinaryChunk)
         {
             _basePath = basePath;
             _glbBinaryChunk = glbBinaryChunk;
@@ -77,8 +77,8 @@ namespace MAPI.Gltf
                     continue;
                 }
 
-                byte[] data = ResolveBuffer(buffer, i);
-                if (data == null)
+            byte[]? data = ResolveBuffer(buffer, i);
+            if (data == null)
                 {
                     DebugLog.Error($"Failed to resolve buffer {i}");
                     return false;

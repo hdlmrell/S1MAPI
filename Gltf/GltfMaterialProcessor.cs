@@ -73,7 +73,7 @@ namespace MAPI.Gltf
                 return materials;
             }
 
-            Shader shader = GetShader(context);
+            Shader? shader = GetShader(context);
             if (shader == null)
             {
                 DebugLog.Error("Failed to find URP Lit shader for materials");
@@ -96,9 +96,9 @@ namespace MAPI.Gltf
         /// </summary>
         /// <param name="context">The GLTF load context</param>
         /// <returns>A default gray URP material</returns>
-        public static Material CreateDefaultMaterial(GltfLoadContext context)
+        public static Material? CreateDefaultMaterial(GltfLoadContext context)
         {
-            Shader shader = GetShader(context);
+            Shader? shader = GetShader(context);
             if (shader == null)
             {
                 DebugLog.Error("Failed to find URP shader for default material");
@@ -117,7 +117,7 @@ namespace MAPI.Gltf
 
         #region Private Methods
 
-        private static Shader GetShader(GltfLoadContext context)
+        private static Shader? GetShader(GltfLoadContext context)
         {
             // Use custom shader if provided
             if (context.Options.Shader != null)
@@ -215,7 +215,7 @@ namespace MAPI.Gltf
             // Base color texture
             if (pbr.baseColorTexture != null)
             {
-                Texture2D tex = GetTexture(context, pbr.baseColorTexture.index);
+                Texture2D? tex = GetTexture(context, pbr.baseColorTexture.index);
                 if (tex != null)
                 {
                     mat.SetTexture(UrpProperty.BaseMap, tex);
@@ -232,7 +232,7 @@ namespace MAPI.Gltf
             // Metallic-roughness texture
             if (pbr.metallicRoughnessTexture != null)
             {
-                Texture2D tex = GetTexture(context, pbr.metallicRoughnessTexture.index);
+                Texture2D? tex = GetTexture(context, pbr.metallicRoughnessTexture.index);
                 if (tex != null)
                 {
                     // URP expects metallic in R channel and smoothness in A channel
@@ -282,7 +282,7 @@ namespace MAPI.Gltf
 
         private static void ApplyNormalTexture(GltfLoadContext context, Material mat, GltfNormalTextureInfo normalInfo)
         {
-            Texture2D tex = GetTexture(context, normalInfo.index);
+            Texture2D? tex = GetTexture(context, normalInfo.index);
             if (tex != null)
             {
                 mat.SetTexture(UrpProperty.BumpMap, tex);
@@ -297,7 +297,7 @@ namespace MAPI.Gltf
 
         private static void ApplyOcclusionTexture(GltfLoadContext context, Material mat, GltfOcclusionTextureInfo occlusionInfo)
         {
-            Texture2D tex = GetTexture(context, occlusionInfo.index);
+            Texture2D? tex = GetTexture(context, occlusionInfo.index);
             if (tex != null)
             {
                 mat.SetTexture(UrpProperty.OcclusionMap, tex);
@@ -351,7 +351,7 @@ namespace MAPI.Gltf
 
             if (gltfMat.emissiveTexture != null)
             {
-                Texture2D tex = GetTexture(context, gltfMat.emissiveTexture.index);
+                Texture2D? tex = GetTexture(context, gltfMat.emissiveTexture.index);
                 if (tex != null)
                 {
                     mat.SetTexture(UrpProperty.EmissionMap, tex);
@@ -441,9 +441,9 @@ namespace MAPI.Gltf
             mat.renderQueue = (int)RenderQueue.Transparent;
         }
 
-        private static Texture2D GetTexture(GltfLoadContext context, int textureIndex)
+        private static Texture2D? GetTexture(GltfLoadContext context, int textureIndex)
         {
-            IReadOnlyList<Texture2D> textures = context.Textures;
+            IReadOnlyList<Texture2D?>? textures = context.Textures;
 
             if (textures == null || textureIndex < 0 || textureIndex >= textures.Count)
             {

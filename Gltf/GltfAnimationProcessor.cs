@@ -31,7 +31,7 @@ namespace MAPI.Gltf
             for (int i = 0; i < gltf.animations.Count; i++)
             {
                 GltfAnimation gltfAnim = gltf.animations[i];
-                AnimationClip clip = CreateAnimationClip(context, gltfAnim, i);
+                AnimationClip? clip = CreateAnimationClip(context, gltfAnim, i);
 
                 if (clip != null)
                 {
@@ -47,7 +47,7 @@ namespace MAPI.Gltf
 
         #region Private Methods
 
-        private static AnimationClip CreateAnimationClip(GltfLoadContext context, GltfAnimation gltfAnim, int index)
+        private static AnimationClip? CreateAnimationClip(GltfLoadContext context, GltfAnimation gltfAnim, int index)
         {
             if (gltfAnim.channels == null || gltfAnim.samplers == null)
             {
@@ -76,14 +76,14 @@ namespace MAPI.Gltf
                 string path = channel.target.path;
 
                 // Get the node path for Unity
-                string nodePath = GetNodePath(context, nodeIndex);
+                string? nodePath = GetNodePath(context, nodeIndex);
                 if (string.IsNullOrEmpty(nodePath))
                 {
                     continue;
                 }
 
                 // Read keyframe data
-                float[] times = ReadFloatArray(context, sampler.input);
+                float[]? times = ReadFloatArray(context, sampler.input);
                 if (times == null || times.Length == 0)
                 {
                     continue;
@@ -120,7 +120,7 @@ namespace MAPI.Gltf
             float[] times,
             string nodePath)
         {
-            Vector3[] values = ReadVector3Array(context, sampler.output);
+            Vector3[]? values = ReadVector3Array(context, sampler.output);
             if (values == null || values.Length == 0)
             {
                 return;
@@ -174,7 +174,7 @@ namespace MAPI.Gltf
             float[] times,
             string nodePath)
         {
-            Vector4[] values = ReadVector4Array(context, sampler.output);
+            Vector4[]? values = ReadVector4Array(context, sampler.output);
             if (values == null || values.Length == 0)
             {
                 return;
@@ -231,7 +231,7 @@ namespace MAPI.Gltf
             float[] times,
             string nodePath)
         {
-            Vector3[] values = ReadVector3Array(context, sampler.output);
+            Vector3[]? values = ReadVector3Array(context, sampler.output);
             if (values == null || values.Length == 0)
             {
                 return;
@@ -290,7 +290,7 @@ namespace MAPI.Gltf
                 return;
             }
 
-            float[] weights = ReadFloatArray(context, sampler.output);
+            float[]? weights = ReadFloatArray(context, sampler.output);
             if (weights == null || weights.Length == 0)
             {
                 return;
@@ -312,9 +312,9 @@ namespace MAPI.Gltf
             GltfMesh mesh = gltf.meshes[node.mesh.Value];
             int targetCount = 0;
 
-            if (mesh.primitives != null && mesh.primitives.Count > 0 && mesh.primitives[0].targets != null)
+                if (mesh.primitives != null && mesh.primitives.Count > 0 && mesh.primitives[0].targets != null)
             {
-                targetCount = mesh.primitives[0].targets.Count;
+                targetCount = mesh.primitives[0].targets!.Count;
             }
 
             if (targetCount == 0)
@@ -364,9 +364,9 @@ namespace MAPI.Gltf
             }
         }
 
-        private static string GetNodePath(GltfLoadContext context, int nodeIndex)
+        private static string? GetNodePath(GltfLoadContext context, int nodeIndex)
         {
-            Transform transform = context.GetNodeTransform(nodeIndex);
+            Transform? transform = context.GetNodeTransform(nodeIndex);
             if (transform == null)
             {
                 return null;
@@ -392,21 +392,21 @@ namespace MAPI.Gltf
             return string.Join("/", pathParts);
         }
 
-        private static float[] ReadFloatArray(GltfLoadContext context, int accessorIndex)
+        private static float[]? ReadFloatArray(GltfLoadContext context, int accessorIndex)
         {
-            GltfAccessor accessor = context.GetAccessor(accessorIndex);
+            GltfAccessor? accessor = context.GetAccessor(accessorIndex);
             if (accessor == null)
             {
                 return null;
             }
 
-            byte[] data = context.GetAccessorData(accessorIndex);
+            byte[]? data = context.GetAccessorData(accessorIndex);
             if (data == null)
             {
                 return null;
             }
 
-            GltfBufferView view = context.GetBufferView(accessor.bufferView ?? 0);
+            GltfBufferView? view = context.GetBufferView(accessor.bufferView ?? 0);
             int stride = view?.byteStride ?? 4;
             int count = accessor.count;
 
@@ -423,21 +423,21 @@ namespace MAPI.Gltf
             return result;
         }
 
-        private static Vector3[] ReadVector3Array(GltfLoadContext context, int accessorIndex)
+        private static Vector3[]? ReadVector3Array(GltfLoadContext context, int accessorIndex)
         {
-            GltfAccessor accessor = context.GetAccessor(accessorIndex);
+            GltfAccessor? accessor = context.GetAccessor(accessorIndex);
             if (accessor == null)
             {
                 return null;
             }
 
-            byte[] data = context.GetAccessorData(accessorIndex);
+            byte[]? data = context.GetAccessorData(accessorIndex);
             if (data == null)
             {
                 return null;
             }
 
-            GltfBufferView view = context.GetBufferView(accessor.bufferView ?? 0);
+            GltfBufferView? view = context.GetBufferView(accessor.bufferView ?? 0);
             int stride = view?.byteStride ?? 12;
             int count = accessor.count;
 
@@ -457,21 +457,21 @@ namespace MAPI.Gltf
             return result;
         }
 
-        private static Vector4[] ReadVector4Array(GltfLoadContext context, int accessorIndex)
+        private static Vector4[]? ReadVector4Array(GltfLoadContext context, int accessorIndex)
         {
-            GltfAccessor accessor = context.GetAccessor(accessorIndex);
+            GltfAccessor? accessor = context.GetAccessor(accessorIndex);
             if (accessor == null)
             {
                 return null;
             }
 
-            byte[] data = context.GetAccessorData(accessorIndex);
+            byte[]? data = context.GetAccessorData(accessorIndex);
             if (data == null)
             {
                 return null;
             }
 
-            GltfBufferView view = context.GetBufferView(accessor.bufferView ?? 0);
+            GltfBufferView? view = context.GetBufferView(accessor.bufferView ?? 0);
             int stride = view?.byteStride ?? 16;
             int count = accessor.count;
 

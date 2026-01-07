@@ -15,9 +15,9 @@ namespace MAPI.Gltf
         /// <param name="gltf">The parsed GLTF root object</param>
         /// <param name="binaryBuffer">The binary buffer containing image data</param>
         /// <returns>List of Unity textures</returns>
-        public static List<Texture2D> ProcessTextures(GltfRoot gltf, byte[] binaryBuffer)
+        public static List<Texture2D?> ProcessTextures(GltfRoot gltf, byte[]? binaryBuffer)
         {
-            List<Texture2D> textures = new List<Texture2D>();
+            List<Texture2D?> textures = new List<Texture2D?>();
 
             if (gltf.textures == null) return textures;
 
@@ -26,7 +26,7 @@ namespace MAPI.Gltf
                 if (gltfTex.source.HasValue && gltf.images != null && gltfTex.source.Value < gltf.images.Count)
                 {
                     GltfImage image = gltf.images[gltfTex.source.Value];
-                    Texture2D tex = LoadImage(gltf, image, binaryBuffer);
+                    Texture2D? tex = LoadImage(gltf, image, binaryBuffer);
                     if (tex != null)
                     {
                         tex.name = gltfTex.name ?? image.name ?? $"texture_{textures.Count}";
@@ -55,7 +55,7 @@ namespace MAPI.Gltf
             return textures;
         }
 
-        private static Texture2D LoadImage(GltfRoot gltf, GltfImage image, byte[] binaryBuffer)
+        private static Texture2D? LoadImage(GltfRoot gltf, GltfImage image, byte[]? binaryBuffer)
         {
             if (image.bufferView.HasValue)
             {

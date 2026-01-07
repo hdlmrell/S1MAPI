@@ -12,8 +12,8 @@ namespace MAPI.Gltf
 {
     public class GltfMeshResult
     {
-        public Mesh mesh;
-        public int[] materialIndices;
+        public Mesh mesh = default!;
+        public int[] materialIndices = default!;
     }
 
     /// <summary>
@@ -28,7 +28,7 @@ namespace MAPI.Gltf
         /// <param name="gltf">The parsed GLTF root object</param>
         /// <param name="binaryBuffer">The binary buffer containing mesh data</param>
         /// <returns>List of processed meshes with material indices</returns>
-        public static List<GltfMeshResult> ProcessMeshes(GltfRoot gltf, byte[] binaryBuffer)
+        public static List<GltfMeshResult> ProcessMeshes(GltfRoot gltf, byte[]? binaryBuffer)
         {
             List<GltfMeshResult> results = new List<GltfMeshResult>();
 
@@ -56,6 +56,11 @@ namespace MAPI.Gltf
                 {
                     foreach (GltfPrimitive primitive in gltfMesh.primitives)
                     {
+                        if (primitive.attributes == null)
+                        {
+                            continue;
+                        }
+
                         // Positions
                         int vertexCount = 0;
                         if (primitive.attributes.TryGetValue("POSITION", out int posIndex))
@@ -171,10 +176,15 @@ namespace MAPI.Gltf
             }
         }
 
-        private static Vector3[] ReadVector3Array(GltfRoot gltf, byte[] buffer, int accessorIndex, bool convertCoordinate)
+        private static Vector3[] ReadVector3Array(GltfRoot gltf, byte[]? buffer, int accessorIndex, bool convertCoordinate)
         {
+            if (gltf.accessors == null || accessorIndex >= gltf.accessors.Count)
+            {
+                return new Vector3[0];
+            }
+
             GltfAccessor accessor = gltf.accessors[accessorIndex];
-            if (!accessor.bufferView.HasValue)
+            if (!accessor.bufferView.HasValue || gltf.bufferViews == null || buffer == null)
             {
                 return new Vector3[accessor.count];
             }
@@ -208,10 +218,15 @@ namespace MAPI.Gltf
             return result;
         }
 
-        private static Vector2[] ReadVector2Array(GltfRoot gltf, byte[] buffer, int accessorIndex, bool flipY)
+        private static Vector2[] ReadVector2Array(GltfRoot gltf, byte[]? buffer, int accessorIndex, bool flipY)
         {
+            if (gltf.accessors == null || accessorIndex >= gltf.accessors.Count)
+            {
+                return new Vector2[0];
+            }
+
             GltfAccessor accessor = gltf.accessors[accessorIndex];
-            if (!accessor.bufferView.HasValue)
+            if (!accessor.bufferView.HasValue || gltf.bufferViews == null || buffer == null)
             {
                 return new Vector2[accessor.count];
             }
@@ -235,10 +250,15 @@ namespace MAPI.Gltf
             return result;
         }
 
-        private static Vector4[] ReadVector4Array(GltfRoot gltf, byte[] buffer, int accessorIndex, bool convertCoordinate)
+        private static Vector4[] ReadVector4Array(GltfRoot gltf, byte[]? buffer, int accessorIndex, bool convertCoordinate)
         {
+            if (gltf.accessors == null || accessorIndex >= gltf.accessors.Count)
+            {
+                return new Vector4[0];
+            }
+
             GltfAccessor accessor = gltf.accessors[accessorIndex];
-            if (!accessor.bufferView.HasValue)
+            if (!accessor.bufferView.HasValue || gltf.bufferViews == null || buffer == null)
             {
                 return new Vector4[accessor.count];
             }
@@ -271,10 +291,15 @@ namespace MAPI.Gltf
             return result;
         }
 
-        private static int[] ReadIntArray(GltfRoot gltf, byte[] buffer, int accessorIndex)
+        private static int[] ReadIntArray(GltfRoot gltf, byte[]? buffer, int accessorIndex)
         {
+            if (gltf.accessors == null || accessorIndex >= gltf.accessors.Count)
+            {
+                return new int[0];
+            }
+
             GltfAccessor accessor = gltf.accessors[accessorIndex];
-            if (!accessor.bufferView.HasValue)
+            if (!accessor.bufferView.HasValue || gltf.bufferViews == null || buffer == null)
             {
                 return new int[accessor.count];
             }
@@ -309,8 +334,13 @@ namespace MAPI.Gltf
             return result;
         }
 
-        private static BoneWeight[] ReadBoneWeights(GltfRoot gltf, byte[] buffer, int jointsIndex, int weightsIndex)
+        private static BoneWeight[] ReadBoneWeights(GltfRoot gltf, byte[]? buffer, int jointsIndex, int weightsIndex)
         {
+            if (gltf.accessors == null || gltf.bufferViews == null || buffer == null)
+            {
+                return new BoneWeight[0];
+            }
+
             GltfAccessor jAcc = gltf.accessors[jointsIndex];
             GltfAccessor wAcc = gltf.accessors[weightsIndex];
             

@@ -17,7 +17,7 @@ namespace MAPI.Gltf
         /// <param name="data">GLB or JSON bytes</param>
         /// <param name="shader">Optional shader for materials</param>
         /// <returns>The root GameObject of the imported model</returns>
-        public static GameObject Load(byte[] data, Shader shader = null)
+        public static GameObject? Load(byte[] data, Shader? shader = null)
         {
             GltfImporter importer = new GltfImporter();
             
@@ -35,7 +35,7 @@ namespace MAPI.Gltf
         /// <param name="glbBytes">Raw GLB bytes</param>
         /// <param name="shader">Optional shader for materials</param>
         /// <returns>The root GameObject of the imported model</returns>
-        public static GameObject LoadGlb(byte[] glbBytes, Shader shader = null)
+        public static GameObject? LoadGlb(byte[] glbBytes, Shader? shader = null)
         {
             GltfImporter importer = new GltfImporter();
             
@@ -53,7 +53,7 @@ namespace MAPI.Gltf
         /// <param name="filePath">Path to the GLTF or GLB file</param>
         /// <param name="shader">Optional shader for materials</param>
         /// <returns>The root GameObject of the imported model</returns>
-        public static GameObject LoadFromFile(string filePath, Shader shader = null)
+        public static GameObject? LoadFromFile(string filePath, Shader? shader = null)
         {
             GltfImporter importer = new GltfImporter();
             
@@ -72,7 +72,7 @@ namespace MAPI.Gltf
         /// <param name="basePath">Base directory for external resources</param>
         /// <param name="shader">Optional shader for materials</param>
         /// <returns>The root GameObject of the imported model</returns>
-        public static GameObject LoadFromJson(string json, string basePath, Shader shader = null)
+        public static GameObject? LoadFromJson(string json, string basePath, Shader? shader = null)
         {
             GltfImporter importer = new GltfImporter();
             
