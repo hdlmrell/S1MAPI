@@ -273,6 +273,20 @@ namespace MAPI.S1
 
         #endregion
 
+        #region Security
+
+        /// <summary>
+        /// Functional passcode panel for secure access control.
+        /// </summary>
+        public static readonly PrefabRef PasscodePanel = new("Passcode Panel (Functional)");
+
+        /// <summary>
+        /// Modular switch for electrical control.
+        /// </summary>
+        public static readonly PrefabRef ModularSwitch = new("ModularSwitch");
+
+        #endregion
+
         #region Production Equipment
 
         /// <summary>
