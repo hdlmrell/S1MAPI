@@ -131,8 +131,15 @@ jobs:
         run: |
           echo "=== Mono Assembly Directory Contents ==="
           if [ -d "Assemblies/Mono" ]; then
-            ls -la Assemblies/Mono/ | head -10
-            echo "Mono assemblies found, proceeding with build..."
+            ls -la Assemblies/Mono/ | head -20
+            echo ""
+            echo "=== Checking for TextMeshPro ==="
+            if [ -f "Assemblies/Mono/Unity.TextMeshPro.dll" ]; then
+              echo "✓ Unity.TextMeshPro.dll found"
+            else
+              echo "✗ Unity.TextMeshPro.dll NOT found - searching for it..."
+              find game-assemblies -name "*TextMeshPro*.dll" -type f
+            fi
           else
             echo "ERROR: Assemblies/Mono directory not found!"
             echo "This likely means the game-assemblies checkout failed."
