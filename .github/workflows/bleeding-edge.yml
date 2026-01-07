@@ -108,7 +108,7 @@ jobs:
           fi
 
       - name: Build Mono
-        run: dotnet build MAPI.csproj --no-restore -c Mono -v normal
+        run: dotnet build MAPI.csproj --no-restore /p:Configuration=Mono -v normal
 
       - name: Populate IL2CPP Assemblies
         if: steps.cache-assemblies.outputs.cache-hit != 'true'
