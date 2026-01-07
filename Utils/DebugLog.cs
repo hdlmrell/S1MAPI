@@ -50,7 +50,7 @@ namespace MAPI.Utils
         /// </summary>
         public static void Exception(Exception ex)
         {
-            Debug.LogException(ex);
+            CrossException.LogException(ex);
         }
 
         /// <summary>
