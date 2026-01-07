@@ -84,6 +84,34 @@ jobs:
              fi
           fi
 
+          # Ensure core IL2CPP runtime assemblies are present
+          echo "=== Checking for IL2CPP runtime assemblies ==="
+          if [ ! -f "Assemblies/Il2Cpp/Il2Cppmscorlib.dll" ]; then
+             echo "Searching for Il2Cppmscorlib.dll..."
+             MSCORLIB_PATH=$(find il2cpp-assemblies -name "Il2Cppmscorlib.dll" -type f | head -1)
+             if [ -n "$MSCORLIB_PATH" ]; then
+               cp "$MSCORLIB_PATH" Assemblies/Il2Cpp/
+               echo "Copied Il2Cppmscorlib.dll"
+             else
+               echo "Warning: Il2Cppmscorlib.dll not found!"
+             fi
+          fi
+
+          if [ ! -f "Assemblies/Il2Cpp/Il2CppInterop.Runtime.dll" ]; then
+             echo "Searching for Il2CppInterop.Runtime.dll..."
+             INTEROP_PATH=$(find il2cpp-assemblies -name "Il2CppInterop.Runtime.dll" -type f | head -1)
+             if [ -n "$INTEROP_PATH" ]; then
+               cp "$INTEROP_PATH" Assemblies/Il2Cpp/
+               echo "Copied Il2CppInterop.Runtime.dll"
+             else
+               echo "Warning: Il2CppInterop.Runtime.dll not found!"
+             fi
+          fi
+
+          # List what we actually have in IL2CPP assemblies
+          echo "=== IL2CPP Assembly Directory Contents ==="
+          ls -la Assemblies/Il2Cpp/ | head -20
+
       - name: Create CI Build Properties
         run: |
           cat > local.build.props << 'EOF'
