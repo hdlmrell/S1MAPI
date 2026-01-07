@@ -4,9 +4,6 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using MAPI.Utils;
-
-// Note: Requires Newtonsoft.Json. If not available, a simple JSON parser replacement is needed.
-// Most Unity modding environments include Newtonsoft.Json.
 using Newtonsoft.Json;
 
 namespace MAPI.Gltf

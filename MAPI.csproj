@@ -159,7 +159,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Il2CppInterop.Runtime">
-      <HintPath>$(Il2CppAssembliesPath)\Il2CppInterop.Runtime.dll</HintPath>
+      <HintPath>$(Il2CppMLAssembliesPath)\Il2CppInterop.Runtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <!-- FishNet (Il2Cpp) -->
@@ -189,6 +189,9 @@
      <None Remove="local.build.props.example" />
      <None Remove="AGENTS.md" />
      <None Remove="CODING_STANDARDS.md" />
+   </ItemGroup>
+   <ItemGroup>
+     <PackageReference Include="Newtonsoft.Json" Version="13.0.5-beta1" />
    </ItemGroup>
 
    <!-- Post-build: Copy to game UserLibs folder -->

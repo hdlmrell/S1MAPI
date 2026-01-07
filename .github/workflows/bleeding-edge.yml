@@ -126,6 +126,18 @@ jobs:
       - name: Restore Dependencies
         run: dotnet restore MAPI.csproj
 
+      - name: Check Mono Assemblies
+        run: |
+          echo "=== Mono Assembly Directory Contents ==="
+          if [ -d "Assemblies/Mono" ]; then
+            ls -la Assemblies/Mono/ | head -10
+            echo "Mono assemblies found, proceeding with build..."
+          else
+            echo "ERROR: Assemblies/Mono directory not found!"
+            echo "This likely means the game-assemblies checkout failed."
+            exit 1
+          fi
+
       - name: Build Mono
         run: dotnet build MAPI.csproj --no-restore -c Mono -v normal
 
