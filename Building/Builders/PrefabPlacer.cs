@@ -1,7 +1,6 @@
 using UnityEngine;
 using MAPI.Core;
 using MAPI.S1;
-using MAPI.Utils;
 
 #if IL2CPP
 using Il2CppFishNet;
@@ -9,13 +8,9 @@ using Il2CppFishNet.Managing;
 using Il2CppFishNet.Managing.Object;
 using Il2CppFishNet.Object;
 #else
-using FishNet;
-using FishNet.Managing;
-using FishNet.Managing.Object;
-using FishNet.Object;
 #endif
 
-namespace MAPI.Building
+namespace MAPI.Building.Builders
 {
     /// <summary>
     /// Places network-spawnable prefabs from the game.

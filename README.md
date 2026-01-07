@@ -2,16 +2,6 @@
 
 **MAPI** is a mapping and construction library specifically designed for Schedule 1 mods. It provides powerful tools for creating procedural meshes, building structures, and handling GLTF assets while remaining update-resilient by avoiding direct dependencies on Schedule 1's Assembly-CSharp types.
 
-## Features
-
-- **Schedule 1 Focused**: Built specifically for Schedule 1 modding with FishNet networking integration
-- **Update-Resilient Design**: Avoids Schedule 1 types to remain stable across game updates
-- **Procedural Mesh Generation**: Create complex 3D meshes at runtime
-- **Building Construction System**: Build and manage structures dynamically
-- **Mono & IL2CPP Support**: Compatible with both Unity scripting backends via FishNet
-- **GLTF Loading**: Import 3D models from GLTF/GLB files
-- **Zero Game Dependencies**: Uses only Unity primitives and FishNet networking types
-
 ## Installation
 
 ### Manual Installation (Recommended for Schedule 1)
@@ -57,11 +47,6 @@ public class YourMod : MelonMod
 
 ## Building from Source
 
-### Prerequisites
-
-1. .NET 6.0 SDK
-2. Schedule 1 game assemblies (for FishNet.Runtime dependency)
-
 ### Build Steps
 
 1. Clone the repository:
@@ -90,32 +75,6 @@ public class YourMod : MelonMod
    dotnet build -c Il2cpp
    ```
 
-### Build Configurations
-
-- **Mono**: For Schedule 1 Mono builds (creates MAPI_Mono.dll)
-- **Il2cpp**: For Schedule 1 IL2CPP builds (creates MAPI_Il2cpp.dll)
-
-## Project Structure
-
-```
-MAPI/
-├── Core/              # Core initialization and library management
-├── ProceduralMesh/    # Procedural mesh generation system
-├── Building/          # Building construction system
-├── Gltf/              # GLTF file loading and processing
-├── S1/                # Schedule 1 specific assets and references
-├── Utils/             # Utility classes and helpers
-└── Resources/         # Embedded resources
-```
-
-## Documentation
-
-Comprehensive documentation is coming soon. For now, refer to:
-
-- XML documentation in the source code
-- Example mods in the `examples/` directory (coming soon)
-- API reference (coming soon)
-
 ## Design Philosophy
 
 MAPI is designed with the following principles:
@@ -133,19 +92,6 @@ Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTIN
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Unity Technologies for the Unity Engine
-- The Schedule 1 development team for the game and FishNet integration
-- The FishNet team for their excellent networking solution
-- The Schedule 1 modding community for inspiration and feedback
-
-## Support
-
-- **Issues**: [GitHub Issues](https://github.com/yourusername/MAPI/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/MAPI/discussions)
-- **Discord**: Coming soon
 
 ## Roadmap
 
@@ -193,7 +139,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [x] Advanced Mesh Operations
   - [x] Vertex welding (optimization)
   - [x] Surface area and volume calculation
-- [ ] Animation support (Skinned Mesh basics implemented)
 - [ ] Texture loading utilities (partially via GLTF)
 
 ### Phase 5: Integration & Optimization

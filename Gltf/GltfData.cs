@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace MAPI.Gltf
 {
     // Minimal GLTF data structures for JSON deserialization

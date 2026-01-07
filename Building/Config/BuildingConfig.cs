@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MAPI.Building
+namespace MAPI.Building.Config
 {
     /// <summary>
     /// Configuration for building dimensions and style.

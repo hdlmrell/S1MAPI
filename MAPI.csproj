@@ -178,6 +178,8 @@
    </ItemGroup>
    <ItemGroup>
      <None Remove="local.build.props.example" />
+     <None Remove="AGENTS.md" />
+     <None Remove="CODING_STANDARDS.md" />
    </ItemGroup>
 
    <!-- Post-build: Copy to game UserLibs folder -->

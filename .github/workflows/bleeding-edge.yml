@@ -1,0 +1,123 @@
+name: Bleeding Edge Build
+
+on:
+  push:
+    branches: [ bleeding-edge ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout MAPI
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Create Assembly Directory Structure
+        run: |
+          mkdir -p Assemblies/Il2Cpp
+          mkdir -p Assemblies/Mono
+
+      - name: Cache Assemblies
+        id: cache-assemblies
+        uses: actions/cache@v4
+        with:
+          path: Assemblies
+          key: mapi-assemblies-${{ hashFiles('MAPI.csproj') }}
+          restore-keys: |
+            mapi-assemblies-
+
+      # Checkout Game Assemblies (Mono)
+      - name: Checkout Game Assemblies
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.GAME_ASSEMBLIES_REPO }}
+          token: ${{ secrets.GAME_REPOS_TOKEN }}
+          path: game-assemblies
+          fetch-depth: 1
+        if: steps.cache-assemblies.outputs.cache-hit != 'true'
+
+      # Checkout IL2CPP Assemblies
+      - name: Checkout IL2CPP Assemblies
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.IL2CPP_ASSEMBLIES_REPO }}
+          token: ${{ secrets.GAME_REPOS_TOKEN }}
+          path: il2cpp-assemblies
+          fetch-depth: 1
+        if: steps.cache-assemblies.outputs.cache-hit != 'true'
+
+      - name: Populate Assemblies
+        if: steps.cache-assemblies.outputs.cache-hit != 'true'
+        run: |
+          echo "=== Setting up Mono Assemblies ==="
+          if [ -d "game-assemblies/Managed" ]; then
+            cp -r game-assemblies/Managed/* Assemblies/Mono/
+          else
+            echo "Warning: game-assemblies/Managed not found"
+          fi
+
+          echo "=== Setting up IL2CPP Assemblies ==="
+          # Copy core IL2CPP assemblies
+          if [ -d "il2cpp-assemblies/MelonLoader/Il2CppAssemblies" ]; then
+            cp -r il2cpp-assemblies/MelonLoader/Il2CppAssemblies/* Assemblies/Il2Cpp/
+          elif [ -d "il2cpp-assemblies/Il2CppAssemblies" ]; then
+            cp -r il2cpp-assemblies/Il2CppAssemblies/* Assemblies/Il2Cpp/
+          fi
+
+          # Ensure FishNet for IL2CPP is present
+          if [ ! -f "Assemblies/Il2Cpp/Il2CppFishNet.Runtime.dll" ]; then
+             echo "Searching for Il2CppFishNet.Runtime.dll..."
+             FN_PATH=$(find il2cpp-assemblies -name "Il2CppFishNet.Runtime.dll" -type f | head -1)
+             if [ -n "$FN_PATH" ]; then
+               cp "$FN_PATH" Assemblies/Il2Cpp/
+               echo "Copied Il2CppFishNet.Runtime.dll"
+             else
+               echo "Warning: Il2CppFishNet.Runtime.dll not found!"
+             fi
+          fi
+
+      - name: Create CI Build Properties
+        run: |
+          cat > local.build.props << 'EOF'
+          <Project>
+              <PropertyGroup>
+                  <MonoAssembliesPath>$(MSBuildThisFileDirectory)Assemblies/Mono</MonoAssembliesPath>
+                  <Il2CppAssembliesPath>$(MSBuildThisFileDirectory)Assemblies/Il2Cpp</Il2CppAssembliesPath>
+              </PropertyGroup>
+          </Project>
+          EOF
+
+      - name: Restore Dependencies
+        run: dotnet restore MAPI.csproj
+
+      - name: Build Mono
+        run: dotnet build MAPI.csproj --no-restore -c Mono -v normal
+
+      - name: Build IL2CPP
+        run: dotnet build MAPI.csproj --no-restore -c Il2cpp -v normal
+
+      - name: Get Version
+        id: get_version
+        run: |
+          VERSION=$(grep -oP '(?<=<Version>)[^<]+' MAPI.csproj)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Upload Mono Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MAPI-Mono-${{ steps.get_version.outputs.version }}-bleeding-edge
+          path: bin/Mono/netstandard2.1/MAPI_Mono.dll
+
+      - name: Upload IL2CPP Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MAPI-Il2cpp-${{ steps.get_version.outputs.version }}-bleeding-edge
+          path: bin/Il2cpp/netstandard2.1/MAPI_Il2cpp.dll

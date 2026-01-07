@@ -1,0 +1,150 @@
+name: Stable Release
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout MAPI
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Get Version
+        id: get_version
+        run: |
+          VERSION=$(grep -oP '(?<=<Version>)[^<]+' MAPI.csproj)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Detected version: $VERSION"
+
+      - name: Check for Existing Release
+        id: check_release
+        run: |
+          TAG="v${{ steps.get_version.outputs.version }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists. Skipping release."
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Assembly Directory Structure
+        if: steps.check_release.outputs.exists != 'true'
+        run: |
+          mkdir -p Assemblies/Il2Cpp
+          mkdir -p Assemblies/Mono
+
+      - name: Cache Assemblies
+        if: steps.check_release.outputs.exists != 'true'
+        id: cache-assemblies
+        uses: actions/cache@v4
+        with:
+          path: Assemblies
+          key: mapi-assemblies-${{ hashFiles('MAPI.csproj') }}
+          restore-keys: |
+            mapi-assemblies-
+
+      - name: Checkout Game Assemblies (Mono)
+        if: steps.check_release.outputs.exists != 'true' && steps.cache-assemblies.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.GAME_ASSEMBLIES_REPO }}
+          token: ${{ secrets.GAME_REPOS_TOKEN }}
+          path: game-assemblies
+          fetch-depth: 1
+
+      - name: Checkout IL2CPP Assemblies
+        if: steps.check_release.outputs.exists != 'true' && steps.cache-assemblies.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.IL2CPP_ASSEMBLIES_REPO }}
+          token: ${{ secrets.GAME_REPOS_TOKEN }}
+          path: il2cpp-assemblies
+          fetch-depth: 1
+
+      - name: Populate Assemblies
+        if: steps.check_release.outputs.exists != 'true' && steps.cache-assemblies.outputs.cache-hit != 'true'
+        run: |
+          echo "=== Setting up Mono Assemblies ==="
+          if [ -d "game-assemblies/Managed" ]; then
+            cp -r game-assemblies/Managed/* Assemblies/Mono/
+          fi
+
+          echo "=== Setting up IL2CPP Assemblies ==="
+          if [ -d "il2cpp-assemblies/MelonLoader/Il2CppAssemblies" ]; then
+            cp -r il2cpp-assemblies/MelonLoader/Il2CppAssemblies/* Assemblies/Il2Cpp/
+          elif [ -d "il2cpp-assemblies/Il2CppAssemblies" ]; then
+            cp -r il2cpp-assemblies/Il2CppAssemblies/* Assemblies/Il2Cpp/
+          fi
+
+          if [ ! -f "Assemblies/Il2Cpp/Il2CppFishNet.Runtime.dll" ]; then
+             FN_PATH=$(find il2cpp-assemblies -name "Il2CppFishNet.Runtime.dll" -type f | head -1)
+             if [ -n "$FN_PATH" ]; then
+               cp "$FN_PATH" Assemblies/Il2Cpp/
+             fi
+          fi
+
+      - name: Create CI Build Properties
+        if: steps.check_release.outputs.exists != 'true'
+        run: |
+          cat > local.build.props << 'EOF'
+          <Project>
+              <PropertyGroup>
+                  <MonoAssembliesPath>$(MSBuildThisFileDirectory)Assemblies/Mono</MonoAssembliesPath>
+                  <Il2CppAssembliesPath>$(MSBuildThisFileDirectory)Assemblies/Il2Cpp</Il2CppAssembliesPath>
+              </PropertyGroup>
+          </Project>
+          EOF
+
+      - name: Restore Dependencies
+        if: steps.check_release.outputs.exists != 'true'
+        run: dotnet restore MAPI.csproj
+
+      - name: Build Mono (and Package)
+        if: steps.check_release.outputs.exists != 'true'
+        run: dotnet build MAPI.csproj --no-restore -c Mono -v normal
+
+      - name: Build IL2CPP
+        if: steps.check_release.outputs.exists != 'true'
+        run: dotnet build MAPI.csproj --no-restore -c Il2cpp -v normal
+
+      - name: Create Release
+        if: steps.check_release.outputs.exists != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.get_version.outputs.version }}
+        run: |
+          NUPKG=$(find bin/Mono -name "*.nupkg" | head -1)
+          
+          echo "Creating Release v$VERSION"
+          gh release create "v$VERSION" \
+            --title "MAPI v$VERSION" \
+            --generate-notes \
+            "bin/Mono/netstandard2.1/MAPI_Mono.dll#MAPI_Mono.dll" \
+            "bin/Il2cpp/netstandard2.1/MAPI_Il2cpp.dll#MAPI_Il2cpp.dll" \
+            "$NUPKG#NuGet Package"
+
+      - name: Publish to NuGet
+        if: steps.check_release.outputs.exists != 'true'
+        env:
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if [ -z "$NUGET_KEY" ]; then
+            echo "NUGET_API_KEY not set. Skipping publish."
+          else
+            NUPKG=$(find bin/Mono -name "*.nupkg" | head -1)
+            dotnet nuget push "$NUPKG" -k "$NUGET_KEY" -s https://api.nuget.org/v3/index.json --skip-duplicate
+          fi

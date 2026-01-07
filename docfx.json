@@ -1,0 +1,64 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "bin/Mono/netstandard2.1",
+          "files": [
+            "MAPI_Mono.dll"
+          ]
+        }
+      ],
+      "dest": "api",
+      "namespaceLayout": "Nested",
+      "disableGitFeatures": false,
+      "disableDefaultFilter": false,
+      "shouldSkipMarkup": false,
+      "force": true,
+      "repo": {
+        "remote": "https://github.com/ifBars/MAPI.git",
+        "branch": "main",
+        "path": "MAPI"
+      }
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [
+          "**/*.{md,yml}"
+        ],
+        "exclude": [
+          "_site/**",
+          "bin/**",
+          "obj/**"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "images/**"
+        ]
+      },
+      {
+        "files": [
+          "styles/**"
+        ]
+      }
+    ],
+    "output": "_site",
+    "template": [
+      "default",
+      "modern"
+    ],
+    "globalMetadata": {
+      "_appName": "MAPI",
+      "_appTitle": "MAPI Documentation",
+      "_enableSearch": true,
+      "_navbarTitle": "MAPI",
+      "pdf": true
+    }
+  }
+}

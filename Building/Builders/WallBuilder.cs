@@ -1,8 +1,8 @@
+using MAPI.Building.Config;
 using UnityEngine;
 using MAPI.S1;
-using MAPI.Utils;
 
-namespace MAPI.Building
+namespace MAPI.Building.Builders
 {
     /// <summary>
     /// Specifies which side of the room a wall is on.

@@ -8,7 +8,6 @@ using Il2CppFishNet.Managing.Object;
 using Il2CppFishNet.Object;
 #else
 using FishNet;
-using FishNet.Managing;
 using FishNet.Managing.Object;
 using FishNet.Object;
 #endif

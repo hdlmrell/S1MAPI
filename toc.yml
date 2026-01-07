@@ -1,0 +1,10 @@
+- name: Home
+  href: index.md
+- name: Guides
+  items:
+    - name: Usage Examples
+      href: USAGE_EXAMPLES.md
+    - name: Coding Standards
+      href: CODING_STANDARDS.md
+- name: API Reference
+  href: api/

@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using MAPI.Utils;
@@ -7,12 +5,13 @@ using MAPI.Utils;
 namespace MAPI.Core
 {
     /// <summary>
-    /// Automatic resource tracking and cleanup system.
-    /// Prevents memory leaks by tracking created resources and cleaning them up when needed.
+    /// Optional resource tracking system for manual cleanup control.
+    /// Provides utility methods to track and cleanup resources if needed.
     /// </summary>
     /// <remarks>
-    /// Resources registered with this tracker will be automatically destroyed when scenes unload
-    /// or when the application quits. Use RegisterForScene to associate resources with specific scenes.
+    /// Unity automatically cleans up resources on scene unload and application quit.
+    /// This tracker is optional - use it only if you need explicit cleanup control.
+    /// Register() calls are lightweight and can be used for debugging resource usage.
     /// </remarks>
     public static class ResourceTracker
     {
@@ -28,63 +27,9 @@ namespace MAPI.Core
         /// </summary>
         internal static readonly Dictionary<Scene, HashSet<UnityEngine.Object>> _sceneResources = new Dictionary<Scene, HashSet<UnityEngine.Object>>();
 
-        /// <summary>
-        /// INTERNAL: Whether the tracker has been initialized.
-        /// </summary>
-        internal static bool _initialized = false;
-
-        /// <summary>
-        /// INTERNAL: Initialize the resource tracker.
-        /// Called by MAPI during library initialization.
-        /// </summary>
-        internal static void Initialize()
-        {
-            if (_initialized)
-            {
-                DebugLog.Warning("ResourceTracker is already initialized");
-                return;
-            }
-
-            SceneManager.sceneUnloaded += OnSceneUnloaded;
-            Application.quitting += OnApplicationQuitting;
-
-            _initialized = true;
-            DebugLog.Info("ResourceTracker initialized");
-        }
-
-        /// <summary>
-        /// INTERNAL: Shutdown the resource tracker.
-        /// Called by MAPI during library shutdown.
-        /// </summary>
-        internal static void Shutdown()
-        {
-            if (!_initialized)
-            {
-                return;
-            }
-
-            SceneManager.sceneUnloaded -= OnSceneUnloaded;
-            Application.quitting -= OnApplicationQuitting;
-
-            CleanupAll();
-
-            _initialized = false;
-            DebugLog.Info("ResourceTracker shutdown");
-        }
-
         #endregion
 
         #region Public Members
-
-        /// <summary>
-        /// Event triggered when a scene is being cleaned up.
-        /// </summary>
-        public static event Action<Scene> OnSceneCleanup;
-
-        /// <summary>
-        /// Event triggered when the application is quitting.
-        /// </summary>
-        public static event Action OnApplicationQuit;
 
         /// <summary>
         /// Gets the total number of tracked resources.
@@ -94,6 +39,7 @@ namespace MAPI.Core
 
         /// <summary>
         /// Register a resource for tracking.
+        /// Useful for debugging or when you need manual cleanup control.
         /// </summary>
         /// <param name="resource">The resource to track</param>
         public static void Register(UnityEngine.Object resource)
@@ -157,7 +103,8 @@ namespace MAPI.Core
         }
 
         /// <summary>
-        /// Clean up all tracked resources.
+        /// Manually clean up all tracked resources.
+        /// Note: Unity already handles cleanup automatically - use only if you need explicit control.
         /// </summary>
         public static void CleanupAll()
         {
@@ -180,7 +127,8 @@ namespace MAPI.Core
         }
 
         /// <summary>
-        /// Clean up resources associated with a specific scene.
+        /// Manually clean up resources associated with a specific scene.
+        /// Note: Unity already handles cleanup automatically - use only if you need explicit control.
         /// </summary>
         /// <param name="scene">The scene to clean up</param>
         public static void CleanupScene(Scene scene)
@@ -205,8 +153,6 @@ namespace MAPI.Core
 
             _sceneResources.Remove(scene);
 
-            OnSceneCleanup?.Invoke(scene);
-
             DebugLog.Info($"Cleaned up {destroyedCount} resources from scene: {scene.name}");
         }
 
@@ -217,27 +163,6 @@ namespace MAPI.Core
         /// <returns>True if the resource is tracked, false otherwise</returns>
         public static bool IsTracked(UnityEngine.Object resource) =>
             resource != null && _trackedResources.Contains(resource);
-
-        #endregion
-
-        #region Private Members
-
-        /// <summary>
-        /// INTERNAL: Handler for scene unload events.
-        /// </summary>
-        private static void OnSceneUnloaded(Scene scene)
-        {
-            CleanupScene(scene);
-        }
-
-        /// <summary>
-        /// INTERNAL: Handler for application quit event.
-        /// </summary>
-        private static void OnApplicationQuitting()
-        {
-            OnApplicationQuit?.Invoke();
-            CleanupAll();
-        }
 
         #endregion
     }
