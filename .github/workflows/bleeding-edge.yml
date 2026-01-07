@@ -183,4 +183,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: MAPI-Il2cpp-${{ steps.get_version.outputs.version }}-bleeding-edge
-          path: bin/Il2cpp/netstandard2.1/MAPI_Il2cpp.dll
+          path: bin/Il2cpp/net6.0/MAPI_Il2cpp.dll
