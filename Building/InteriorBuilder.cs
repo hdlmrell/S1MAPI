@@ -1,6 +1,9 @@
 using UnityEngine;
 using MAPI.Utils;
 using MAPI.S1;
+using System;
+using System.Collections.Generic;
+using MAPI.Building.Builders;
 
 namespace MAPI.Building
 {
@@ -14,6 +17,7 @@ namespace MAPI.Building
         
         private readonly string _name;
         private readonly List<GameObject> _furniture = new List<GameObject>();
+        private Transform _parent;
         
         #endregion
 
@@ -22,9 +26,21 @@ namespace MAPI.Building
         /// <summary>
         /// Create a new interior builder
         /// </summary>
+        /// <param name="name">Name for the interior container</param>
         public InteriorBuilder(string name = "Interior")
         {
             _name = name;
+        }
+
+        /// <summary>
+        /// Create a new interior builder with a parent transform
+        /// </summary>
+        /// <param name="parent">Parent transform to attach furniture to</param>
+        /// <param name="name">Name for the interior container</param>
+        public InteriorBuilder(Transform parent, string name = "Interior")
+        {
+            _name = name;
+            _parent = parent;
         }
         
         #endregion
@@ -558,46 +574,6 @@ namespace MAPI.Building
         
         #endregion
 
-        #region Public API - Shelving System
-        
-        /// <summary>
-        /// Add a wall-mounted shelf system using S1 locker shelf meshes
-        /// </summary>
-        /// <param name="wallPosition">Position along the wall</param>
-        /// <param name="tiers">Number of vertical tiers</param>
-        /// <param name="spacing">Vertical spacing between shelves</param>
-        /// <param name="rotation">Rotation (defaults to identity)</param>
-        public InteriorBuilder AddWallShelves(
-            Vector3 wallPosition,
-            int tiers,
-            float spacing,
-            Quaternion? rotation = null)
-        {
-            Quaternion rot = rotation ?? Quaternion.identity;
-
-            for (int tier = 0; tier < tiers; tier++)
-            {
-                float shelfY = wallPosition.y + tier * spacing;
-                Vector3 position = new Vector3(wallPosition.x, shelfY, wallPosition.z);
-
-                GameObject? shelf = Meshes.LockerShelf.Instantiate($"WallShelf_Tier{tier}", position, rot);
-
-                if (shelf != null)
-                {
-                    _furniture.Add(shelf);
-                    BuildingUtilities.AddNavMeshObstacle(shelf);
-                }
-                else
-                {
-                    DebugLog.Warning($"Failed to instantiate Wall Shelf tier {tier}");
-                }
-            }
-
-            return this;
-        }
-        
-        #endregion
-
         #region Public API - Custom Objects
         
         /// <summary>
@@ -609,6 +585,10 @@ namespace MAPI.Building
         {
             if (gameObject != null)
             {
+                if (_parent != null)
+                {
+                    gameObject.transform.SetParent(_parent);
+                }
                 gameObject.transform.localPosition = position;
                 _furniture.Add(gameObject);
             }
@@ -625,7 +605,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddCustomMesh(Core.MeshRef meshRef, string name, Vector3 position, Quaternion? rotation = null)
         {
-            GameObject? obj = meshRef.Instantiate(name, position, rotation ?? Quaternion.identity);
+            GameObject? obj = meshRef.Instantiate(name, position, rotation ?? Quaternion.identity, _parent);
             
             if (obj != null)
             {
@@ -638,6 +618,64 @@ namespace MAPI.Building
 
             return this;
         }
+
+        /// <summary>
+        /// Add a prefab using PrefabPlacer pattern for networked/functional objects
+        /// </summary>
+        /// <param name="prefab">The prefab reference to instantiate</param>
+        /// <param name="position">Local position</param>
+        /// <param name="rotation">Rotation (defaults to identity)</param>
+        /// <param name="networked">Whether this should be a networked object</param>
+        /// <param name="enableComponents">Whether to enable components on the prefab</param>
+        /// <param name="onCreated">Optional callback after creation</param>
+        public InteriorBuilder AddPrefab(
+            Core.PrefabRef prefab, 
+            Vector3 position, 
+            Quaternion? rotation = null, 
+            bool networked = false,
+            bool enableComponents = true,
+            Action<GameObject>? onCreated = null)
+        {
+            if (_parent == null)
+            {
+                DebugLog.Warning("Cannot add prefab without parent transform. Use constructor with parent or call SetParent first.");
+                return this;
+            }
+
+            PrefabPlacer placer = new PrefabPlacer(_parent);
+            GameObject? obj = placer.Place(
+                prefab, 
+                position, 
+                rotation ?? Quaternion.identity, 
+                networked, 
+                enableComponents);
+
+            if (obj != null)
+            {
+                _furniture.Add(obj);
+                onCreated?.Invoke(obj);
+            }
+            else
+            {
+                DebugLog.Warning($"Failed to place prefab");
+            }
+
+            return this;
+        }
+        
+        #endregion
+
+        #region Public API - Configuration
+        
+        /// <summary>
+        /// Set the parent transform for all future furniture placements
+        /// </summary>
+        /// <param name="parent">Parent transform</param>
+        public InteriorBuilder SetParent(Transform parent)
+        {
+            _parent = parent;
+            return this;
+        }
         
         #endregion
 
@@ -646,7 +684,7 @@ namespace MAPI.Building
         /// <summary>
         /// Build the interior and attach all furniture to the parent
         /// </summary>
-        /// <param name="parent">Parent GameObject to attach furniture to</param>
+        /// <param name="parent">Parent GameObject to attach furniture to (overrides constructor parent)</param>
         /// <returns>Array of created furniture GameObjects</returns>
         public GameObject[] Build(GameObject parent)
         {
@@ -668,6 +706,21 @@ namespace MAPI.Building
 
             DebugLog.Info($"Built interior: {_name} with {_furniture.Count} pieces");
             return _furniture.ToArray();
+        }
+
+        /// <summary>
+        /// Build the interior using the parent transform set in constructor
+        /// </summary>
+        /// <returns>Array of created furniture GameObjects</returns>
+        public GameObject[] Build()
+        {
+            if (_parent == null)
+            {
+                DebugLog.Warning("No parent set for interior builder. Use Build(GameObject) or set parent in constructor.");
+                return _furniture.ToArray();
+            }
+
+            return Build(_parent.gameObject);
         }
 
         /// <summary>
