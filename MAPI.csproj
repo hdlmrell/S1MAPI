@@ -1,9 +1,8 @@
   <Project Sdk="Microsoft.NET.Sdk">
    <!-- Import local overrides for contributor paths from repository root -->
-   <Import Project="local.build.props" Condition="Exists('local.build.props')" />
-
-  <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <Import Project="local.build.props" Condition="Exists('local.build.props')" />
+ 
+   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>MAPI</RootNamespace>
     <LangVersion>default</LangVersion>
@@ -13,7 +12,6 @@
     <Configurations>Mono;Il2cpp</Configurations>
     <Nullable>enable</Nullable>
     <OutputType>Library</OutputType>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>MAPI</PackageId>
     <Title>Schedule 1 Mapping API</Title>
     <Authors>MAPI Contributors</Authors>
@@ -25,15 +23,19 @@
   </PropertyGroup>
 
   <!-- Mono build for base game mono assemblies -->
-  <PropertyGroup Condition="'$(Configuration)'=='Mono'">
-    <DefineConstants>MONO</DefineConstants>
-    <AssemblyName>MAPI_Mono</AssemblyName>
+   <PropertyGroup Condition="'$(Configuration)'=='Mono'">
+     <TargetFramework>netstandard2.1</TargetFramework>
+     <DefineConstants>MONO</DefineConstants>
+     <AssemblyName>MAPI_Mono</AssemblyName>
+     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <!-- Il2Cpp build for MelonLoader net6 assemblies -->
-  <PropertyGroup Condition="'$(Configuration)'=='Il2cpp'">
-    <DefineConstants>IL2CPP</DefineConstants>
-    <AssemblyName>MAPI_Il2cpp</AssemblyName>
+   <PropertyGroup Condition="'$(Configuration)'=='Il2cpp'">
+     <TargetFramework>net6.0</TargetFramework>
+     <DefineConstants>IL2CPP</DefineConstants>
+     <AssemblyName>MAPI_Il2cpp</AssemblyName>
+     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <!-- Mono Unity references -->
@@ -184,11 +186,15 @@
    <!-- Embedded Resources -->
    <ItemGroup>
      <EmbeddedResource Include="Resources\**\*" />
+     <EmbeddedResource Remove="api\**" />
+     <EmbeddedResource Remove="_site\**" />
    </ItemGroup>
    <ItemGroup>
      <None Remove="local.build.props.example" />
      <None Remove="AGENTS.md" />
      <None Remove="CODING_STANDARDS.md" />
+     <None Remove="api\**" />
+     <None Remove="_site\**" />
    </ItemGroup>
    <ItemGroup>
      <PackageReference Include="Newtonsoft.Json" Version="13.0.5-beta1" />
