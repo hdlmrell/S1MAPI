@@ -1,6 +1,12 @@
 using UnityEngine;
 using MAPI.Utils;
 
+#if IL2CPP
+using S1Type = Il2CppSystem.Type;
+#else
+using S1Type = System.Type;
+#endif
+
 namespace MAPI.Core
 {
     /// <summary>
@@ -14,10 +20,10 @@ namespace MAPI.Core
         private readonly GameObject _original;
         private readonly List<Type> _componentsToDisable = new List<Type>();
         private readonly List<Type> _componentsToRemove = new List<Type>();
-        private Material _replacementMaterial;
+        private Material? _replacementMaterial;
         private bool _stripColliders;
         private int? _targetLayer;
-        private Action<GameObject> _postProcessAction;
+        private Action<GameObject>? _postProcessAction;
         
         #endregion
 
@@ -105,7 +111,7 @@ namespace MAPI.Core
         /// <param name="rotation">World rotation for the clone</param>
         /// <param name="parent">Parent transform</param>
         /// <returns>The cloned GameObject</returns>
-        public GameObject Clone(Vector3 position, Quaternion rotation, Transform parent = null)
+        public GameObject? Clone(Vector3 position, Quaternion rotation, Transform? parent = null)
         {
             if (_original == null)
             {
@@ -130,7 +136,7 @@ namespace MAPI.Core
         /// <summary>
         /// Create a clone at the origin
         /// </summary>
-        public GameObject Clone()
+        public GameObject? Clone()
         {
             return Clone(Vector3.zero, Quaternion.identity);
         }
@@ -142,9 +148,10 @@ namespace MAPI.Core
         private void ProcessClone(GameObject clone)
         {
             // 1. Disable components
-            foreach (Type type in _componentsToDisable)
+            foreach (System.Type type in _componentsToDisable)
             {
-                foreach (Component comp in clone.GetComponentsInChildren(type, true))
+                S1Type runtimeType = CrossType.ToRuntimeType(type);
+                foreach (Component comp in clone.GetComponentsInChildren(runtimeType, true))
                 {
                     if (comp is MonoBehaviour mb) mb.enabled = false;
                     else if (comp is Renderer r) r.enabled = false;
@@ -153,9 +160,10 @@ namespace MAPI.Core
             }
 
             // 2. Remove components
-            foreach (Type type in _componentsToRemove)
+            foreach (System.Type type in _componentsToRemove)
             {
-                foreach (Component comp in clone.GetComponentsInChildren(type, true))
+                S1Type runtimeType = CrossType.ToRuntimeType(type);
+                foreach (Component comp in clone.GetComponentsInChildren(runtimeType, true))
                 {
                     UnityEngine.Object.Destroy(comp);
                 }
@@ -193,7 +201,7 @@ namespace MAPI.Core
         /// <summary>
         /// Quick static helper to clone an object
         /// </summary>
-        public static GameObject Clone(GameObject original, Vector3 position, Quaternion rotation)
+        public static GameObject? Clone(GameObject original, Vector3 position, Quaternion rotation)
         {
             return new ObjectCloner(original).Clone(position, rotation);
         }

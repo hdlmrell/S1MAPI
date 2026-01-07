@@ -133,10 +133,12 @@ namespace MAPI.Core
         /// <param name="scene">The scene to clean up</param>
         public static void CleanupScene(Scene scene)
         {
-            if (!_sceneResources.TryGetValue(scene, out HashSet<UnityEngine.Object> resources))
+            if (!_sceneResources.TryGetValue(scene, out HashSet<UnityEngine.Object>? resources))
             {
                 return;
             }
+
+            if (resources == null) return;
 
             DebugLog.Info($"Cleaning up {resources.Count} resources for scene: {scene.name}");
 

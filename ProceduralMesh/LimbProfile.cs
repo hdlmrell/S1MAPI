@@ -41,7 +41,7 @@ namespace MAPI.ProceduralMesh
         /// <summary>
         /// Create a custom limb profile
         /// </summary>
-        public LimbProfile(Vector3[] jointPositions, float[] jointRadii, float[] forwardPush = null, int segments = 12)
+        public LimbProfile(Vector3[] jointPositions, float[] jointRadii, float[]? forwardPush = null, int segments = 12)
         {
             JointPositions = jointPositions;
             JointRadii = jointRadii;

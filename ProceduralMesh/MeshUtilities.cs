@@ -34,7 +34,7 @@ namespace MAPI.ProceduralMesh
             int[] triangles = mesh.triangles;
             Vector3[] vertices = new Vector3[triangles.Length];
             Vector3[] normals = new Vector3[triangles.Length];
-            Vector2[] uvs = mesh.uv.Length > 0 ? new Vector2[triangles.Length] : null;
+            Vector2[]? uvs = mesh.uv.Length > 0 ? new Vector2[triangles.Length] : null;
 
             for (int i = 0; i < triangles.Length; i += 3)
             {
