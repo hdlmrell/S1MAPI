@@ -153,6 +153,15 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>$(Il2CppAssembliesPath)\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <!-- Core IL2CPP Runtime -->
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>$(Il2CppAssembliesPath)\Il2Cppmscorlib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Il2CppInterop.Runtime">
+      <HintPath>$(Il2CppAssembliesPath)\Il2CppInterop.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <!-- FishNet (Il2Cpp) -->
     <Reference Include="Il2CppFishNet.Runtime">
       <HintPath>$(Il2CppAssembliesPath)\Il2CppFishNet.Runtime.dll</HintPath>
