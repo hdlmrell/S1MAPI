@@ -109,5 +109,36 @@ namespace MAPI.Utils
             /// </summary>
             public const float DefaultGridSize = 0.5f;
         }
+
+        /// <summary>
+        /// GLTF file format constants
+        /// </summary>
+        public static class Gltf
+        {
+            /// <summary>
+            /// GLB magic number ("glTF" in little-endian)
+            /// </summary>
+            public const uint GlbMagic = 0x46546C67;
+
+            /// <summary>
+            /// JSON chunk type identifier
+            /// </summary>
+            public const uint ChunkTypeJson = 0x4E4F534A;
+
+            /// <summary>
+            /// Binary chunk type identifier
+            /// </summary>
+            public const uint ChunkTypeBin = 0x004E4942;
+
+            /// <summary>
+            /// Current supported GLTF version
+            /// </summary>
+            public const int SupportedVersion = 2;
+
+            /// <summary>
+            /// Default name for imported models
+            /// </summary>
+            public const string DefaultModelName = "GltfModel";
+        }
     }
 }
