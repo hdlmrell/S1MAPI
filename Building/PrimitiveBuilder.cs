@@ -29,7 +29,7 @@ namespace MAPI.Building
             Vector3 localPosition,
             Vector3 localScale,
             Color color,
-            Transform parent = null)
+            Transform? parent = null)
         {
             GameObject primitive = GameObject.CreatePrimitive(type);
             primitive.name = name;
@@ -70,7 +70,7 @@ namespace MAPI.Building
             Vector3 localScale,
             Color color,
             float scale,
-            Transform parent = null)
+            Transform? parent = null)
         {
             return CreatePrimitive(
                 type,
@@ -96,7 +96,7 @@ namespace MAPI.Building
             string name,
             Vector3 localPosition,
             Quaternion localRotation,
-            Transform parent = null)
+            Transform? parent = null)
         {
             // 1. Try Resources.Load
             GameObject prefab = Resources.Load<GameObject>(prefabName);
@@ -123,7 +123,7 @@ namespace MAPI.Building
             if (prefab == null)
             {
                 DebugLog.Warning($"Could not find prefab: {prefabName}");
-                return null;
+                return null!;
             }
 
             GameObject instance = Object.Instantiate(prefab);
@@ -200,7 +200,7 @@ namespace MAPI.Building
             Vector3 localPosition,
             Vector3 size,
             Color color,
-            Transform parent = null)
+            Transform? parent = null)
         {
             return CreatePrimitive(
                 PrimitiveType.Cube,
@@ -220,7 +220,7 @@ namespace MAPI.Building
             Vector3 localPosition,
             float radius,
             Color color,
-            Transform parent = null)
+            Transform? parent = null)
         {
             return CreatePrimitive(
                 PrimitiveType.Sphere,
@@ -240,7 +240,7 @@ namespace MAPI.Building
             Vector3 localPosition,
             Vector3 size,
             Color color,
-            Transform parent = null)
+            Transform? parent = null)
         {
             return CreatePrimitive(
                 PrimitiveType.Cylinder,
@@ -265,7 +265,7 @@ namespace MAPI.Building
             Color color,
             float range,
             float intensity,
-            Transform parent = null)
+            Transform? parent = null)
         {
             GameObject lightObj = new GameObject(name);
             if (parent != null)

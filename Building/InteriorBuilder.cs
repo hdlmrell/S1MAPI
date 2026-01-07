@@ -38,7 +38,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddDesk(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject desk = Meshes.Desk.Instantiate("Desk", position, rotation ?? Quaternion.identity);
+            GameObject? desk = Meshes.Desk.Instantiate("Desk", position, rotation ?? Quaternion.identity);
             
             if (desk != null)
             {
@@ -60,7 +60,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddLocker(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject locker = Meshes.LockerShelf.Instantiate("Locker", position, rotation ?? Quaternion.identity);
+            GameObject? locker = Meshes.LockerShelf.Instantiate("Locker", position, rotation ?? Quaternion.identity);
             
             if (locker != null)
             {
@@ -82,7 +82,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddChair(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject chair = Meshes.Chair.Instantiate("Chair", position, rotation ?? Quaternion.identity);
+            GameObject? chair = Meshes.Chair.Instantiate("Chair", position, rotation ?? Quaternion.identity);
             
             if (chair != null)
             {
@@ -104,7 +104,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddArmchair(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject armchair = Meshes.Armchair.Instantiate("Armchair", position, rotation ?? Quaternion.identity);
+            GameObject? armchair = Meshes.Armchair.Instantiate("Armchair", position, rotation ?? Quaternion.identity);
             
             if (armchair != null)
             {
@@ -126,7 +126,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddTable(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject table = Meshes.CoffeeTable.Instantiate("Table", position, rotation ?? Quaternion.identity);
+            GameObject? table = Meshes.CoffeeTable.Instantiate("Table", position, rotation ?? Quaternion.identity);
             
             if (table != null)
             {
@@ -148,7 +148,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddOfficeTable(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject table = Meshes.OfficeTable.Instantiate("OfficeTable", position, rotation ?? Quaternion.identity);
+            GameObject? table = Meshes.OfficeTable.Instantiate("OfficeTable", position, rotation ?? Quaternion.identity);
             
             if (table != null)
             {
@@ -170,7 +170,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddBench(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject bench = Meshes.Bench.Instantiate("Bench", position, rotation ?? Quaternion.identity);
+            GameObject? bench = Meshes.Bench.Instantiate("Bench", position, rotation ?? Quaternion.identity);
             
             if (bench != null)
             {
@@ -192,7 +192,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddBed(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject bed = Meshes.Bed.Instantiate("Bed", position, rotation ?? Quaternion.identity);
+            GameObject? bed = Meshes.Bed.Instantiate("Bed", position, rotation ?? Quaternion.identity);
             
             if (bed != null)
             {
@@ -214,7 +214,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddFridge(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject fridge = Meshes.Fridge.Instantiate("Fridge", position, rotation ?? Quaternion.identity);
+            GameObject? fridge = Meshes.Fridge.Instantiate("Fridge", position, rotation ?? Quaternion.identity);
             
             if (fridge != null)
             {
@@ -240,7 +240,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddBox(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject box = Meshes.Box.Instantiate("Box", position, rotation ?? Quaternion.identity);
+            GameObject? box = Meshes.Box.Instantiate("Box", position, rotation ?? Quaternion.identity);
             
             if (box != null)
             {
@@ -261,7 +261,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddBarrel(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject barrel = Meshes.Barrel.Instantiate("Barrel", position, rotation ?? Quaternion.identity);
+            GameObject? barrel = Meshes.Barrel.Instantiate("Barrel", position, rotation ?? Quaternion.identity);
             
             if (barrel != null)
             {
@@ -282,7 +282,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddCabinet(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject cabinet = Meshes.Cabinet.Instantiate("Cabinet", position, rotation ?? Quaternion.identity);
+            GameObject? cabinet = Meshes.Cabinet.Instantiate("Cabinet", position, rotation ?? Quaternion.identity);
             
             if (cabinet != null)
             {
@@ -304,7 +304,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddDrawer(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject drawer = Meshes.Drawer.Instantiate("Drawer", position, rotation ?? Quaternion.identity);
+            GameObject? drawer = Meshes.Drawer.Instantiate("Drawer", position, rotation ?? Quaternion.identity);
             
             if (drawer != null)
             {
@@ -326,7 +326,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddSafe(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject safe = Meshes.Safe.Instantiate("Safe", position, rotation ?? Quaternion.identity);
+            GameObject? safe = Meshes.Safe.Instantiate("Safe", position, rotation ?? Quaternion.identity);
             
             if (safe != null)
             {
@@ -348,7 +348,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddBin(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject bin = Meshes.Bin.Instantiate("Bin", position, rotation ?? Quaternion.identity);
+            GameObject? bin = Meshes.Bin.Instantiate("Bin", position, rotation ?? Quaternion.identity);
             
             if (bin != null)
             {
@@ -373,7 +373,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddPlant(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject plant = Meshes.Plant.Instantiate("Plant", position, rotation ?? Quaternion.identity);
+            GameObject? plant = Meshes.Plant.Instantiate("Plant", position, rotation ?? Quaternion.identity);
             
             if (plant != null)
             {
@@ -394,7 +394,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddPlanter(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject planter = Meshes.Planter.Instantiate("Planter", position, rotation ?? Quaternion.identity);
+            GameObject? planter = Meshes.Planter.Instantiate("Planter", position, rotation ?? Quaternion.identity);
             
             if (planter != null)
             {
@@ -415,7 +415,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddVase(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject vase = Meshes.Vase.Instantiate("Vase", position, rotation ?? Quaternion.identity);
+            GameObject? vase = Meshes.Vase.Instantiate("Vase", position, rotation ?? Quaternion.identity);
             
             if (vase != null)
             {
@@ -436,7 +436,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddPainting(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject painting = Meshes.Paintings.Instantiate("Painting", position, rotation ?? Quaternion.identity);
+            GameObject? painting = Meshes.Paintings.Instantiate("Painting", position, rotation ?? Quaternion.identity);
             
             if (painting != null)
             {
@@ -457,7 +457,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddClock(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject clock = Meshes.Clock.Instantiate("Clock", position, rotation ?? Quaternion.identity);
+            GameObject? clock = Meshes.Clock.Instantiate("Clock", position, rotation ?? Quaternion.identity);
             
             if (clock != null)
             {
@@ -478,7 +478,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddWallClock(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject wallClock = Meshes.WallClock.Instantiate("WallClock", position, rotation ?? Quaternion.identity);
+            GameObject? wallClock = Meshes.WallClock.Instantiate("WallClock", position, rotation ?? Quaternion.identity);
             
             if (wallClock != null)
             {
@@ -499,7 +499,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddToilet(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject toilet = Meshes.Toilet.Instantiate("Toilet", position, rotation ?? Quaternion.identity);
+            GameObject? toilet = Meshes.Toilet.Instantiate("Toilet", position, rotation ?? Quaternion.identity);
             
             if (toilet != null)
             {
@@ -521,7 +521,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddComputer(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject computer = Meshes.Computer.Instantiate("Computer", position, rotation ?? Quaternion.identity);
+            GameObject? computer = Meshes.Computer.Instantiate("Computer", position, rotation ?? Quaternion.identity);
             
             if (computer != null)
             {
@@ -542,7 +542,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddScreen(Vector3 position, Quaternion? rotation = null)
         {
-            GameObject screen = Meshes.Screen.Instantiate("Screen", position, rotation ?? Quaternion.identity);
+            GameObject? screen = Meshes.Screen.Instantiate("Screen", position, rotation ?? Quaternion.identity);
             
             if (screen != null)
             {
@@ -580,7 +580,7 @@ namespace MAPI.Building
                 float shelfY = wallPosition.y + tier * spacing;
                 Vector3 position = new Vector3(wallPosition.x, shelfY, wallPosition.z);
 
-                GameObject shelf = Meshes.LockerShelf.Instantiate($"WallShelf_Tier{tier}", position, rot);
+                GameObject? shelf = Meshes.LockerShelf.Instantiate($"WallShelf_Tier{tier}", position, rot);
 
                 if (shelf != null)
                 {
@@ -625,7 +625,7 @@ namespace MAPI.Building
         /// <param name="rotation">Rotation (defaults to identity)</param>
         public InteriorBuilder AddCustomMesh(Core.MeshRef meshRef, string name, Vector3 position, Quaternion? rotation = null)
         {
-            GameObject obj = meshRef.Instantiate(name, position, rotation ?? Quaternion.identity);
+            GameObject? obj = meshRef.Instantiate(name, position, rotation ?? Quaternion.identity);
             
             if (obj != null)
             {

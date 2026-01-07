@@ -7,7 +7,9 @@ using Il2CppFishNet;
 using Il2CppFishNet.Managing;
 using Il2CppFishNet.Managing.Object;
 using Il2CppFishNet.Object;
+using Il2CppTMPro;
 #else
+using TMPro;
 #endif
 
 namespace MAPI.Building.Builders
@@ -180,7 +182,7 @@ namespace MAPI.Building.Builders
             Transform signTransform = doorInstance.transform.Find("Door/Door/OpeningHoursSign");
             if (signTransform != null)
             {
-                TMPro.TextMeshPro? tmp = signTransform.GetComponent<TMPro.TextMeshPro>();
+                TextMeshPro? tmp = signTransform.GetComponent<TextMeshPro>();
                 if (tmp != null)
                 {
                     tmp.text = text;
@@ -189,7 +191,7 @@ namespace MAPI.Building.Builders
             }
 
             // Fallback: search recursively
-            TMPro.TextMeshPro[] tmps = doorInstance.GetComponentsInChildren<TMPro.TextMeshPro>(true);
+            TextMeshPro[] tmps = doorInstance.GetComponentsInChildren<TextMeshPro>(true);
             foreach (var t in tmps)
             {
                 if (t.name == "OpeningHoursSign" || t.transform.parent?.name == "OpeningHoursSign")

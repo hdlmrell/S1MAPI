@@ -180,7 +180,7 @@ namespace MAPI.Building
         /// <summary>
         /// Create an empty GameObject to serve as a folder/container
         /// </summary>
-        public static GameObject CreateFolder(string name, Transform parent = null)
+        public static GameObject CreateFolder(string name, Transform? parent = null)
         {
             GameObject folder = new GameObject(name);
             

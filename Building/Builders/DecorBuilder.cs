@@ -76,7 +76,60 @@ namespace MAPI.Building.Builders
                 color, container.transform);
 
             // Apply material
-            Material mat = material ?? _palette.TrimMaterial;
+            Material? mat = material ?? _palette.TrimMaterial;
+            if (mat != null)
+            {
+                ApplyMaterial(north, mat);
+                ApplyMaterial(south, mat);
+                ApplyMaterial(east, mat);
+                ApplyMaterial(west, mat);
+            }
+
+            return container;
+        }
+
+        /// <summary>
+        /// Add a secondary trim above the main roof trim (parapet style).
+        /// </summary>
+        /// <param name="height">Height of the trim in meters</param>
+        /// <param name="material">Optional material override</param>
+        /// <returns>The trim container GameObject</returns>
+        public GameObject AddSecondaryRoofTrim(float height = 0.15f, Material? material = null)
+        {
+            float wallThickness = 0.2f;
+            float trimDepth = wallThickness + 0.1f;
+            GameObject container = BuildingUtilities.CreateFolder("SecondaryRoofTrim", _parent);
+
+            Color color = _palette.AccentColor;
+            // Position above the roof line (AddRoofTrim ends at _roomSize.y)
+            float yPos = _roomSize.y + height / 2f;
+
+            // North
+            GameObject north = PrimitiveBuilder.CreateBox("NorthTrim",
+                new Vector3(_roomSize.x / 2f, yPos, _roomSize.z),
+                new Vector3(_roomSize.x + trimDepth, height, trimDepth),
+                color, container.transform);
+
+            // South
+            GameObject south = PrimitiveBuilder.CreateBox("SouthTrim",
+                new Vector3(_roomSize.x / 2f, yPos, 0f),
+                new Vector3(_roomSize.x + trimDepth, height, trimDepth),
+                color, container.transform);
+
+            // East
+            GameObject east = PrimitiveBuilder.CreateBox("EastTrim",
+                new Vector3(_roomSize.x, yPos, _roomSize.z / 2f),
+                new Vector3(trimDepth, height, _roomSize.z - trimDepth),
+                color, container.transform);
+
+            // West
+            GameObject west = PrimitiveBuilder.CreateBox("WestTrim",
+                new Vector3(0f, yPos, _roomSize.z / 2f),
+                new Vector3(trimDepth, height, _roomSize.z - trimDepth),
+                color, container.transform);
+
+            // Apply material
+            Material? mat = material ?? _palette.AccentMaterial ?? _palette.TrimMaterial;
             if (mat != null)
             {
                 ApplyMaterial(north, mat);
@@ -127,7 +180,7 @@ namespace MAPI.Building.Builders
                 color, container.transform);
 
             // Apply material
-            Material mat = material ?? _palette.PillarMaterial;
+            Material? mat = material ?? _palette.PillarMaterial;
             if (mat != null)
             {
                 ApplyMaterial(ne, mat);
@@ -168,6 +221,70 @@ namespace MAPI.Building.Builders
             if (material != null)
             {
                 ApplyMaterial(foundation, material);
+            }
+
+            return container;
+        }
+
+        /// <summary>
+        /// Add base molding around the bottom of the building.
+        /// </summary>
+        /// <param name="height">Molding height in meters</param>
+        /// <param name="depth">Molding depth in meters</param>
+        /// <param name="material">Optional material override</param>
+        /// <returns>The molding container GameObject</returns>
+        public GameObject AddBaseMolding(float height = 0.3f, float depth = 0.1f, Material? material = null)
+        {
+            float halfWidth = _roomSize.x / 2f;
+            float halfDepth = _roomSize.z / 2f;
+            GameObject container = BuildingUtilities.CreateFolder("BaseMolding", _parent);
+
+            Color color = _palette.TrimColor;
+            
+            // Back (North)
+            GameObject back = PrimitiveBuilder.CreateBox(
+                "BaseMolding_North",
+                new Vector3(halfWidth, height / 2f, _roomSize.z + depth / 2f),
+                new Vector3(_roomSize.x + depth * 2f, height, depth),
+                color,
+                container.transform
+            );
+
+            // Left (West)
+            GameObject left = PrimitiveBuilder.CreateBox(
+                "BaseMolding_West",
+                new Vector3(-depth / 2f, height / 2f, halfDepth),
+                new Vector3(depth, height, _roomSize.z),
+                color,
+                container.transform
+            );
+
+            // Right (East)
+            GameObject right = PrimitiveBuilder.CreateBox(
+                "BaseMolding_East",
+                new Vector3(_roomSize.x + depth / 2f, height / 2f, halfDepth),
+                new Vector3(depth, height, _roomSize.z),
+                color,
+                container.transform
+            );
+
+            // Front (South)
+            GameObject front = PrimitiveBuilder.CreateBox(
+                "BaseMolding_South",
+                new Vector3(halfWidth, height / 2f, -depth / 2f),
+                new Vector3(_roomSize.x + depth * 2f, height, depth),
+                color,
+                container.transform
+            );
+
+            // Apply material
+            Material? mat = material ?? _palette.TrimMaterial;
+            if (mat != null)
+            {
+                ApplyMaterial(back, mat);
+                ApplyMaterial(left, mat);
+                ApplyMaterial(right, mat);
+                ApplyMaterial(front, mat);
             }
 
             return container;
