@@ -37,15 +37,15 @@ public class YourMod : MelonMod
     public override void OnInitializeMelon()
     {
         // Initialize MAPI
-        MAPICore.Initialize();
-        
+        MAPI.Initialize();
+
         LoggerInstance.Msg("MAPI initialized successfully!");
     }
 
     public override void OnApplicationQuit()
     {
         // Cleanup MAPI
-        MAPICore.Shutdown();
+        MAPI.Shutdown();
     }
 }
 ```
