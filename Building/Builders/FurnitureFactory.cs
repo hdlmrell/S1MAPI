@@ -12,7 +12,6 @@ namespace MAPI.Building.Builders
         Table,
         Chair,
         Desk,
-        Bed,
         Bookshelf,
         Counter,
         CoffeeTable
@@ -65,7 +64,6 @@ namespace MAPI.Building.Builders
                 FurnitureType.Table => CreateTable(position, rotation, furnitureColor),
                 FurnitureType.Chair => CreateChair(position, rotation, furnitureColor),
                 FurnitureType.Desk => CreateDesk(position, rotation, furnitureColor),
-                FurnitureType.Bed => CreateBed(position, rotation, furnitureColor),
                 FurnitureType.Bookshelf => CreateBookshelf(position, rotation, furnitureColor),
                 FurnitureType.Counter => CreateCounter(position, rotation, furnitureColor),
                 FurnitureType.CoffeeTable => CreateCoffeeTable(position, rotation, furnitureColor),
@@ -85,7 +83,6 @@ namespace MAPI.Building.Builders
                 FurnitureType.Table => new Vector3(1.4f, 0.75f, 0.9f),
                 FurnitureType.Chair => new Vector3(0.5f, 0.95f, 0.5f),
                 FurnitureType.Desk => new Vector3(1.5f, 0.75f, 0.7f),
-                FurnitureType.Bed => new Vector3(1.5f, 1.0f, 2.0f),
                 FurnitureType.Bookshelf => new Vector3(1.2f, 2.0f, 0.3f),
                 FurnitureType.Counter => new Vector3(2.0f, 0.95f, 0.6f),
                 FurnitureType.CoffeeTable => new Vector3(1.1f, 0.45f, 0.6f),
@@ -103,7 +100,6 @@ namespace MAPI.Building.Builders
             {
                 FurnitureType.Table or FurnitureType.Desk or FurnitureType.Chair or FurnitureType.Bookshelf => 
                     new Color(0.55f, 0.35f, 0.2f), // Wood brown
-                FurnitureType.Bed => new Color(0.9f, 0.9f, 0.95f), // White/cream
                 FurnitureType.Counter => _palette.AccentColor,
                 FurnitureType.CoffeeTable => new Color(0.4f, 0.25f, 0.1f),
                 _ => new Color(0.5f, 0.5f, 0.5f)
@@ -189,21 +185,6 @@ namespace MAPI.Building.Builders
             PrimitiveBuilder.CreateBox("RightPanel", new Vector3(0.6f, 0.375f, 0f), new Vector3(0.05f, 0.75f, 0.7f), color, desk.transform);
 
             return desk;
-        }
-
-        private GameObject CreateBed(Vector3 position, Quaternion rotation, Color color)
-        {
-            GameObject bed = BuildingUtilities.CreateFolder("Bed", _parent);
-            bed.transform.localPosition = position;
-            bed.transform.localRotation = rotation;
-
-            // Mattress
-            PrimitiveBuilder.CreateBox("Mattress", new Vector3(0f, 0.4f, 0f), new Vector3(1.5f, 0.3f, 2f), color, bed.transform);
-
-            // Headboard
-            PrimitiveBuilder.CreateBox("Headboard", new Vector3(0f, 0.75f, -1f), new Vector3(1.5f, 1.2f, 0.1f), new Color(0.3f, 0.2f, 0.1f), bed.transform);
-
-            return bed;
         }
 
         private GameObject CreateBookshelf(Vector3 position, Quaternion rotation, Color color)

@@ -23,6 +23,8 @@ Follow `CODING_STANDARDS.md`. Key points:
 - Use nested static classes for constants (`Constants.Mesh.MaxVerticesPerMesh`)
 - Register created meshes with `ResourceTracker`; use `DebugLog` for logging
 - XML documentation required for all public APIs
+- Avoid implementing unnecessarry features, prefer less code in favor of cleaner code
+- Sperate concerns of Schedule 1 specific Meshes/Prefabs and primitive game objects/meshes, for example S1 namespace has Schedule 1 assets, PrimitiveBuilder and things built with it should be seperated by concern as of C# standards
 
 ## Relationship to S1API
 MAPI and S1API serve complementary roles:

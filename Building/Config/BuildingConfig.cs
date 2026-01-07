@@ -102,48 +102,6 @@ namespace MAPI.Building.Config
         };
 
         /// <summary>
-        /// Small retail shop (6m x 3m x 5m) with modern palette.
-        /// </summary>
-        public static BuildingConfig SmallShop => new()
-        {
-            Width = 6f,
-            Height = 3f,
-            Depth = 5f,
-            Palette = new BuildingPalette
-            {
-                FloorColor = new Color(0.85f, 0.85f, 0.85f),
-                WallColor = Color.white,
-                CeilingColor = Color.white,
-                TrimColor = new Color(0.1f, 0.1f, 0.1f),
-                PillarColor = new Color(0.1f, 0.1f, 0.1f),
-                AccentColor = new Color(0.2f, 0.4f, 0.8f),
-                LightColor = new Color(1f, 1f, 1f),
-                LightIntensity = 1.0f
-            }
-        };
-
-        /// <summary>
-        /// Medium retail store (10m x 3.5m x 8m) with modern palette.
-        /// </summary>
-        public static BuildingConfig RetailStore => new()
-        {
-            Width = 10f,
-            Height = 3.5f,
-            Depth = 8f,
-            Palette = new BuildingPalette
-            {
-                FloorColor = new Color(0.85f, 0.85f, 0.85f),
-                WallColor = Color.white,
-                CeilingColor = Color.white,
-                TrimColor = new Color(0.1f, 0.1f, 0.1f),
-                PillarColor = new Color(0.1f, 0.1f, 0.1f),
-                AccentColor = new Color(0.2f, 0.4f, 0.8f),
-                LightColor = new Color(1f, 1f, 1f),
-                LightIntensity = 1.0f
-            }
-        };
-
-        /// <summary>
         /// Warehouse style (20m x 6m x 15m) with industrial palette.
         /// </summary>
         public static BuildingConfig Warehouse => new()
