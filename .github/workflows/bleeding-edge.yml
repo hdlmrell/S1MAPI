@@ -54,7 +54,7 @@ jobs:
           fetch-depth: 1
         if: steps.cache-assemblies.outputs.cache-hit != 'true'
 
-      - name: Populate Assemblies
+      - name: Populate Mono Assemblies
         if: steps.cache-assemblies.outputs.cache-hit != 'true'
         run: |
           echo "=== Setting up Mono Assemblies ==="
@@ -64,6 +64,55 @@ jobs:
             echo "Warning: game-assemblies/Managed not found"
           fi
 
+      - name: Create CI Build Properties
+        run: |
+          cat > local.build.props << 'EOF'
+          <Project>
+              <PropertyGroup>
+                  <MonoAssembliesPath>$(MSBuildThisFileDirectory)Assemblies/Mono</MonoAssembliesPath>
+                  <Il2CppAssembliesPath>$(MSBuildThisFileDirectory)Assemblies/Il2Cpp</Il2CppAssembliesPath>
+                  <Il2CppMLAssembliesPath>$(MSBuildThisFileDirectory)Assemblies/Il2Cpp</Il2CppMLAssembliesPath>
+              </PropertyGroup>
+          </Project>
+          EOF
+
+      - name: Restore Dependencies
+        run: dotnet restore MAPI.csproj /p:Configuration=Mono
+
+      - name: Check Mono Assemblies
+        run: |
+          echo "=== Mono Assembly Directory Contents ==="
+          if [ -d "Assemblies/Mono" ]; then
+            ls -la Assemblies/Mono/ | head -20
+            echo ""
+            echo "=== Checking for TextMeshPro ==="
+            if [ -f "Assemblies/Mono/Unity.TextMeshPro.dll" ]; then
+              echo "✓ Unity.TextMeshPro.dll found"
+              echo "File size: $(stat -c%s Assemblies/Mono/Unity.TextMeshPro.dll) bytes"
+              # Use ildasm-like tool if available, or just check if file is valid
+              file Assemblies/Mono/Unity.TextMeshPro.dll || true
+            else
+              echo "✗ Unity.TextMeshPro.dll NOT found - searching for it..."
+              find game-assemblies -name "*TextMeshPro*.dll" -type f
+            fi
+            echo ""
+            echo "=== Checking for potential assembly conflicts ==="
+            if [ -d "Assemblies/Il2Cpp" ]; then
+              echo "IL2CPP assemblies directory exists (may cause conflicts)"
+              ls Assemblies/Il2Cpp/*.dll 2>/dev/null | wc -l
+            fi
+          else
+            echo "ERROR: Assemblies/Mono directory not found!"
+            echo "This likely means the game-assemblies checkout failed."
+            exit 1
+          fi
+
+      - name: Build Mono
+        run: dotnet build MAPI.csproj --no-restore -c Mono -v normal
+
+      - name: Populate IL2CPP Assemblies
+        if: steps.cache-assemblies.outputs.cache-hit != 'true'
+        run: |
           echo "=== Setting up IL2CPP Assemblies ==="
           # Copy core IL2CPP assemblies
           if [ -d "il2cpp-assemblies/MelonLoader/Il2CppAssemblies" ]; then
@@ -112,42 +161,8 @@ jobs:
           echo "=== IL2CPP Assembly Directory Contents ==="
           ls -la Assemblies/Il2Cpp/ | head -20
 
-      - name: Create CI Build Properties
-        run: |
-          cat > local.build.props << 'EOF'
-          <Project>
-              <PropertyGroup>
-                  <MonoAssembliesPath>$(MSBuildThisFileDirectory)Assemblies/Mono</MonoAssembliesPath>
-                  <Il2CppAssembliesPath>$(MSBuildThisFileDirectory)Assemblies/Il2Cpp</Il2CppAssembliesPath>
-                  <Il2CppMLAssembliesPath>$(MSBuildThisFileDirectory)Assemblies/Il2Cpp</Il2CppMLAssembliesPath>
-              </PropertyGroup>
-          </Project>
-          EOF
-
-      - name: Restore Dependencies
-        run: dotnet restore MAPI.csproj /p:Configuration=Mono
-
-      - name: Check Mono Assemblies
-        run: |
-          echo "=== Mono Assembly Directory Contents ==="
-          if [ -d "Assemblies/Mono" ]; then
-            ls -la Assemblies/Mono/ | head -20
-            echo ""
-            echo "=== Checking for TextMeshPro ==="
-            if [ -f "Assemblies/Mono/Unity.TextMeshPro.dll" ]; then
-              echo "✓ Unity.TextMeshPro.dll found"
-            else
-              echo "✗ Unity.TextMeshPro.dll NOT found - searching for it..."
-              find game-assemblies -name "*TextMeshPro*.dll" -type f
-            fi
-          else
-            echo "ERROR: Assemblies/Mono directory not found!"
-            echo "This likely means the game-assemblies checkout failed."
-            exit 1
-          fi
-
-      - name: Build Mono
-        run: dotnet build MAPI.csproj --no-restore -c Mono -v normal
+      - name: Restore IL2CPP Dependencies
+        run: dotnet restore MAPI.csproj /p:Configuration=Il2cpp
 
       - name: Build IL2CPP
         run: dotnet build MAPI.csproj --no-restore -c Il2cpp -v normal
