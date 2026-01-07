@@ -1,29 +1,25 @@
-# MAPI - Modding API for Unity Games
+# MAPI - Schedule 1 Mapping API
 
-**MAPI** is a universal, game-agnostic Unity modding library that provides powerful tools for mod developers working with Unity-based games. It offers procedural mesh generation, building construction systems, and advanced modding utilities without requiring game-specific dependencies.
+**MAPI** is a mapping and construction library specifically designed for Schedule 1 mods. It provides powerful tools for creating procedural meshes, building structures, and handling GLTF assets while remaining update-resilient by avoiding direct dependencies on Schedule 1's Assembly-CSharp types.
 
 ## Features
 
-- **Game-Agnostic Design**: Works across different Unity games and modding frameworks
+- **Schedule 1 Focused**: Built specifically for Schedule 1 modding with FishNet networking integration
+- **Update-Resilient Design**: Avoids Schedule 1 types to remain stable across game updates
 - **Procedural Mesh Generation**: Create complex 3D meshes at runtime
 - **Building Construction System**: Build and manage structures dynamically
-- **Mono & IL2CPP Support**: Compatible with both Unity scripting backends
-- **MelonLoader Integration**: Designed to work seamlessly with MelonLoader
-- **Zero Game Dependencies**: Uses only standard Unity and .NET APIs
+- **Mono & IL2CPP Support**: Compatible with both Unity scripting backends via FishNet
+- **GLTF Loading**: Import 3D models from GLTF/GLB files
+- **Zero Game Dependencies**: Uses only Unity primitives and FishNet networking types
 
 ## Installation
 
-### As a NuGet Package (Recommended)
+### Manual Installation (Recommended for Schedule 1)
 
-```bash
-dotnet add package MAPI
-```
-
-### Manual Installation
-
-1. Download the latest release from the [releases page](https://github.com/yourusername/MAPI/releases)
-2. Add `MAPI.dll` as a reference in your mod project
-3. Initialize MAPI in your mod's initialization code
+1. Download the latest release from the [releases page](https://github.com/ifBars/MAPI/releases)
+2. Add the appropriate `MAPI_Mono.dll` or `MAPI_Il2cpp.dll` as a reference in your mod project
+3. Ensure FishNet.Runtime is available in your mod environment
+4. Initialize MAPI in your mod's initialization code
 
 ## Quick Start
 
@@ -52,47 +48,52 @@ public class YourMod : MelonMod
 
 ## Requirements
 
-- **Unity Version**: 2019.4+ (2020.1+ recommended)
+- **Game**: Schedule 1
+- **Unity Version**: Schedule 1's Unity version
 - **Target Framework**: .NET Standard 2.1
-- **Scripting Backend**: Mono or IL2CPP
-- **Mod Loader**: MelonLoader (optional, but recommended)
+- **Scripting Backend**: Mono or IL2CPP (matching your Schedule 1 installation)
+- **Networking**: FishNet.Runtime (included with Schedule 1)
+- **Mod Loader**: MelonLoader or compatible Schedule 1 mod loader
 
 ## Building from Source
 
 ### Prerequisites
 
 1. .NET 6.0 SDK
-2. Unity assemblies from your target game
-3. (Optional) MelonLoader assemblies
+2. Schedule 1 game assemblies (for FishNet.Runtime dependency)
 
 ### Build Steps
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/MAPI.git
+   git clone https://github.com/ifBars/MAPI.git
    cd MAPI
    ```
 
-2. Copy `local.build.props.example` to `local.build.props` and configure paths:
+2. Copy `local.build.props.example` to `local.build.props` and configure Schedule 1 paths:
    ```bash
    cp local.build.props.example local.build.props
    ```
 
-3. Edit `local.build.props` to point to your Unity assemblies:
+3. Edit `local.build.props` to point to your Schedule 1 installation:
    ```xml
-   <MonoAssembliesPath>D:\SteamLibrary\steamapps\common\YourGame\YourGame_Data\Managed</MonoAssembliesPath>
+   <MonoAssembliesPath>D:\SteamLibrary\steamapps\common\Schedule 1\Schedule 1_Data\Managed</MonoAssembliesPath>
+   <Il2CppAssembliesPath>D:\SteamLibrary\steamapps\common\Schedule 1\Schedule 1_Data\Managed</Il2CppAssembliesPath>
    ```
 
-4. Build the project:
+4. Build the project for your target configuration:
    ```bash
-   dotnet build -c Universal
+   # For Mono Schedule 1 builds
+   dotnet build -c Mono
+   
+   # For IL2CPP Schedule 1 builds  
+   dotnet build -c Il2cpp
    ```
 
 ### Build Configurations
 
-- **Universal**: Default configuration for game-agnostic use (recommended)
-- **Mono**: For Mono Unity builds
-- **Il2cpp**: For IL2CPP Unity builds
+- **Mono**: For Schedule 1 Mono builds (creates MAPI_Mono.dll)
+- **Il2cpp**: For Schedule 1 IL2CPP builds (creates MAPI_Il2cpp.dll)
 
 ## Project Structure
 
@@ -101,6 +102,8 @@ MAPI/
 ├── Core/              # Core initialization and library management
 ├── ProceduralMesh/    # Procedural mesh generation system
 ├── Building/          # Building construction system
+├── Gltf/              # GLTF file loading and processing
+├── S1/                # Schedule 1 specific assets and references
 ├── Utils/             # Utility classes and helpers
 └── Resources/         # Embedded resources
 ```
@@ -117,9 +120,9 @@ Comprehensive documentation is coming soon. For now, refer to:
 
 MAPI is designed with the following principles:
 
-1. **Universal Compatibility**: No game-specific dependencies
-2. **Extensibility**: Easy to extend with game-specific adapters
-3. **Performance**: Optimized for runtime mesh generation and building
+1. **Update Resilience**: Avoids Schedule 1 Assembly-CSharp types to survive game updates
+2. **Schedule 1 Integration**: Leverages FishNet networking and Unity primitives
+3. **Performance**: Optimized for runtime mesh generation and building in multiplayer environments
 4. **Maintainability**: Clean architecture with clear separation of concerns
 5. **Developer Experience**: Well-documented APIs with sensible defaults
 
@@ -134,8 +137,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 
 - Unity Technologies for the Unity Engine
-- The MelonLoader team for their excellent mod loader
-- The modding community for inspiration and feedback
+- The Schedule 1 development team for the game and FishNet integration
+- The FishNet team for their excellent networking solution
+- The Schedule 1 modding community for inspiration and feedback
 
 ## Support
 
@@ -146,12 +150,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Roadmap
 
 ### Phase 1: Core Infrastructure ✅
-- [x] Project setup
+- [x] Schedule 1 specific project setup
 - [x] Core initialization system
 - [x] Logging utilities
 - [x] Resource management (ResourceTracker)
 - [x] Material presets system
 - [x] Embedded resource loader
+- [x] FishNet.Runtime integration for Mono and IL2CPP
 
 ### Phase 2: Procedural Mesh Generation ✅
 - [x] Basic mesh primitives (Box, Sphere, Cylinder, Capsule)

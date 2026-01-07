@@ -3,8 +3,13 @@ using UnityEngine;
 namespace MAPI.ProceduralMesh
 {
     /// <summary>
-    /// Defines the shape profile for an articulated limb (leg, arm, tail, etc.)
+    /// Defines the shape profile for an articulated limb (leg, arm, tail, etc.).
+    /// Reference implementation for organic shapes with joints.
     /// </summary>
+    /// <remarks>
+    /// This is a reference implementation provided as an example.
+    /// For custom organic shapes, inherit from <see cref="OrganicShapeGenerator"/> and implement your own generation logic.
+    /// </remarks>
     public class LimbProfile
     {
         #region Properties

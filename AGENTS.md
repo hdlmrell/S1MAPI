@@ -12,7 +12,6 @@ MAPI is a mesh and building construction library for Schedule 1 mods. It avoids 
 Namespaces mirror folder structure (e.g., `MAPI.ProceduralMesh`, `MAPI.Building`).
 
 ## Build, Test, and Development Commands
-- `dotnet build MAPI.csproj -c Universal` — Default build for general use
 - `dotnet build MAPI.csproj -c Mono` — Mono-specific build
 - `dotnet build MAPI.csproj -c Il2cpp` — IL2CPP-specific build
 - `dotnet clean` — Clean build artifacts

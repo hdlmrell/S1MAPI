@@ -3,9 +3,13 @@ using UnityEngine;
 namespace MAPI.ProceduralMesh
 {
     /// <summary>
-    /// Defines the shape profile for a segmented organic body
-    /// Used for creating dog bodies, worm segments, etc.
+    /// Defines the shape profile for a segmented organic body.
+    /// Reference implementation for creating organic shapes like animal bodies.
     /// </summary>
+    /// <remarks>
+    /// This is a reference implementation provided as an example.
+    /// For custom organic shapes, inherit from <see cref="OrganicShapeGenerator"/> and implement your own generation logic.
+    /// </remarks>
     public class BodyProfile
     {
         #region Properties

@@ -1,6 +1,6 @@
 # MAPI Usage Examples
 
-This document provides practical examples of using MAPI in your mods.
+This document provides practical examples of using MAPI in your Schedule 1 mods. All examples assume you're working with FishNet networking and the Schedule 1 environment.
 
 ## Table of Contents
 - [Initialization](#initialization)
@@ -18,11 +18,11 @@ Always initialize MAPI in your mod's initialization method:
 ```csharp
 using MAPI.Core;
 
-public class YourMod : MelonMod
+public class YourSchedule1Mod : MelonMod
 {
     public override void OnInitializeMelon()
     {
-        // Initialize MAPI
+        // Initialize MAPI for Schedule 1
         MAPI.Initialize();
         
         LoggerInstance.Msg("MAPI initialized successfully!");
@@ -32,6 +32,33 @@ public class YourMod : MelonMod
     {
         // Cleanup MAPI
         MAPI.Shutdown();
+    }
+}
+```
+
+### Network-Aware Initialization
+
+For multiplayer mods, ensure FishNet is available:
+
+```csharp
+using MAPI.Core;
+using FishNet;
+using FishNet.Managing;
+
+public class NetworkAwareMod : MelonMod
+{
+    public override void OnInitializeMelon()
+    {
+        // Check if FishNet is available (required for Schedule 1)
+        if (NetworkManager.Instance != null)
+        {
+            MAPI.Initialize();
+            LoggerInstance.Msg("MAPI initialized with FishNet support!");
+        }
+        else
+        {
+            LoggerInstance.Error("FishNet not found - MAPI requires FishNet for Schedule 1");
+        }
     }
 }
 ```

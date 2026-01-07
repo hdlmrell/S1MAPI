@@ -15,10 +15,10 @@
     <OutputType>Library</OutputType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>MAPI</PackageId>
-    <Title>Modding API for Unity Games</Title>
+    <Title>Schedule 1 Mapping API</Title>
     <Authors>MAPI Contributors</Authors>
-    <Description>A universal, game-agnostic Unity modding library providing procedural mesh generation, building construction, and advanced modding utilities.</Description>
-    <PackageTags>unity;modding;melon-loader;il2cpp;mono;procedural-mesh;gltf</PackageTags>
+    <Description>A mapping and construction library for Schedule 1 mods, providing procedural mesh generation, building construction, and GLTF loading while remaining update-resilient.</Description>
+    <PackageTags>schedule-1;mapping;modding;fishnet;il2cpp;mono;procedural-mesh;gltf;building</PackageTags>
     <RepositoryUrl>https://github.com/ifBars/MAPI</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Version>0.1.0</Version>

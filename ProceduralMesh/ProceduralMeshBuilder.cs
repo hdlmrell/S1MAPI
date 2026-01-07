@@ -9,7 +9,7 @@ namespace MAPI.ProceduralMesh
 {
     /// <summary>
     /// High-level fluent builder for creating procedural meshes.
-    /// Provides a chainable API for constructing meshes from basic and organic shapes.
+    /// Provides a chainable API for constructing meshes from basic shapes.
     /// </summary>
     /// <remarks>
     /// Use the builder pattern to add shapes, configure materials, then call Build() to create the final mesh.
@@ -171,60 +171,6 @@ namespace MAPI.ProceduralMesh
         }
 
         /// <summary>
-        /// Add a segmented organic body to the mesh.
-        /// </summary>
-        /// <param name="size">Overall size (x=width, y=height, z=length)</param>
-        /// <param name="profile">Body profile defining the shape</param>
-        /// <returns>This builder for method chaining</returns>
-        public ProceduralMeshBuilder AddSegmentedBody(Vector3 size, BodyProfile profile)
-        {
-            Mesh bodyMesh = OrganicShapeBuilder.CreateSegmentedBody(size, profile, $"{_name}_Body");
-            MergeMesh(bodyMesh);
-            return this;
-        }
-
-        /// <summary>
-        /// Add an articulated limb to the mesh.
-        /// </summary>
-        /// <param name="profile">Limb profile defining joints and radii</param>
-        /// <param name="position">Local position offset</param>
-        /// <returns>This builder for method chaining</returns>
-        public ProceduralMeshBuilder AddArticulatedLimb(LimbProfile profile, Vector3 position = default)
-        {
-            Mesh limbMesh = OrganicShapeBuilder.CreateArticulatedLimb(profile, $"{_name}_Limb");
-            MergeMesh(limbMesh, position);
-            return this;
-        }
-
-        /// <summary>
-        /// Add a paw to the mesh.
-        /// </summary>
-        /// <param name="width">Width of the paw</param>
-        /// <param name="height">Height of the paw</param>
-        /// <param name="length">Length of the paw</param>
-        /// <param name="position">Local position offset</param>
-        /// <returns>This builder for method chaining</returns>
-        public ProceduralMeshBuilder AddPaw(float width, float height, float length, Vector3 position = default)
-        {
-            Mesh pawMesh = OrganicShapeBuilder.CreatePaw(width, height, length, $"{_name}_Paw");
-            MergeMesh(pawMesh, position);
-            return this;
-        }
-
-        /// <summary>
-        /// Add an ear to the mesh.
-        /// </summary>
-        /// <param name="radius">Size of the ear</param>
-        /// <param name="position">Local position offset</param>
-        /// <returns>This builder for method chaining</returns>
-        public ProceduralMeshBuilder AddEar(float radius, Vector3 position = default)
-        {
-            Mesh earMesh = OrganicShapeBuilder.CreateEar(radius, $"{_name}_Ear");
-            MergeMesh(earMesh, position);
-            return this;
-        }
-
-        /// <summary>
         /// Build the mesh and return it.
         /// </summary>
         /// <returns>The constructed mesh</returns>
@@ -289,38 +235,6 @@ namespace MAPI.ProceduralMesh
 
             DebugLog.Info($"Built GameObject: {_name}");
             return go;
-        }
-
-        #endregion
-
-        #region Private Members
-
-        /// <summary>
-        /// INTERNAL: Merge another mesh into this builder.
-        /// </summary>
-        private void MergeMesh(Mesh mesh, Vector3 offset = default)
-        {
-            if (mesh == null) return;
-
-            int vertexOffset = _vertices.Count;
-
-            // Add vertices with offset
-            foreach (Vector3 vertex in mesh.vertices)
-            {
-                _vertices.Add(vertex + offset);
-            }
-
-            // Add triangles with vertex offset
-            foreach (int triangle in mesh.triangles)
-            {
-                _triangles.Add(triangle + vertexOffset);
-            }
-
-            // Add UVs if available
-            if (mesh.uv != null && mesh.uv.Length > 0)
-            {
-                _uvs.AddRange(mesh.uv);
-            }
         }
 
         #endregion
