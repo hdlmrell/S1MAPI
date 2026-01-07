@@ -124,7 +124,7 @@ jobs:
           EOF
 
       - name: Restore Dependencies
-        run: dotnet restore MAPI.csproj -c Mono
+        run: dotnet restore MAPI.csproj /p:Configuration=Mono
 
       - name: Check Mono Assemblies
         run: |
