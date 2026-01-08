@@ -113,13 +113,35 @@ jobs:
         if: steps.check_release.outputs.exists != 'true'
         run: dotnet restore MAPI.csproj
 
+      - name: Clear IL2CPP Before Mono Build
+        if: steps.check_release.outputs.exists != 'true'
+        run: |
+          echo "=== Isolating Mono build from IL2CPP assemblies ==="
+          if [ -d "Assemblies/Il2Cpp" ]; then
+            rm -rf /tmp/Il2Cpp.backup 2>/dev/null || true
+            mv Assemblies/Il2Cpp /tmp/Il2Cpp.backup
+          fi
+
       - name: Build Mono (and Package)
         if: steps.check_release.outputs.exists != 'true'
-        run: dotnet build MAPI.csproj --no-restore -c Mono -v normal
+        run: dotnet build MAPI.csproj --no-restore -c Mono /p:AssemblySearchPaths="{RawFileName};{TargetFrameworkDirectory}" -v normal
+
+      - name: Restore IL2CPP and Clear Mono
+        if: steps.check_release.outputs.exists != 'true'
+        run: |
+          echo "=== Restoring IL2CPP and isolating from Mono ==="
+          if [ -d "/tmp/Il2Cpp.backup" ]; then
+            mkdir -p Assemblies/Il2Cpp
+            cp -r /tmp/Il2Cpp.backup/* Assemblies/Il2Cpp/
+          fi
+          if [ -d "Assemblies/Mono" ]; then
+            rm -rf /tmp/Mono.backup 2>/dev/null || true
+            mv Assemblies/Mono /tmp/Mono.backup
+          fi
 
       - name: Build IL2CPP
         if: steps.check_release.outputs.exists != 'true'
-        run: dotnet build MAPI.csproj --no-restore -c Il2cpp -v normal
+        run: dotnet build MAPI.csproj --no-restore -c Il2cpp /p:AssemblySearchPaths="{RawFileName};{TargetFrameworkDirectory}" -v normal
 
       - name: Create Release
         if: steps.check_release.outputs.exists != 'true'
