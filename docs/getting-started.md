@@ -37,7 +37,7 @@ The **[MAPITesting repository](https://github.com/ifBars/MAPITesting)** provides
 - Use the build configuration and MelonLoader integration
 - Reference the csproj as a starting point for your own mods
 
-The license only restricts copying the **specific examples** (the dispensary building, decorations, signage). MAPI's `BuildingConfig` presets and all code patterns are MIT-licensed and free to use. This may change in the future to support more open source once I release it as it's own mod. Until then feel free to contact me on discord if you have any concerns: ifbars
+The license only restricts copying the **specific examples** (the dispensary building, decorations, signage). MAPI's `BuildingConfig` presets and all code patterns are GPL-licensed and free to use. This may change in the future to support more open source once I release it as it's own mod. Until then feel free to contact me on discord if you have any concerns: ifbars
 
 #### Option 2: Manual Setup
 
@@ -201,4 +201,4 @@ The MAPITesting repository uses a **Preview Learning-Only License (PLOL)**:
 - Copy the decorations, signage, or exact interior layouts
 - Publish a "reskinned" version of the example
 
-The key distinction: **Building configurations from MAPI are MIT-licensed and free to use. The specific examples in MAPITesting are protected.**
+The key distinction: **Building configurations from MAPI are GPL-licensed and free to use. The specific examples in MAPITesting are protected.**
