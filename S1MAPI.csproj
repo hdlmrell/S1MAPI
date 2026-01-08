@@ -20,6 +20,7 @@
     <PackageTags>schedule-1;mapping;modding;il2cpp;mono;procedural-mesh;gltf</PackageTags>
     <RepositoryUrl>https://github.com/ifBars/S1MAPI</RepositoryUrl>
     <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <Version>1.0.0</Version>
   </PropertyGroup>
 
@@ -197,6 +198,7 @@
      <None Remove="Public\**" />
      <None Remove="README_THUNDERSTORE.md" />
      <None Remove="nexuspost.bbcode" />
+     <None Include="README.md" Pack="true" PackagePath="\" />
    </ItemGroup>
    <ItemGroup>
      <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />

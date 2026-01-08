@@ -1,5 +1,6 @@
 using UnityEngine;
 using S1MAPI.Core;
+using S1MAPI.Extensions;
 using S1MAPI.Utils;
 using S1MAPI.ProceduralMesh.Generators.Primitives;
 
@@ -193,7 +194,7 @@ namespace S1MAPI.ProceduralMesh
 
             if (_applyFlatShading)
             {
-                MeshUtilities.ApplyFlatShading(mesh);
+                mesh.ApplyFlatShading();
             }
             else
             {
