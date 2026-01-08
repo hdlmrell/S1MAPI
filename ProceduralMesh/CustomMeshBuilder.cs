@@ -28,6 +28,10 @@ namespace MAPI.ProceduralMesh
         private Material? _material;
         private bool _calculateNormals = true;
 
+        /// <summary>
+        /// Create a new custom mesh builder.
+        /// </summary>
+        /// <param name="name">Name for the generated mesh</param>
         public CustomMeshBuilder(string name)
         {
             _name = name;
