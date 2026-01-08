@@ -97,6 +97,14 @@ jobs:
             exit 1
           fi
 
+      - name: Clear IL2CPP Assemblies Before Mono Build
+        run: |
+          echo "=== Clearing IL2CPP assemblies for Mono build ==="
+          if [ -d "Assemblies/Il2Cpp" ]; then
+            mv Assemblies/Il2Cpp Assemblies/Il2Cpp.backup
+            echo "Backed up IL2CPP assemblies"
+          fi
+
       - name: Build Mono
         run: dotnet build MAPI.csproj --no-restore /p:Configuration=Mono -v normal
 
@@ -157,15 +165,37 @@ jobs:
              fi
           fi
 
+          # Restore IL2CPP assemblies if backed up
+          echo "=== Restoring IL2CPP assemblies for IL2CPP build ==="
+          if [ -d "Assemblies/Il2Cpp.backup" ]; then
+            mv Assemblies/Il2Cpp.backup Assemblies/Il2Cpp
+            echo "Restored IL2CPP assemblies"
+          fi
+
+          # Clear Mono assemblies before IL2CPP build
+          echo "=== Clearing Mono assemblies for IL2CPP build ==="
+          if [ -d "Assemblies/Mono" ]; then
+            mv Assemblies/Mono Assemblies/Mono.backup
+            echo "Backed up Mono assemblies"
+          fi
+
           # List what we actually have in IL2CPP assemblies
-          echo "=== IL2CPP Assembly Directory Contents ==="
-          ls -la Assemblies/Il2Cpp/ | head -20
+           echo "=== IL2CPP Assembly Directory Contents ==="
+           ls -la Assemblies/Il2Cpp/ | head -20
 
       - name: Restore IL2CPP Dependencies
         run: dotnet restore MAPI.csproj /p:Configuration=Il2cpp
 
-      - name: Build IL2CPP
-        run: dotnet build MAPI.csproj --no-restore -c Il2cpp -v normal
+       - name: Build IL2CPP
+         run: dotnet build MAPI.csproj --no-restore -c Il2cpp -v normal
+
+       - name: Restore Mono Assemblies
+         run: |
+           echo "=== Restoring Mono assemblies ==="
+           if [ -d "Assemblies/Mono.backup" ]; then
+             mv Assemblies/Mono.backup Assemblies/Mono
+             echo "Restored Mono assemblies"
+           fi
 
       - name: Get Version
         id: get_version
