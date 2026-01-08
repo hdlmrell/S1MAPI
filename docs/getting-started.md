@@ -8,24 +8,36 @@ This guide walks you through installing MAPI and creating your first procedural 
 
 1. **Install MelonLoader**
    - Download from [melonwiki.xyz](https://melonwiki.xyz/#/README)
-   - Install for Schedule 1
+   - Install 0.7.0 for Schedule 1
    - Verify installation by launching the game
 
 2. **Install MAPI**
    - Download the latest release from [GitHub Releases](https://github.com/ifBars/MAPI/releases)
    - Extract the ZIP file
    - Copy the contents to your Schedule 1 game directory
-   - The `Plugins` folder from the release merges with your existing `Plugins`
+   - The `UserLibs` folder from the release merges with your existing `UserLibs`
 
 3. **Install Mods Requiring MAPI**
-   - Place mod DLLs in the `Plugins` folder as usual
+   - Place mod DLLs in the `Mods` folder as usual
    - MAPI loads automatically before your mods
 
 ### For Developers
 
-#### Option 1: Template Project (Recommended)
+#### Option 1: Example Project (Recommended)
 
-Use the [MAPITemplate repository](https://github.com/ifBars/MAPITemplate) for a ready-to-go project structure.
+The **[MAPITesting repository](https://github.com/ifBars/MAPITesting)** provides a complete working mod that demonstrates:
+- Building construction with `BuildingBuilder`
+- Interior decoration with `InteriorBuilder`
+- GLTF model loading (neon signs)
+- Prefab placement with networking
+- Integration with S1API for game entities (storage, doors)
+
+**You are free to use this project as a template!**
+- Copy the `.csproj`, `.sln`, and project structure
+- Use the build configuration and MelonLoader integration
+- Reference the csproj as a starting point for your own mods
+
+The license only restricts copying the **specific examples** (the dispensary building, decorations, signage). MAPI's `BuildingConfig` presets and all code patterns are MIT-licensed and free to use. This may change in the future to support more open source once I release it as it's own mod. Until then feel free to contact me on discord if you have any concerns: ifbars
 
 #### Option 2: Manual Setup
 
@@ -33,21 +45,15 @@ Use the [MAPITemplate repository](https://github.com/ifBars/MAPITemplate) for a 
 
 2. **Add MAPI reference**
    - Download the appropriate MAPI DLL from [releases](https://github.com/ifBars/MAPI/releases)
-   - Add `MAPI_Mono.dll` or `MAPI_Il2cpp.dll` as a project reference
-   - Set "Copy Local" to `false` (MAPI loads separately)
+   - Add `MAPI_Mono.dll` as a project reference
 
-3. **Configure local.build.props**
-   Copy `local.build.props.example` to `local.build.props`:
-   ```xml
-   <MonoAssembliesPath>D:\SteamLibrary\steamapps\common\Schedule 1\Schedule 1_Data\Managed</MonoAssembliesPath>
-   <Il2CppAssembliesPath>D:\SteamLibrary\steamapps\common\Schedule 1\Schedule 1_Data\Managed</Il2CppAssembliesPath>
-   ```
-
-4. **Build your mod**
+3. **Build your mod**
    ```bash
    dotnet build -c Mono   # For Mono builds
    dotnet build -c Il2cpp # For IL2CPP builds
    ```
+
+Note: MAPI works similarly to S1API, in the way that you only need to reference the Mono dll of MAPI. It is on the users of the mod to have the correct Mono/Il2Cpp dll installed in their `UserLibs` folder inside their Schedule 1 installation.
 
 ## Your First Mesh
 
@@ -94,7 +100,7 @@ Use `BuildingBuilder` for structured constructions:
 using MAPI.Building;
 using MAPI.Building.Config;
 
-GameObject shop = new BuildingBuilder("MyDispensary")
+GameObject shop = new BuildingBuilder("MyBuilding")
     .WithConfig(BuildingConfig.Medium)
     .AddFloor()
     .AddCeiling()
@@ -110,14 +116,15 @@ shop.transform.rotation = Quaternion.Euler(0, 90, 0);
 
 ## Loading GLTF Models
 
-Load external 3D models embedded in your mod:
+Embed GLB files in your mod assembly and load them at runtime:
 
 ```csharp
 using MAPI.Gltf;
+using MAPI.Utils;
 
-// Load from embedded resource
-byte[]? glbData = File.ReadAllBytes("path/to/model.glb");
-GameObject? model = GltfLoader.LoadGlb(glbData);
+// Load from embedded resource (file must be marked as embedded resource in csproj)
+byte[]? glbBytes = EmbeddedResourceLoader.LoadBytes("YourMod.Resources.neon_sign.glb");
+GameObject? model = GltfLoader.LoadGlb(glbBytes);
 
 if (model != null)
 {
@@ -125,6 +132,25 @@ if (model != null)
     model.transform.localScale = Vector3.one * 0.5f;
 }
 ```
+
+**In your `.csproj`, mark GLB files as embedded resources:**
+```xml
+<ItemGroup>
+  <EmbeddedResource Include="Resources\**\*.glb" />
+</ItemGroup>
+```
+
+For more control, use `GltfImporter` directly:
+
+```csharp
+byte[]? glbData = EmbeddedResourceLoader.LoadBytes("YourMod.Resources.sign.glb");
+
+GameObject? model = new GltfImporter()
+    .SetEmissionIntensity(3.0f)  // Boost emission for neon signs
+    .Load(glbData);
+```
+
+See the [GLTF Loading Guide](gltf-loading.md) for complete documentation.
 
 ## Using Materials
 
@@ -154,16 +180,25 @@ GameObject cube = new ProceduralMeshBuilder("GlowingCube")
 
 ## Next Steps
 
-- [Procedural Mesh Guide](procedural-mesh.html) - Deep dive into mesh generation
-- [Building Guide](building.html) - Create complete buildings
-- [GLTF Loading](gltf-loading.html) - Import external models
-- [Examples](examples.html) - Complete code examples
-- Explore the [API Reference](api/) for detailed documentation
+- [Procedural Mesh Guide](procedural-mesh.md) - Deep dive into mesh generation
+- [Building Guide](building.md) - Create complete buildings
+- [GLTF Loading](gltf-loading.md) - Import external models
+- [Examples](examples.md) - Complete code examples
+- Explore the API <xref:MAPI> for detailed documentation
 
-## Complete Example: dispensary Building
+### License Notice
 
-See the [MAPITesting repository](https://github.com/ifBars/MAPITesting) for a full working mod that demonstrates:
-- Building construction with `BuildingBuilder`
-- Interior decoration with `InteriorBuilder`
-- GLTF model loading
-- Integration with S1API for game entity placement
+The MAPITesting repository uses a **Preview Learning-Only License (PLOL)**:
+
+**You ARE free to:**
+- Copy the project structure (`.csproj`, `.sln`, build configuration)
+- Use MAPI's `BuildingConfig` presets (`BuildingConfig.Large`, etc.)
+- Study the code patterns and learn from them
+- Build your own mods using the same approach
+
+**You may NOT:**
+- Copy the specific dispensary building example (GreenLabDispensary.cs)
+- Copy the decorations, signage, or exact interior layouts
+- Publish a "reskinned" version of the example
+
+The key distinction: **Building configurations from MAPI are MIT-licensed and free to use. The specific examples in MAPITesting are protected.**

@@ -278,6 +278,6 @@ See the [MAPITesting repository](https://github.com/ifBars/MAPITesting) for a co
 
 ## Next Steps
 
-- [GLTF Loading](gltf-loading.html) - Add imported 3D models to buildings
-- [API Reference](api/MAPI.Building.BuildingBuilder.html) - Full API docs
-- [Examples](examples.html) - More code examples
+- [GLTF Loading](gltf-loading.md) - Add imported 3D models to buildings
+- [API Reference](xref:MAPI.Building.BuildingBuilder) - Full API docs
+- [Examples](examples.md) - More code examples

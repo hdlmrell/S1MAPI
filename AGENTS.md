@@ -25,8 +25,8 @@ Prefabs should **usually be networked** to ensure consistency across all clients
 **Networked Prefab Placement:**
 ```csharp
 // Use PrefabPlacer for networked prefab placement
-var placer = new PrefabPlacer(networkManager);
-NetworkObject networkedPrefab = placer.PlaceNetworked(prefab, position, rotation);
+var placer = new PrefabPlacer(parentTransform);
+GameObject? networkedPrefab = placer.Place(prefab, position, rotation, networked: true);
 // Automatically handles NetworkObject spawning and ownership
 ```
 
@@ -52,8 +52,6 @@ var builder = new PrimitiveBuilder()
     .WithBox(position, size)
     .WithMaterial(material);
 GameObject mesh = builder.Build();
-// Register with ResourceTracker for cleanup management
-ResourceTracker.Register(mesh);
 ```
 
 **ProceduralMeshBuilder (Complex/Custom meshes):**
@@ -66,8 +64,6 @@ var meshBuilder = new ProceduralMeshBuilder()
 GameObject mesh = meshBuilder.Build();
 // For complex organic shapes, use OrganicShapeGenerator
 ```
-
-**Important:** Always register created meshes with `ResourceTracker` for proper resource management and cleanup.
 
 ### Building Namespace Usage
 
@@ -101,14 +97,13 @@ var building = new BuildingBuilder()
 2. Use component builders (WallBuilder, InteriorBuilder) for specific systems
 3. Configure via BuildingConfig/BuildingPalette before building
 4. PrefabPlacer integrates external prefabs into building constructions
-5. Always dispose building resources via ResourceTracker when done
 
 ## Coding Style & Naming Conventions
 Follow `CODING_STANDARDS.md`. Key points:
 - PascalCase for types/methods/properties; camelCase with `_` prefix for private/internal fields
 - Fluent builder pattern: configuration methods return `this`, terminate with `Build()`
 - Use nested static classes for constants (`Constants.Mesh.MaxVerticesPerMesh`)
-- Register created meshes with `ResourceTracker`; use `DebugLog` for logging
+- Use `DebugLog` for logging; XML documentation required for all public APIs
 - XML documentation required for all public APIs
 - Avoid implementing unnecessary features, prefer less code in favor of cleaner code
 - Separate concerns of Schedule 1 specific Meshes/Prefabs and primitive game objects/meshes, for example S1 namespace has Schedule 1 assets, PrimitiveBuilder and things built with it should be separated by concern as of C# standards

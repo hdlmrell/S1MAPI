@@ -92,11 +92,11 @@ GameObject? model = new GltfImporter()
 Load GLB files embedded in your mod assembly:
 
 ```csharp
-using MAPI.Core;
+using MAPI.Utils;
 using MAPI.Gltf;
 
 // Load from embedded resource (assembly must contain the file)
-byte[]? glbData = MAPI.LoadEmbeddedBytes("MyMod.Resources.sign.glb");
+byte[]? glbData = EmbeddedResourceLoader.LoadBytes("MyMod.Resources.sign.glb");
 
 if (glbData != null)
 {
@@ -143,7 +143,7 @@ This means models appear correctly oriented without manual transformation.
 ## Example: Neon Sign
 
 ```csharp
-using MAPI.Core;
+using MAPI.Utils;
 using MAPI.Gltf;
 using UnityEngine;
 
@@ -152,7 +152,7 @@ public static class SignLoader
     public static GameObject LoadNeonSign(GameObject parentBuilding)
     {
         // Load embedded GLB
-        byte[]? glbData = MAPI.LoadEmbeddedBytes("MyMod.Resources.neon_open_sign.glb");
+        byte[]? glbData = EmbeddedResourceLoader.LoadBytes("MyMod.Resources.neon_open_sign.glb");
         if (glbData == null)
         {
             Debug.LogWarning("Failed to load neon sign");
@@ -190,7 +190,7 @@ public static class SignLoader
 
 3. **Emission intensity**: Higher values create brighter glow effects but check visual quality.
 
-4. **Resource cleanup**: GLTF imports create meshes, materials, and textures. These are tracked by `ResourceTracker` for cleanup.
+4. **Resource cleanup**: GLTF imports create meshes, materials, and textures. Unity handles cleanup automatically when GameObjects are destroyed.
 
 ## Troubleshooting
 
@@ -220,6 +220,6 @@ public static class SignLoader
 
 ## Next Steps
 
-- [Building Guide](building.html) - Add GLTF models to buildings
-- [Examples](examples.html) - Complete examples with GLTF
-- [API Reference](api/MAPI.Gltf.GltfLoader.html) - Full API docs
+- [Building Guide](building.md) - Add GLTF models to buildings
+- [Examples](examples.md) - Complete examples with GLTF
+- [API Reference](xref:MAPI.Gltf.GltfLoader) - Full API docs

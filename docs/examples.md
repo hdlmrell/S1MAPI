@@ -172,10 +172,10 @@ GameObject shop = new BuildingBuilder("FurnishedShop")
 ### Load from Embedded Resource
 
 ```csharp
-using MAPI.Core;
+using MAPI.Utils;
 using MAPI.Gltf;
 
-byte[]? glbData = MAPI.LoadEmbeddedBytes("YourNamespace.Resources.sign.glb");
+byte[]? glbData = EmbeddedResourceLoader.LoadBytes("YourNamespace.Resources.sign.glb");
 
 if (glbData != null)
 {
@@ -200,64 +200,17 @@ GameObject? model = new GltfImporter()
 
 ## Utility Examples
 
-### Snap to Grid
+### Material Creation
 
 ```csharp
-using MAPI.Core;
+using MAPI.Utils;
 
-Vector3 position = new Vector3(1.23f, 4.56f, 7.89f);
-Vector3 snapped = MAPI.SnapToGrid(position, gridSize: 0.5f);
-// Result: (1.0, 4.5, 8.0)
-```
-
-### Quick Material Creation
-
-```csharp
-using MAPI.Core;
-
-// Quick opaque material
-Material mat1 = MAPI.CreateMaterial(Color.red);
-
-// Quick transparent material
-Material mat2 = MAPI.CreateMaterial(Color.blue, transparent: true, alpha: 0.7f);
-```
-
-## Resource Management
-
-### Automatic Tracking
-
-MAPI automatically tracks resources created through its APIs:
-
-```csharp
-// These are automatically registered for cleanup
-GameObject mesh = new ProceduralMeshBuilder("Mesh")
-    .AddBox(Vector3.zero, Vector3.one)
-    .Build();
-
-Texture2D? texture = MAPI.LoadEmbeddedTexture("texture.png");
-```
-
-### Manual Cleanup
-
-```csharp
-using MAPI.Core;
-
-// Clean up all tracked resources
-ResourceTracker.CleanupAll();
-
-// Or cleanup specific scene resources
-ResourceTracker.CleanupScene(SceneManager.GetActiveScene());
-```
-
-### Manual Resource Registration
-
-```csharp
-using MAPI.Core;
-
-// Register external resources for tracking
-Material myMaterial = new Material(Shader.Find("Standard"));
-myMaterial.color = Color.red;
-MAPI.RegisterResource(myMaterial);
+// Create materials with MaterialPresets
+Material opaque = MaterialPresets.Opaque(Color.red);
+Material transparent = MaterialPresets.Transparent(Color.blue, alpha: 0.7f);
+Material glass = MaterialPresets.Glass(Color.cyan, alpha: 0.3f);
+Material metal = MaterialPresets.Metal(Color.gray, metallic: 0.9f, smoothness: 0.95f);
+Material emissive = MaterialPresets.Emissive(Color.yellow, intensity: 2.0f);
 ```
 
 ## Complete Examples
@@ -347,8 +300,8 @@ See the **[MAPITesting Repository](https://github.com/ifBars/MAPITesting)** for 
 
 ## Next Steps
 
-- [API Reference](api/) - Complete API documentation
-- [Getting Started](getting-started.html) - Installation guide
-- [Procedural Mesh Guide](procedural-mesh.html) - Mesh generation deep dive
-- [Building Guide](building.html) - Building construction
-- [GLTF Loading](gltf-loading.html) - Import external models
+- <xref:MAPI> - Complete API documentation
+- [Getting Started](getting-started.md) - Installation guide
+- [Procedural Mesh Guide](procedural-mesh.md) - Mesh generation deep dive
+- [Building Guide](building.md) - Building construction
+- [GLTF Loading](gltf-loading.md) - Import external models

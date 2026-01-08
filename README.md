@@ -13,33 +13,13 @@
 - **GLTF Loading**: Import external 3D models without external dependencies
 - **Update Resilience**: Works across game updates by avoiding Assembly-CSharp types
 
-## Quick Start
-
-```csharp
-using MAPI.ProceduralMesh;
-using UnityEngine;
-
-public class YourMod : MelonMod
-{
-    public override void OnInitializeMelon()
-    {
-        // No initialization needed
-        GameObject cube = new ProceduralMeshBuilder("MyCube")
-            .AddBox(Vector3.zero, Vector3.one)
-            .SetColor(Color.blue)
-            .Build();
-
-        LoggerInstance.Msg("Created a blue cube!");
-    }
-}
-```
-
 ## Installation
 
 ### For Users
 1. Download the latest release from [GitHub Releases](https://github.com/ifBars/MAPI/releases)
-2. Copy `MAPI_Mono.dll` or `MAPI_Il2cpp.dll` to your mod's `Plugins` folder
-3. MAPI loads automatically with MelonLoader
+2. Extract the ZIP and copy the contents to your Schedule 1 game directory
+3. The `UserLibs` folder from the release merges with your existing `UserLibs`
+4. MAPI loads automatically with MelonLoader
 
 ### For Developers
 Clone the repository and build:
@@ -54,15 +34,12 @@ dotnet build -c Il2cpp # For IL2CPP builds
 ## Requirements
 
 - **Game**: Schedule 1
-- **Scripting Backend**: Mono or IL2CPP
-- **Networking**: FishNet.Runtime (included with Schedule 1)
 - **Mod Loader**: MelonLoader 0.7.0+
 
 ## Learn More
 
-- [Getting Started](docs/getting-started.html) - Installation and your first project
-- [API Reference](api/) - Complete API documentation
-- [Examples](docs/examples.html) - Code examples and patterns
+- [Getting Started](docs/getting-started.md) - Installation and your first project
+- [Examples](docs/examples.md) - Code examples and patterns
 - [MAPITesting Repository](https://github.com/ifBars/MAPITesting) - Full working mod example
 
 ## Relationship to S1API
@@ -75,8 +52,8 @@ Most mods use both libraries together.
 
 ## Contributing
 
-Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Contributions are welcome! See [Contributing Guide](docs/contributing.md) for guidelines.
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file.
+GNU GPL v3 License - see [LICENSE](LICENSE) file.

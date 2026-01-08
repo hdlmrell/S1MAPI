@@ -24,11 +24,11 @@ Construct complex structures, generate procedural meshes, and import 3D models a
 Designed for stability, performance, and seamless integration.
 </p>
 <div class="mapi-cta-group">
-<a class="mapi-btn mapi-btn-primary" href="docs/getting-started.html">
+<a class="mapi-btn mapi-btn-primary" href="docs/getting-started.md">
 <span class="btn-text">Start Building</span>
 <span class="btn-icon">→</span>
 </a>
-<a class="mapi-btn mapi-btn-outline" href="api/MAPI.Core.MAPI.html">API Reference</a>
+<a class="mapi-btn mapi-btn-outline" href="xref:MAPI.Core.MAPI">API Reference</a>
 </div>
 </div>
 <div class="mapi-code-card">
@@ -83,11 +83,11 @@ Designed for stability, performance, and seamless integration.
 <div class="mapi-container">
 <h2>Ready to construct?</h2>
 <div class="mapi-links">
-<a href="docs/introduction.html">Read the Docs</a>
+<a href="docs/introduction.md">Read the Docs</a>
 <span class="separator">/</span>
-<a href="docs/getting-started.html">Get Started</a>
+<a href="docs/getting-started.md">Get Started</a>
 <span class="separator">/</span>
-<a href="api/MAPI.Core.MAPI.html">API Reference</a>
+<a href="xref:MAPI.Core.MAPI">API Reference</a>
 </div>
 </div>
 </div>

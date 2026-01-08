@@ -63,10 +63,10 @@ GameObject capsule = new ProceduralMeshBuilder("Capsule")
 Chain multiple shape methods to create complex geometries:
 
 ```csharp
-GameObject arrow = new ProceduralMeshBuilder("Arrow")
-    .AddCylinder(new Vector3(0, 0, 0), new Vector3(0, 1, 0), 0.1f, 8)     // Shaft
-    .AddCone(new Vector3(0, 1, 0), new Vector3(0, 2, 0), 0.3f, 8)        // Tip
-    .SetColor(Color.red)
+GameObject tower = new ProceduralMeshBuilder("Tower")
+    .AddCylinder(new Vector3(0, 0, 0), new Vector3(0, 2, 0), 0.3f, 8)     // Base cylinder
+    .AddSphere(new Vector3(0, 2.3f, 0), 0.4f, 6)                          // Top sphere
+    .SetColor(Color.gray)
     .Build();
 ```
 
@@ -182,6 +182,6 @@ public static class ProceduralObjects
 
 ## Next Steps
 
-- [Building Guide](building.html) - Create structured buildings
-- [GLTF Loading](gltf-loading.html) - Import external models
-- [API Reference](api/MAPI.ProceduralMesh.ProceduralMeshBuilder.html) - Full API docs
+- [Building Guide](building.md) - Create structured buildings
+- [GLTF Loading](gltf-loading.md) - Import external models
+- [API Reference](xref:MAPI.ProceduralMesh.ProceduralMeshBuilder) - Full API docs

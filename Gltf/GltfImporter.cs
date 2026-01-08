@@ -51,7 +51,7 @@ namespace MAPI.Gltf
         /// <summary>
         /// Creates a new GLTF importer with the specified options.
         /// </summary>
-        /// <param name="options">Import options</param>
+        /// <param name="options">Import options controlling the loading behavior. Create a <see cref="MAPI.Gltf.Data.GltfImportOptions"/> instance to configure how the model is imported.</param>
         public GltfImporter(GltfImportOptions options)
         {
             _options = options ?? new GltfImportOptions();

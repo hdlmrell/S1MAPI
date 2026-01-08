@@ -236,6 +236,8 @@ namespace MAPI.Gltf.Data
 
     /// <summary>
     /// Options for controlling GLTF import behavior.
+    /// Create an instance and pass it to <see cref="Gltf.GltfImporter"/> constructor,
+    /// or use the fluent API on <see cref="Gltf.GltfImporter"/> for inline configuration.
     /// </summary>
     public sealed class GltfImportOptions
     {

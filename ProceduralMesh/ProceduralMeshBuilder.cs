@@ -11,7 +11,6 @@ namespace MAPI.ProceduralMesh
     /// </summary>
     /// <remarks>
     /// Use the builder pattern to add shapes, configure materials, then call Build() to create the final mesh.
-    /// Generated meshes are registered with ResourceTracker for optional manual cleanup.
     /// Unity automatically handles cleanup on scene unload and application quit.
     /// </remarks>
     public sealed class ProceduralMeshBuilder

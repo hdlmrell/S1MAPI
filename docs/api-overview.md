@@ -25,16 +25,6 @@ public static string Version => Constants.LIBRARY_VERSION;
 public static string Name => Constants.LIBRARY_NAME;
 ```
 
-**Resource Tracking:**
-```csharp
-// Resources are automatically tracked
-ResourceTracker.Register(mesh);
-
-// Manual cleanup when needed
-ResourceTracker.CleanupAll();
-ResourceTracker.CleanupScene(activeScene);
-```
-
 ## Procedural Mesh API (MAPI.ProceduralMesh)
 
 The `ProceduralMeshBuilder` class creates meshes using a fluent API:
@@ -167,10 +157,12 @@ Material? found = MaterialPresets.FindExistingMaterial("materialName");
 
 **Embedded Resource Loading:**
 ```csharp
+using MAPI.Utils;
+
 // Load embedded resources from your assembly
-Texture2D? texture = MAPI.LoadEmbeddedTexture("Namespace.Resources.image.png");
-Sprite? sprite = MAPI.LoadEmbeddedSprite("Namespace.Resources.icon.png", pixelsPerUnit: 100f);
-byte[]? data = MAPI.LoadEmbeddedBytes("Namespace.Resources/file.bin");
+Texture2D? texture = EmbeddedResourceLoader.LoadTexture("Namespace.Resources.image.png");
+Sprite? sprite = EmbeddedResourceLoader.LoadSprite("Namespace.Resources.icon.png", pixelsPerUnit: 100f);
+byte[]? data = EmbeddedResourceLoader.LoadBytes("Namespace.Resources.file.bin");
 ```
 
 ## Extension Methods (MAPI.Extensions)

@@ -39,23 +39,16 @@ Create complete building structures with:
 
 ### GLTF Import
 Load external 3D models at runtime:
-- Supports GLB and GLTF formats
+- Supports GLB and GLTF formats (prefer GLB)
 - No external dependencies
 - Automatic coordinate system conversion
 
-### Resource Management
-Optional tracking and cleanup of created resources:
-- Automatic registration with `ResourceTracker`
-- Manual cleanup via `ResourceTracker.CleanupAll()`
-- Unity handles scene-based cleanup automatically
-
 ## When to Use MAPI
 
-Use MAPI when you need to:
+Use MAPI when you need/want to:
 - Create custom 3D objects programmatically
-- Build structures that don't depend on game entities
 - Import external 3D models
-- Avoid game assembly dependencies
+- Avoid asset bundles
 
 Use [S1API](https://github.com/ifBars/S1API) when you need to:
 - Interact with game entities (NPCs, items, quests)
@@ -64,7 +57,7 @@ Use [S1API](https://github.com/ifBars/S1API) when you need to:
 
 ## Next Steps
 
-- [Getting Started](getting-started.html) - Install MAPI and create your first project
-- [Procedural Mesh Guide](procedural-mesh.html) - Learn mesh generation
-- [Building Guide](building.html) - Create structured buildings
-- [GLTF Loading](gltf-loading.html) - Import external models
+- [Getting Started](getting-started.md) - Install MAPI and create your first project
+- [Procedural Mesh Guide](procedural-mesh.md) - Learn mesh generation
+- [Building Guide](building.md) - Create structured buildings
+- [GLTF Loading](gltf-loading.md) - Import external models

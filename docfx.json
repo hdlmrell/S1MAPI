@@ -6,7 +6,7 @@
         {
           "src": "bin/Mono/netstandard2.1",
           "files": [
-            "MAPI_Mono.dll"
+            "MAPI.dll"
           ]
         }
       ],
