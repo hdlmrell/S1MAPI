@@ -1,4 +1,5 @@
 using MAPI.Building.Config;
+using MAPI.ProceduralMesh;
 using UnityEngine;
 
 namespace MAPI.Building.Interior
