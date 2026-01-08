@@ -181,13 +181,13 @@ jobs:
         run: dotnet restore MAPI.sln
 
       - name: Build MAPI
-        run: dotnet build MAPI/MAPI.csproj --no-restore -c Mono -v normal
+        run: dotnet build MAPI.csproj --no-restore -c Mono -v normal
 
       - name: Upload MAPI Mono Artifact
         uses: actions/upload-artifact@v4
         with:
           name: MAPI-Mono
-          path: MAPI/bin/Mono/netstandard2.1/MAPI_Mono.dll
+          path: MAPI/bin/Mono/netstandard2.1/MAPI.dll
 
       - name: Install DocFX
         run: dotnet tool install -g docfx
