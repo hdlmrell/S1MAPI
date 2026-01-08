@@ -2,6 +2,8 @@
 
 This guide covers coding standards, development practices, and contribution guidelines for S1MAPI.
 
+I won't hold you accountable for every little detail in this guide, especially if I already fail to follow the standard with my code. Nonetheless, make the effort to at least adhere to most of it for faster PR merge.
+
 ## Core Principle
 
 **Avoid ScheduleOne types** — S1MAPI remains update-resilient by using only Unity primitives and FishNet. Never reference `Assembly-CSharp.dll`.
