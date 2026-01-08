@@ -1,15 +1,15 @@
 # Examples
 
-This guide provides practical examples of using MAPI in your Schedule 1 mods.
+This guide provides practical examples of using S1MAPI in your Schedule 1 mods.
 
 ## Quick Examples
 
 ### No Initialization Required
 
-MAPI works immediately without any setup:
+S1MAPI works immediately without any setup:
 
 ```csharp
-using MAPI.ProceduralMesh;
+using S1MAPI.ProceduralMesh;
 using UnityEngine;
 
 public class YourSchedule1Mod : MelonMod
@@ -80,7 +80,7 @@ GameObject complex = new ProceduralMeshBuilder("ComplexObject")
 ### Create Materials with Presets
 
 ```csharp
-using MAPI.Utils;
+using S1MAPI.Utils;
 
 // Opaque material
 Material opaque = MaterialPresets.Opaque(Color.red);
@@ -114,8 +114,8 @@ GameObject metalBox = new ProceduralMeshBuilder("MetalBox")
 ### Basic Building
 
 ```csharp
-using MAPI.Building;
-using MAPI.Building.Config;
+using S1MAPI.Building;
+using S1MAPI.Building.Config;
 
 GameObject shop = new BuildingBuilder("MyDispensary")
     .WithConfig(BuildingConfig.Medium)
@@ -172,8 +172,8 @@ GameObject shop = new BuildingBuilder("FurnishedShop")
 ### Load from Embedded Resource
 
 ```csharp
-using MAPI.Utils;
-using MAPI.Gltf;
+using S1MAPI.Utils;
+using S1MAPI.Gltf;
 
 byte[]? glbData = EmbeddedResourceLoader.LoadBytes("YourNamespace.Resources.sign.glb");
 
@@ -203,7 +203,7 @@ GameObject? model = new GltfImporter()
 ### Material Creation
 
 ```csharp
-using MAPI.Utils;
+using S1MAPI.Utils;
 
 // Create materials with MaterialPresets
 Material opaque = MaterialPresets.Opaque(Color.red);
@@ -218,8 +218,8 @@ Material emissive = MaterialPresets.Emissive(Color.yellow, intensity: 2.0f);
 ### Creating a Crate
 
 ```csharp
-using MAPI.ProceduralMesh;
-using MAPI.Utils;
+using S1MAPI.ProceduralMesh;
+using S1MAPI.Utils;
 using UnityEngine;
 
 public static class ProceduralObjects
@@ -240,8 +240,8 @@ public static class ProceduralObjects
 ### Creating a Glowing Beacon
 
 ```csharp
-using MAPI.ProceduralMesh;
-using MAPI.Utils;
+using S1MAPI.ProceduralMesh;
+using S1MAPI.Utils;
 using UnityEngine;
 
 public static class BeaconCreator
@@ -300,7 +300,7 @@ See the **[MAPITesting Repository](https://github.com/ifBars/MAPITesting)** for 
 
 ## Next Steps
 
-- <xref:MAPI> - Complete API documentation
+- <xref:S1MAPI> - Complete API documentation
 - [Getting Started](getting-started.md) - Installation guide
 - [Procedural Mesh Guide](procedural-mesh.md) - Mesh generation deep dive
 - [Building Guide](building.md) - Building construction

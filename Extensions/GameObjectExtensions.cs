@@ -1,8 +1,8 @@
-using MAPI.Utils;
+using S1MAPI.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace MAPI.Extensions
+namespace S1MAPI.Extensions
 {
     /// <summary>
     /// Extension methods for GameObject operations.
@@ -92,7 +92,7 @@ namespace MAPI.Extensions
         {
             if (gameObject == null)
             {
-                DebugLog.Warning("[MAPI] Cannot enable components on null GameObject");
+                DebugLog.Warning("[S1MAPI] Cannot enable components on null GameObject");
                 return;
             }
 
@@ -116,13 +116,13 @@ namespace MAPI.Extensions
         {
             if (gameObject == null)
             {
-                DebugLog.Warning("[MAPI] Cannot enable components on null GameObject");
+                DebugLog.Warning("[S1MAPI] Cannot enable components on null GameObject");
                 return;
             }
 
             if (componentNames == null || componentNames.Length == 0)
             {
-                DebugLog.Warning("[MAPI] No component names provided");
+                DebugLog.Warning("[S1MAPI] No component names provided");
                 return;
             }
 
@@ -140,7 +140,7 @@ namespace MAPI.Extensions
                     if (componentTypeName == name)
                     {
                         component.Enable();
-                        DebugLog.Info($"[MAPI] Enabled component: {componentTypeName}");
+                        DebugLog.Info($"[S1MAPI] Enabled component: {componentTypeName}");
                         break;
                     }
                 }
@@ -186,7 +186,7 @@ namespace MAPI.Extensions
             var component = gameObject.GetComponentByName(componentName, recursive);
             if (component == null)
             {
-                DebugLog.Warning($"[MAPI] Component '{componentName}' not found on {gameObject.name}");
+                DebugLog.Warning($"[S1MAPI] Component '{componentName}' not found on {gameObject.name}");
                 return false;
             }
 
@@ -204,16 +204,16 @@ namespace MAPI.Extensions
                     try
                     {
                         method.Invoke(component, null);
-                        DebugLog.Info($"[MAPI] Invoked {setupMethodName} on {componentName}");
+                        DebugLog.Info($"[S1MAPI] Invoked {setupMethodName} on {componentName}");
                     }
                     catch (System.Exception e)
                     {
-                        DebugLog.Error($"[MAPI] Failed to invoke {setupMethodName}: {e.Message}");
+                        DebugLog.Error($"[S1MAPI] Failed to invoke {setupMethodName}: {e.Message}");
                     }
                 }
                 else
                 {
-                    DebugLog.Warning($"[MAPI] Method '{setupMethodName}' not found on {componentName}");
+                    DebugLog.Warning($"[S1MAPI] Method '{setupMethodName}' not found on {componentName}");
                 }
             }
 

@@ -1,9 +1,9 @@
-using MAPI.Extensions;
+using S1MAPI.Extensions;
 using UnityEngine;
 using UnityEngine.AI;
-using MAPI.Utils;
+using S1MAPI.Utils;
 
-namespace MAPI.Building
+namespace S1MAPI.Building
 {
     /// <summary>
     /// Utility functions for building construction and configuration

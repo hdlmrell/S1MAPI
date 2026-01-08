@@ -6,7 +6,7 @@
         {
           "src": "bin/Mono/netstandard2.1",
           "files": [
-            "MAPI.dll"
+            "S1MAPI.dll"
           ]
         }
       ],
@@ -17,9 +17,9 @@
       "shouldSkipMarkup": false,
       "force": true,
       "repo": {
-        "remote": "https://github.com/ifBars/MAPI.git",
+        "remote": "https://github.com/ifBars/S1MAPI.git",
         "branch": "main",
-        "path": "MAPI"
+        "path": "S1MAPI"
       }
     }
   ],
@@ -54,12 +54,12 @@
       "modern"
     ],
     "globalMetadata": {
-      "_appName": "MAPI",
-      "_appTitle": "MAPI Documentation",
+      "_appName": "S1MAPI",
+      "_appTitle": "S1MAPI Documentation",
       "_enableSearch": true,
-      "_navbarTitle": "MAPI",
+      "_navbarTitle": "S1MAPI",
       "pdf": true,
-      "_appFooter": "MAPI - Procedural Mesh & Building API for Schedule 1",
+      "_appFooter": "S1MAPI - Procedural Mesh & Building API for Schedule 1",
       "_enableNewTab": true
     },
     "fileMetadata": {

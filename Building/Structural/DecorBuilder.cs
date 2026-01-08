@@ -1,8 +1,8 @@
-using MAPI.Building.Config;
-using MAPI.ProceduralMesh;
+using S1MAPI.Building.Config;
+using S1MAPI.ProceduralMesh;
 using UnityEngine;
 
-namespace MAPI.Building.Structural
+namespace S1MAPI.Building.Structural
 {
     /// <summary>
     /// Creates decorative building elements like trim, pillars, and foundations.

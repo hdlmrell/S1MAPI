@@ -1,10 +1,10 @@
 using UnityEngine;
 
-namespace MAPI.Utils
+namespace S1MAPI.Utils
 {
     /// <summary>
     /// Standardized material creation for common use cases.
-    /// Provides consistent visual styling across MAPI-generated objects.
+    /// Provides consistent visual styling across S1MAPI-generated objects.
     /// </summary>
     public static class MaterialPresets
     {
@@ -339,7 +339,7 @@ namespace MAPI.Utils
         }
 
         /// <summary>
-        /// Apply standard MAPI properties to a material.
+        /// Apply standard S1MAPI properties to a material.
         /// </summary>
         /// <param name="material">The material to configure</param>
         public static void ApplyStandardProperties(Material material)

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MAPI.Gltf
+namespace S1MAPI.Gltf
 {
     /// <summary>
     /// Static utility class for loading GLB/GLTF files.

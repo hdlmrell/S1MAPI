@@ -1,6 +1,6 @@
 # Building Guide
 
-Learn how to construct buildings using MAPI's semantic building API.
+Learn how to construct buildings using S1MAPI's semantic building API.
 
 ## Overview
 
@@ -9,8 +9,8 @@ The `BuildingBuilder` class provides a fluent API for creating complete building
 ## Basic Building
 
 ```csharp
-using MAPI.Building;
-using MAPI.Building.Config;
+using S1MAPI.Building;
+using S1MAPI.Building.Config;
 
 GameObject shop = new BuildingBuilder("MyDispensary")
     .WithConfig(BuildingConfig.Medium)
@@ -114,7 +114,7 @@ new BuildingBuilder("Shop")
 ### Custom Openings
 
 ```csharp
-using MAPI.Building.Structural;
+using S1MAPI.Building.Structural;
 
 .AddWalls(
     north: WallOpening.Door(width: 1.5f, height: 2.5f),
@@ -259,8 +259,8 @@ interior.Build();
 ## Complete Example
 
 ```csharp
-using MAPI.Building;
-using MAPI.Building.Config;
+using S1MAPI.Building;
+using S1MAPI.Building.Config;
 using UnityEngine;
 
 public static class BuildingExamples
@@ -305,5 +305,5 @@ See the [MAPITesting repository](https://github.com/ifBars/MAPITesting) for a co
 ## Next Steps
 
 - [GLTF Loading](gltf-loading.md) - Add imported 3D models to buildings
-- [API Reference](xref:MAPI.Building.BuildingBuilder) - Full API docs
+- [API Reference](xref:S1MAPI.Building.BuildingBuilder) - Full API docs
 - [Examples](examples.md) - More code examples

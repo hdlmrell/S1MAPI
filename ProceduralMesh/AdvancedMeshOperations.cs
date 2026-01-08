@@ -1,7 +1,7 @@
 using UnityEngine;
-using MAPI.Utils;
+using S1MAPI.Utils;
 
-namespace MAPI.ProceduralMesh
+namespace S1MAPI.ProceduralMesh
 {
     /// <summary>
     /// Advanced operations for mesh manipulation and analysis

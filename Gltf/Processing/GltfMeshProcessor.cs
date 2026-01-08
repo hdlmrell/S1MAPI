@@ -1,13 +1,13 @@
-using MAPI.Gltf.Data;
+using S1MAPI.Gltf.Data;
 using UnityEngine;
 // For IndexFormat
-using MAPI.Utils;
+using S1MAPI.Utils;
 
 #if IL2CPP
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 #endif
 
-namespace MAPI.Gltf.Processing
+namespace S1MAPI.Gltf.Processing
 {
     internal class GltfMeshResult
     {

@@ -4,7 +4,7 @@
  
    <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>MAPI</RootNamespace>
+    <RootNamespace>S1MAPI</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <LangVersion>default</LangVersion>
     <NeutralLanguage>en-US</NeutralLanguage>
@@ -13,12 +13,12 @@
     <Configurations>Mono;Il2cpp</Configurations>
     <Nullable>enable</Nullable>
     <OutputType>Library</OutputType>
-    <PackageId>MAPI</PackageId>
+    <PackageId>S1MAPI</PackageId>
     <Title>Schedule 1 Mapping API</Title>
-    <Authors>MAPI Contributors</Authors>
+    <Authors>S1MAPI Contributors</Authors>
     <Description>A mapping and construction library for Schedule 1 mods, providing procedural mesh generation, building construction, and GLTF loading while remaining update-resilient.</Description>
     <PackageTags>schedule-1;mapping;modding;il2cpp;mono;procedural-mesh;gltf</PackageTags>
-    <RepositoryUrl>https://github.com/ifBars/MAPI</RepositoryUrl>
+    <RepositoryUrl>https://github.com/ifBars/S1MAPI</RepositoryUrl>
     <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
     <Version>1.0.0</Version>
   </PropertyGroup>
@@ -195,7 +195,7 @@
      <None Remove="_site\**" />
    </ItemGroup>
    <ItemGroup>
-     <PackageReference Include="Newtonsoft.Json" Version="13.0.5-beta1" />
+     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
    </ItemGroup>
 
    <!-- Post-build: Copy to game UserLibs folder -->

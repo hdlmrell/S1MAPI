@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout MAPI
+      - name: Checkout S1MAPI
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -30,7 +30,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: Assemblies
-          key: mapi-assemblies-${{ hashFiles('MAPI.csproj') }}
+          key: mapi-assemblies-${{ hashFiles('S1MAPI.csproj') }}
           restore-keys: |
             mapi-assemblies-
 
@@ -67,7 +67,7 @@ jobs:
           EOF
 
       - name: Restore Dependencies
-        run: dotnet restore MAPI.csproj /p:Configuration=Mono
+        run: dotnet restore S1MAPI.csproj /p:Configuration=Mono
 
       - name: Check Mono Assemblies
         run: |
@@ -107,7 +107,7 @@ jobs:
           fi
 
       - name: Build Mono
-        run: dotnet build MAPI.csproj --no-restore /p:Configuration=Mono -v normal
+        run: dotnet build S1MAPI.csproj --no-restore /p:Configuration=Mono -v normal
 
       - name: Restore IL2CPP Assemblies from Backup
         run: |
@@ -195,10 +195,10 @@ jobs:
           ls -la Assemblies/Il2Cpp/ | head -20
 
       - name: Restore IL2CPP Dependencies
-        run: dotnet restore MAPI.csproj /p:Configuration=Il2cpp
+        run: dotnet restore S1MAPI.csproj /p:Configuration=Il2cpp
 
       - name: Build IL2CPP
-        run: dotnet build MAPI.csproj --no-restore -c Il2cpp -v normal
+        run: dotnet build S1MAPI.csproj --no-restore -c Il2cpp -v normal
 
       - name: Restore Mono Assemblies
         run: |
@@ -212,17 +212,17 @@ jobs:
       - name: Get Version
         id: get_version
         run: |
-          VERSION=$(grep -oP '(?<=<Version>)[^<]+' MAPI.csproj)
+          VERSION=$(grep -oP '(?<=<Version>)[^<]+' S1MAPI.csproj)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Upload Mono Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MAPI-Mono-${{ steps.get_version.outputs.version }}-bleeding-edge
-          path: bin/Mono/netstandard2.1/MAPI.dll
+          name: S1MAPI-Mono-${{ steps.get_version.outputs.version }}-bleeding-edge
+          path: bin/Mono/netstandard2.1/S1MAPI.dll
 
       - name: Upload IL2CPP Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MAPI-Il2cpp-${{ steps.get_version.outputs.version }}-bleeding-edge
-          path: bin/Il2cpp/net6.0/MAPI.dll
+          name: S1MAPI-Il2cpp-${{ steps.get_version.outputs.version }}-bleeding-edge
+          path: bin/Il2cpp/net6.0/S1MAPI.dll

@@ -1,11 +1,11 @@
 using UnityEngine;
-using MAPI.Utils;
-using MAPI.S1;
+using S1MAPI.Utils;
+using S1MAPI.S1;
 using System;
 using System.Collections.Generic;
-using MAPI.Building.Components;
+using S1MAPI.Building.Components;
 
-namespace MAPI.Building.Interior
+namespace S1MAPI.Building.Interior
 {
     /// <summary>
     /// Fluent builder for creating interior furnishings and decorations using Schedule 1 assets

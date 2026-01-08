@@ -1,9 +1,9 @@
 using UnityEngine;
-using MAPI.Core;
-using MAPI.Utils;
-using MAPI.ProceduralMesh.Generators.Primitives;
+using S1MAPI.Core;
+using S1MAPI.Utils;
+using S1MAPI.ProceduralMesh.Generators.Primitives;
 
-namespace MAPI.ProceduralMesh
+namespace S1MAPI.ProceduralMesh
 {
     /// <summary>
     /// High-level fluent builder for creating procedural meshes.

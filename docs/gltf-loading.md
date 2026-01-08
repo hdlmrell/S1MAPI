@@ -1,10 +1,10 @@
 # GLTF Loading Guide
 
-Learn how to import external 3D models at runtime using MAPI's GLTF loader.
+Learn how to import external 3D models at runtime using S1MAPI's GLTF loader.
 
 ## Overview
 
-MAPI includes a native GLTF/GLB loader with no external dependencies. It handles:
+S1MAPI includes a native GLTF/GLB loader with no external dependencies. It handles:
 - GLB (binary GLTF) files
 - JSON-based GLTF files
 - External resources ( textures, buffers)
@@ -16,7 +16,7 @@ MAPI includes a native GLTF/GLB loader with no external dependencies. It handles
 ### From Bytes
 
 ```csharp
-using MAPI.Gltf;
+using S1MAPI.Gltf;
 
 // Load GLB data from file or embedded resource
 byte[] glbData = File.ReadAllBytes("path/to/model.glb");
@@ -68,7 +68,7 @@ GameObject? model = GltfLoader.LoadFromJson(gltfJson, basePath);
 For more control over the import process:
 
 ```csharp
-using MAPI.Gltf;
+using S1MAPI.Gltf;
 
 GameObject? model = new GltfImporter()
     .SetShader(myShader)                      // Custom shader for materials
@@ -92,8 +92,8 @@ GameObject? model = new GltfImporter()
 Load GLB files embedded in your mod assembly:
 
 ```csharp
-using MAPI.Utils;
-using MAPI.Gltf;
+using S1MAPI.Utils;
+using S1MAPI.Gltf;
 
 // Load from embedded resource (assembly must contain the file)
 byte[]? glbData = EmbeddedResourceLoader.LoadBytes("MyMod.Resources.sign.glb");
@@ -116,7 +116,7 @@ if (glbData != null)
 
 ### Default Material Behavior
 
-- Materials are created using MAPI's default shader (URP Lit → Standard → Hidden/Internal-Colored)
+- Materials are created using S1MAPI's default shader (URP Lit → Standard → Hidden/Internal-Colored)
 - Textures are applied if found in the GLTF file
 - Emission is supported with configurable intensity
 
@@ -132,7 +132,7 @@ GameObject? model = new GltfImporter()
 
 ## Coordinate System
 
-GLTF uses a right-handed coordinate system, while Unity uses left-handed. MAPI automatically handles the conversion by:
+GLTF uses a right-handed coordinate system, while Unity uses left-handed. S1MAPI automatically handles the conversion by:
 
 1. Inverting the Z axis
 2. Converting the rotation matrix
@@ -143,8 +143,8 @@ This means models appear correctly oriented without manual transformation.
 ## Example: Neon Sign
 
 ```csharp
-using MAPI.Utils;
-using MAPI.Gltf;
+using S1MAPI.Utils;
+using S1MAPI.Gltf;
 using UnityEngine;
 
 public static class SignLoader
@@ -199,7 +199,7 @@ public static class SignLoader
 - Verify textures are being loaded correctly
 
 ### Model Orientation is Wrong
-- MAPI should handle conversion automatically
+- S1MAPI should handle conversion automatically
 - If still wrong, try flipping the Z scale: `model.transform.localScale = new Vector3(1, 1, -1)`
 
 ### Model is Too Large/Small
@@ -222,4 +222,4 @@ public static class SignLoader
 
 - [Building Guide](building.md) - Add GLTF models to buildings
 - [Examples](examples.md) - Complete examples with GLTF
-- [API Reference](xref:MAPI.Gltf.GltfLoader) - Full API docs
+- [API Reference](xref:S1MAPI.Gltf.GltfLoader) - Full API docs

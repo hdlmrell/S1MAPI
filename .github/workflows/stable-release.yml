@@ -12,7 +12,7 @@ jobs:
       contents: write
       packages: write
     steps:
-      - name: Checkout MAPI
+      - name: Checkout S1MAPI
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -26,7 +26,7 @@ jobs:
       - name: Get Version
         id: get_version
         run: |
-          VERSION=$(grep -oP '(?<=<Version>)[^<]+' MAPI.csproj)
+          VERSION=$(grep -oP '(?<=<Version>)[^<]+' S1MAPI.csproj)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Detected version: $VERSION"
 
@@ -52,7 +52,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: Assemblies
-          key: mapi-assemblies-${{ hashFiles('MAPI.csproj') }}
+          key: mapi-assemblies-${{ hashFiles('S1MAPI.csproj') }}
           restore-keys: |
             mapi-assemblies-
 
@@ -90,7 +90,7 @@ jobs:
 
       - name: Restore Dependencies
         if: steps.check_release.outputs.exists != 'true'
-        run: dotnet restore MAPI.csproj /p:Configuration=Mono
+        run: dotnet restore S1MAPI.csproj /p:Configuration=Mono
 
       - name: Clear IL2CPP Before Mono Build
         if: steps.check_release.outputs.exists != 'true'
@@ -103,7 +103,7 @@ jobs:
 
       - name: Build Mono (and Package)
         if: steps.check_release.outputs.exists != 'true'
-        run: dotnet build MAPI.csproj --no-restore -c Mono -v normal
+        run: dotnet build S1MAPI.csproj --no-restore -c Mono -v normal
 
       - name: Restore IL2CPP Assemblies from Backup
         if: steps.check_release.outputs.exists != 'true'
@@ -193,11 +193,11 @@ jobs:
 
       - name: Restore IL2CPP Dependencies
         if: steps.check_release.outputs.exists != 'true'
-        run: dotnet restore MAPI.csproj /p:Configuration=Il2cpp
+        run: dotnet restore S1MAPI.csproj /p:Configuration=Il2cpp
 
       - name: Build IL2CPP
         if: steps.check_release.outputs.exists != 'true'
-        run: dotnet build MAPI.csproj --no-restore -c Il2cpp -v normal
+        run: dotnet build S1MAPI.csproj --no-restore -c Il2cpp -v normal
 
       - name: Create Release
         if: steps.check_release.outputs.exists != 'true'
@@ -210,8 +210,8 @@ jobs:
           echo "Creating Release v$VERSION"
 
           # Find actual DLL paths (without _Mono/_Il2cpp suffix)
-          MONO_DLL=$(find bin/Mono -name "MAPI.dll" -type f | head -1)
-          IL2CPP_DLL=$(find bin/Il2cpp -name "MAPI.dll" -type f | head -1)
+          MONO_DLL=$(find bin/Mono -name "S1MAPI.dll" -type f | head -1)
+          IL2CPP_DLL=$(find bin/Il2cpp -name "S1MAPI.dll" -type f | head -1)
 
           echo "Found Mono DLL: $MONO_DLL"
           echo "Found IL2CPP DLL: $IL2CPP_DLL"
@@ -224,7 +224,7 @@ jobs:
           cp "$IL2CPP_DLL" /tmp/release-files/MAPI_Il2cpp.dll
 
           gh release create "v$VERSION" \
-            --title "MAPI v$VERSION" \
+            --title "S1MAPI v$VERSION" \
             --generate-notes \
             "/tmp/release-files/MAPI_Mono.dll" \
             "/tmp/release-files/MAPI_Il2cpp.dll" \

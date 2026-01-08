@@ -9,7 +9,7 @@ using S1Type = Il2CppSystem.Type;
 using S1Type = System.Type;
 #endif
 
-namespace MAPI.Utils
+namespace S1MAPI.Utils
 {
     /// <summary>
     /// Provides extension methods for converting between C# and Il2Cpp lists.

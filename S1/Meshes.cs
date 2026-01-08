@@ -1,6 +1,6 @@
-using MAPI.Core;
+using S1MAPI.Core;
 
-namespace MAPI.S1
+namespace S1MAPI.S1
 {
     /// <summary>
     /// Registry of known Schedule 1 static mesh assets.

@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-MAPI is a mesh and building construction library for Schedule 1 mods. It avoids ScheduleOne types to remain update-resilient—using only Unity primitives and FishNet.
+S1MAPI is a mesh and building construction library for Schedule 1 mods. It avoids ScheduleOne types to remain update-resilient—using only Unity primitives and FishNet.
 
 - `Core/` — Initialization, resource tracking, embedded resource loading
 - `ProceduralMesh/` — Fluent mesh builders, organic shapes, mesh utilities
@@ -10,11 +10,11 @@ MAPI is a mesh and building construction library for Schedule 1 mods. It avoids 
 - `Extensions/` — Extension methods for Unity types (Transform, GameObject, Component, Mesh, etc.)
 - `Utils/` — Constants, logging, material presets, game object utilities
 
-Namespaces mirror folder structure (e.g., `MAPI.ProceduralMesh`, `MAPI.Building`).
+Namespaces mirror folder structure (e.g., `S1MAPI.ProceduralMesh`, `S1MAPI.Building`).
 
 ## Build, Test, and Development Commands
-- `dotnet build MAPI.csproj -c Mono` — Mono-specific build
-- `dotnet build MAPI.csproj -c Il2cpp` — IL2CPP-specific build
+- `dotnet build S1MAPI.csproj -c Mono` — Mono-specific build
+- `dotnet build S1MAPI.csproj -c Il2cpp` — IL2CPP-specific build
 - `dotnet clean` — Clean build artifacts
 
 ## Prefab Placement Guidelines
@@ -44,7 +44,7 @@ GameObject nonNetworked = UnityEngine.Object.Instantiate(prefab, position, rotat
 - When in doubt, use networked - it's easier to add than remove network behavior
 
 ### Mesh Instantiation
-MAPI provides two primary pathways for mesh creation:
+S1MAPI provides two primary pathways for mesh creation:
 
 **PrimitiveBuilder (Simple meshes):**
 ```csharp
@@ -110,17 +110,17 @@ Follow `CODING_STANDARDS.md`. Key points:
 - Always use the appropriate builder for the task: `PrefabPlacer` for prefabs, `PrimitiveBuilder` for simple meshes, `ProceduralMeshBuilder` for complex meshes, and component builders (`WallBuilder`, `InteriorBuilder`, etc.) for building construction
 
 ## Relationship to S1API
-MAPI and S1API serve complementary roles:
-- **MAPI**: Mesh construction, building generation, GLTF loading (no ScheduleOne types)
+S1MAPI and S1API serve complementary roles:
+- **S1MAPI**: Mesh construction, building generation, GLTF loading (no ScheduleOne types)
 - **S1API**: Game component wrappers, entity management, quest systems (wraps ScheduleOne types)
 
-Mods typically use both: MAPI for construction, S1API for game integration. MAPI should never depend on S1API or ScheduleOne types.
+Mods typically use both: S1MAPI for construction, S1API for game integration. S1MAPI should never depend on S1API or ScheduleOne types.
 
 ## Testing Guidelines
 - No automated test suite yet; treat multiplatform builds as acceptance gate
 - Build both `Mono` and `Il2cpp` configurations before submitting PRs
 - Test mesh generation and building construction in-game across both runtimes
-- Use `MAPI.Utils.DebugLog` with clear module context for all logging
+- Use `S1MAPI.Utils.DebugLog` with clear module context for all logging
 
 ## Commit & Pull Request Guidelines
 - Conventional Commits with module scope: `feat(ProceduralMesh): add sphere generator`

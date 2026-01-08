@@ -1,7 +1,7 @@
 using UnityEngine;
-using MAPI.Core;
-using MAPI.Extensions;
-using MAPI.S1;
+using S1MAPI.Core;
+using S1MAPI.Extensions;
+using S1MAPI.S1;
 
 #if IL2CPP
 using Il2CppFishNet;
@@ -13,7 +13,7 @@ using Il2CppTMPro;
 using TMPro;
 #endif
 
-namespace MAPI.Building.Components
+namespace S1MAPI.Building.Components
 {
     /// <summary>
     /// Places network-spawnable prefabs from the game.

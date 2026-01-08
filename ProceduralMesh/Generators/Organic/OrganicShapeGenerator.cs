@@ -1,15 +1,15 @@
 using UnityEngine;
-using MAPI.Core;
-using MAPI.Utils;
+using S1MAPI.Core;
+using S1MAPI.Utils;
 
-namespace MAPI.ProceduralMesh.Generators.Organic
+namespace S1MAPI.ProceduralMesh.Generators.Organic
 {
     /// <summary>
     /// Abstract base class for creating organic shape generators (animals, plants, etc.).
     /// Provides helper methods for common organic mesh patterns like rings and joints.
     /// </summary>
     /// <remarks>
-    /// MAPI focuses on building/map construction. This class provides an extension point
+    /// S1MAPI focuses on building/map construction. This class provides an extension point
     /// for mods that need organic shapes. Inherit from this class to create custom generators.
     /// 
     /// Example usage:

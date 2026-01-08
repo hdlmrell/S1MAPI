@@ -1,6 +1,6 @@
 # Getting Started
 
-This guide walks you through installing MAPI and creating your first procedural mesh.
+This guide walks you through installing S1MAPI and creating your first procedural mesh.
 
 ## Installation
 
@@ -11,15 +11,15 @@ This guide walks you through installing MAPI and creating your first procedural 
    - Install 0.7.0 for Schedule 1
    - Verify installation by launching the game
 
-2. **Install MAPI**
-   - Download the latest release from [GitHub Releases](https://github.com/ifBars/MAPI/releases)
+2. **Install S1MAPI**
+   - Download the latest release from [GitHub Releases](https://github.com/ifBars/S1MAPI/releases)
    - Extract the ZIP file
    - Copy the contents to your Schedule 1 game directory
    - The `UserLibs` folder from the release merges with your existing `UserLibs`
 
-3. **Install Mods Requiring MAPI**
+3. **Install Mods Requiring S1MAPI**
    - Place mod DLLs in the `Mods` folder as usual
-   - MAPI loads automatically before your mods
+   - S1MAPI loads automatically before your mods
 
 ### For Developers
 
@@ -37,14 +37,14 @@ The **[MAPITesting repository](https://github.com/ifBars/MAPITesting)** provides
 - Use the build configuration and MelonLoader integration
 - Reference the csproj as a starting point for your own mods
 
-The license only restricts copying the **specific examples** (the dispensary building, decorations, signage). MAPI's `BuildingConfig` presets and all code patterns are GPL-licensed and free to use. This may change in the future to support more open source once I release it as it's own mod. Until then feel free to contact me on discord if you have any concerns: ifbars
+The license only restricts copying the **specific examples** (the dispensary building, decorations, signage). S1MAPI's `BuildingConfig` presets and all code patterns are GPL-licensed and free to use. This may change in the future to support more open source once I release it as it's own mod. Until then feel free to contact me on discord if you have any concerns: ifbars
 
 #### Option 2: Manual Setup
 
 1. **Create a new MelonLoader mod project**
 
-2. **Add MAPI reference**
-   - Download the appropriate MAPI DLL from [releases](https://github.com/ifBars/MAPI/releases)
+2. **Add S1MAPI reference**
+   - Download the appropriate S1MAPI DLL from [releases](https://github.com/ifBars/S1MAPI/releases)
    - Add `MAPI_Mono.dll` as a project reference
 
 3. **Build your mod**
@@ -53,14 +53,14 @@ The license only restricts copying the **specific examples** (the dispensary bui
    dotnet build -c Il2cpp # For IL2CPP builds
    ```
 
-Note: MAPI works similarly to S1API, in the way that you only need to reference the Mono dll of MAPI. It is on the users of the mod to have the correct Mono/Il2Cpp dll installed in their `UserLibs` folder inside their Schedule 1 installation.
+Note: S1MAPI works similarly to S1API, in the way that you only need to reference the Mono dll of S1MAPI. It is on the users of the mod to have the correct Mono/Il2Cpp dll installed in their `UserLibs` folder inside their Schedule 1 installation.
 
 ## Your First Mesh
 
 Create a simple colored cube in your mod's `OnInitializeMelon`:
 
 ```csharp
-using MAPI.ProceduralMesh;
+using S1MAPI.ProceduralMesh;
 using UnityEngine;
 
 public class YourMod : MelonMod
@@ -97,8 +97,8 @@ GameObject snowman = new ProceduralMeshBuilder("Snowman")
 Use `BuildingBuilder` for structured constructions:
 
 ```csharp
-using MAPI.Building;
-using MAPI.Building.Config;
+using S1MAPI.Building;
+using S1MAPI.Building.Config;
 
 GameObject shop = new BuildingBuilder("MyBuilding")
     .WithConfig(BuildingConfig.Medium)
@@ -119,8 +119,8 @@ shop.transform.rotation = Quaternion.Euler(0, 90, 0);
 Embed GLB files in your mod assembly and load them at runtime:
 
 ```csharp
-using MAPI.Gltf;
-using MAPI.Utils;
+using S1MAPI.Gltf;
+using S1MAPI.Utils;
 
 // Load from embedded resource (file must be marked as embedded resource in csproj)
 byte[]? glbBytes = EmbeddedResourceLoader.LoadBytes("YourMod.Resources.neon_sign.glb");
@@ -157,7 +157,7 @@ See the [GLTF Loading Guide](gltf-loading.md) for complete documentation.
 Create materials with different visual properties:
 
 ```csharp
-using MAPI.Utils;
+using S1MAPI.Utils;
 
 // Opaque red material
 Material redOpaque = MaterialPresets.Opaque(Color.red);
@@ -184,7 +184,7 @@ GameObject cube = new ProceduralMeshBuilder("GlowingCube")
 - [Building Guide](building.md) - Create complete buildings
 - [GLTF Loading](gltf-loading.md) - Import external models
 - [Examples](examples.md) - Complete code examples
-- Explore the API <xref:MAPI> for detailed documentation
+- Explore the API <xref:S1MAPI> for detailed documentation
 
 ### License Notice
 
@@ -192,7 +192,7 @@ The MAPITesting repository uses a **Preview Learning-Only License (PLOL)**:
 
 **You ARE free to:**
 - Copy the project structure (`.csproj`, `.sln`, build configuration)
-- Use MAPI's `BuildingConfig` presets (`BuildingConfig.Large`, etc.)
+- Use S1MAPI's `BuildingConfig` presets (`BuildingConfig.Large`, etc.)
 - Study the code patterns and learn from them
 - Build your own mods using the same approach
 
@@ -201,4 +201,4 @@ The MAPITesting repository uses a **Preview Learning-Only License (PLOL)**:
 - Copy the decorations, signage, or exact interior layouts
 - Publish a "reskinned" version of the example
 
-The key distinction: **Building configurations from MAPI are GPL-licensed and free to use. The specific examples in MAPITesting are protected.**
+The key distinction: **Building configurations from S1MAPI are GPL-licensed and free to use. The specific examples in MAPITesting are protected.**

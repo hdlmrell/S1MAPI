@@ -1,13 +1,13 @@
-using MAPI.Building.Config;
-using MAPI.Building.Structural;
-using MAPI.Building.Interior;
-using MAPI.Building.Components;
+using S1MAPI.Building.Config;
+using S1MAPI.Building.Structural;
+using S1MAPI.Building.Interior;
+using S1MAPI.Building.Components;
 using UnityEngine;
-using MAPI.Core;
-using MAPI.S1;
-using MAPI.Utils;
+using S1MAPI.Core;
+using S1MAPI.S1;
+using S1MAPI.Utils;
 
-namespace MAPI.Building
+namespace S1MAPI.Building
 {
     /// <summary>
     /// Fluent builder for constructing buildings with a clean, chainable API.

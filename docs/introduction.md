@@ -1,17 +1,17 @@
 # Introduction
 
-MAPI (Mapping API) is a library for creating procedural 3D content in Schedule 1 mods. It focuses on mesh generation, building construction, and GLTF model loading while maintaining update resilience by avoiding direct dependencies on game assemblies.
+S1MAPI (Mapping API) is a library for creating procedural 3D content in Schedule 1 mods. It focuses on mesh generation, building construction, and GLTF model loading while maintaining update resilience by avoiding direct dependencies on game assemblies.
 
 ## Core Design Principles
 
 ### Zero Initialization
-MAPI requires no initialization. All APIs work immediately without calling any setup methods. Unity automatically handles resource cleanup when scenes unload or the application quits.
+S1MAPI requires no initialization. All APIs work immediately without calling any setup methods. Unity automatically handles resource cleanup when scenes unload or the application quits.
 
 ### Update Resilience
-MAPI never references `Assembly-CSharp.dll` types. This means your mods continue working across game updates, as long as Unity and FishNet remain stable (they typically do).
+S1MAPI never references `Assembly-CSharp.dll` types. This means your mods continue working across game updates, as long as Unity and FishNet remain stable (they typically do).
 
 ### Fluent API
-MAPI uses a fluent builder pattern for intuitive method chaining:
+S1MAPI uses a fluent builder pattern for intuitive method chaining:
 
 ```csharp
 GameObject building = new BuildingBuilder("MyShop")
@@ -43,9 +43,9 @@ Load external 3D models at runtime:
 - No external dependencies
 - Automatic coordinate system conversion
 
-## When to Use MAPI
+## When to Use S1MAPI
 
-Use MAPI when you need/want to:
+Use S1MAPI when you need/want to:
 - Create custom 3D objects programmatically
 - Import external 3D models
 - Avoid asset bundles
@@ -57,7 +57,7 @@ Use [S1API](https://github.com/ifBars/S1API) when you need to:
 
 ## Next Steps
 
-- [Getting Started](getting-started.md) - Install MAPI and create your first project
+- [Getting Started](getting-started.md) - Install S1MAPI and create your first project
 - [Procedural Mesh Guide](procedural-mesh.md) - Learn mesh generation
 - [Building Guide](building.md) - Create structured buildings
 - [GLTF Loading](gltf-loading.md) - Import external models

@@ -1,9 +1,9 @@
 using UnityEngine;
-using MAPI.Core;
-using MAPI.Extensions;
-using MAPI.Utils;
+using S1MAPI.Core;
+using S1MAPI.Extensions;
+using S1MAPI.Utils;
 
-namespace MAPI.ProceduralMesh
+namespace S1MAPI.ProceduralMesh
 {
     /// <summary>
     /// Utility functions for mesh manipulation and optimization

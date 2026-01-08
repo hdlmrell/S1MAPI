@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MAPI.ProceduralMesh.Generators.Primitives
+namespace S1MAPI.ProceduralMesh.Generators.Primitives
 {
     /// <summary>
     /// Generates box (cube) mesh geometry.

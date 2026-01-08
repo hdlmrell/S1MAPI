@@ -9,7 +9,7 @@ _layout: landing
 <div class="mapi-container">
 <div class="mapi-hero-content">
 <div class="mapi-brand">
-<h1 class="mapi-title">MAPI</h1>
+<h1 class="mapi-title">S1MAPI</h1>
 <div class="mapi-tagline">The Schedule 1 Mapping Framework</div>
 </div>
 <div class="mapi-badges">
@@ -28,7 +28,7 @@ Designed for stability, performance, and seamless integration.
 <span class="btn-text">Start Building</span>
 <span class="btn-icon">→</span>
 </a>
-<a class="mapi-btn mapi-btn-outline" href="xref:MAPI.Core.MAPI">API Reference</a>
+<a class="mapi-btn mapi-btn-outline" href="xref:S1MAPI.Core.S1MAPI">API Reference</a>
 </div>
 </div>
             <div class="mapi-code-card">
@@ -71,7 +71,7 @@ building.transform.position = new Vector3(100, 0, 50);</code></pre>
 </div>
 <div class="mapi-tech-card">
 <h3>🛡️ Update Resilient</h3>
-<p>Engineered to survive game updates. MAPI abstracts direct Assembly-CSharp dependencies, keeping your mod functional across versions.</p>
+<p>Engineered to survive game updates. S1MAPI abstracts direct Assembly-CSharp dependencies, keeping your mod functional across versions.</p>
 </div>
 <div class="mapi-tech-card">
 <h3>⚡ Optimized Core</h3>
@@ -89,7 +89,7 @@ building.transform.position = new Vector3(100, 0, 50);</code></pre>
 <span class="separator">/</span>
 <a href="docs/getting-started.md">Get Started</a>
 <span class="separator">/</span>
-<a href="xref:MAPI.Core.MAPI">API Reference</a>
+<a href="xref:S1MAPI.Core.S1MAPI">API Reference</a>
 </div>
 </div>
 </div>

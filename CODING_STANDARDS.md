@@ -1,26 +1,26 @@
 # Coding Standards
 
-MAPI is a mesh and building construction library for Schedule 1 mods.
+S1MAPI is a mesh and building construction library for Schedule 1 mods.
 The core principle: **avoid ScheduleOne types** to remain resilient across game updates.
-MAPI uses Unity primitives and FishNet only—no `Assembly-CSharp` references.
+S1MAPI uses Unity primitives and FishNet only—no `Assembly-CSharp` references.
 
 ## General Best Practice
 * Review the codebase thoroughly before submitting a PR.
-* Keep MAPI free of ScheduleOne type dependencies.
-* MAPI handles meshes and buildings; S1API handles game component integration.
-  * Mods typically use both: MAPI for construction, S1API for game logic.
+* Keep S1MAPI free of ScheduleOne type dependencies.
+* S1MAPI handles meshes and buildings; S1API handles game component integration.
+  * Mods typically use both: S1MAPI for construction, S1API for game logic.
 
 ## File and Namespace Structure
 * All classes must exist in a logical namespace matching the folder structure.
-* Core initialization and resource management in `MAPI.Core`.
-* Mesh generation in `MAPI.ProceduralMesh`.
-* Building construction in `MAPI.Building`.
-* GLTF loading in `MAPI.Gltf`.
-* Utilities in `MAPI.Utils`.
+* Core initialization and resource management in `S1MAPI.Core`.
+* Mesh generation in `S1MAPI.ProceduralMesh`.
+* Building construction in `S1MAPI.Building`.
+* GLTF loading in `S1MAPI.Gltf`.
+* Utilities in `S1MAPI.Utils`.
 
 ```csharp
-namespace MAPI.ProceduralMesh { ... }
-namespace MAPI.Building { ... }
+namespace S1MAPI.ProceduralMesh { ... }
+namespace S1MAPI.Building { ... }
 ```
 
 ## Naming Conventions
@@ -88,7 +88,7 @@ public Material? DefaultMaterial { get; set; }
 ```
 
 ## Fluent Builder Pattern
-MAPI uses fluent builders as its primary API style. Builders should:
+S1MAPI uses fluent builders as its primary API style. Builders should:
 * Return `this` from configuration methods for chaining.
 * Place configuration methods before terminal `Build()` methods.
 * Provide sensible defaults so minimal configuration is required.
@@ -105,7 +105,7 @@ GameObject building = new BuildingBuilder("MyShop")
 
 ## Resource Management
 
-Unity automatically handles resource cleanup when GameObjects are destroyed. Use `MAPI.Utils.DebugLog` for logging:
+Unity automatically handles resource cleanup when GameObjects are destroyed. Use `S1MAPI.Utils.DebugLog` for logging:
 
 ```csharp
 DebugLog.Info($"Built mesh: {_name} ({_vertices.Count} vertices)");
@@ -114,7 +114,7 @@ DebugLog.Error($"Failed to load GLTF: {path}");
 ```
 
 ## FishNet & Networking
-MAPI uses FishNet for networked prefabs (e.g., doors that sync across clients).
+S1MAPI uses FishNet for networked prefabs (e.g., doors that sync across clients).
 * NetworkBehaviour components should follow FishNet conventions.
 * Prefabs intended for network spawning must be registered appropriately.
 * Keep networking logic separate from mesh generation logic.
@@ -171,7 +171,7 @@ public ProceduralMeshBuilder AddBox(...) { ... }
 
 ## What **NOT** to Do
 * **Do not** reference ScheduleOne types (`Assembly-CSharp.dll`).
-  This is the core rule—MAPI must remain update-resilient.
+  This is the core rule—S1MAPI must remain update-resilient.
 * **Do not** use magic strings—prefer enums or constants.
 * **Do not** ignore compiler warnings.
 * **Do not** leave commented-out code in commits.

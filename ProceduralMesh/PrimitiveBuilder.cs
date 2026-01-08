@@ -1,9 +1,9 @@
 using UnityEngine;
-using MAPI.Core;
-using MAPI.Utils;
+using S1MAPI.Core;
+using S1MAPI.Utils;
 using Object = UnityEngine.Object;
 
-namespace MAPI.ProceduralMesh
+namespace S1MAPI.ProceduralMesh
 {
     /// <summary>
     /// Helper for creating and configuring Unity primitive GameObjects

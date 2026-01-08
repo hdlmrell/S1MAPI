@@ -1,11 +1,11 @@
 using System.Text;
 using UnityEngine;
 using Newtonsoft.Json;
-using MAPI.Utils;
-using MAPI.Gltf.Data;
-using MAPI.Gltf.Processing;
+using S1MAPI.Utils;
+using S1MAPI.Gltf.Data;
+using S1MAPI.Gltf.Processing;
 
-namespace MAPI.Gltf
+namespace S1MAPI.Gltf
 {
     /// <summary>
     /// Fluent importer for GLB and GLTF files.
@@ -51,7 +51,7 @@ namespace MAPI.Gltf
         /// <summary>
         /// Creates a new GLTF importer with the specified options.
         /// </summary>
-        /// <param name="options">Import options controlling the loading behavior. Create a <see cref="MAPI.Gltf.Data.GltfImportOptions"/> instance to configure how the model is imported.</param>
+        /// <param name="options">Import options controlling the loading behavior. Create a <see cref="S1MAPI.Gltf.Data.GltfImportOptions"/> instance to configure how the model is imported.</param>
         public GltfImporter(GltfImportOptions options)
         {
             _options = options ?? new GltfImportOptions();

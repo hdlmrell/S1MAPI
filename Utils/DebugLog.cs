@@ -1,9 +1,9 @@
 using UnityEngine;
 
-namespace MAPI.Utils
+namespace S1MAPI.Utils
 {
     /// <summary>
-    /// Debug logging utility for MAPI library
+    /// Debug logging utility for S1MAPI library
     /// Provides consistent logging interface with conditional compilation
     /// </summary>
     internal static class DebugLog

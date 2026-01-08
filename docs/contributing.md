@@ -1,10 +1,10 @@
-# Contributing to MAPI
+# Contributing to S1MAPI
 
-This guide covers coding standards, development practices, and contribution guidelines for MAPI.
+This guide covers coding standards, development practices, and contribution guidelines for S1MAPI.
 
 ## Core Principle
 
-**Avoid ScheduleOne types** — MAPI remains update-resilient by using only Unity primitives and FishNet. Never reference `Assembly-CSharp.dll`.
+**Avoid ScheduleOne types** — S1MAPI remains update-resilient by using only Unity primitives and FishNet. Never reference `Assembly-CSharp.dll`.
 
 ## Getting Started
 
@@ -29,7 +29,7 @@ dotnet clean
 ## Project Structure
 
 ```
-MAPI/
+S1MAPI/
 ├── Core/           # Initialization, resource tracking
 ├── ProceduralMesh/ # Mesh generation builders
 ├── Building/       # Building construction
@@ -39,7 +39,7 @@ MAPI/
 └── S1/             # Schedule 1 specific materials/meshes
 ```
 
-Namespaces mirror folder structure: `namespace MAPI.Building { ... }`
+Namespaces mirror folder structure: `namespace S1MAPI.Building { ... }`
 
 ## Coding Standards
 
@@ -54,7 +54,7 @@ Namespaces mirror folder structure: `namespace MAPI.Building { ... }`
 | Constants | Nested classes with PascalCase | `Constants.Mesh.MaxVertices` |
 
 ```csharp
-namespace MAPI.ProceduralMesh
+namespace S1MAPI.ProceduralMesh
 {
     public sealed class ProceduralMeshBuilder
     {
@@ -116,7 +116,7 @@ public GameObject Build() { ... }
 
 ## Fluent Builder Pattern
 
-MAPI's primary API style uses fluent builders:
+S1MAPI's primary API style uses fluent builders:
 
 ```csharp
 GameObject building = new BuildingBuilder("MyShop")
@@ -182,7 +182,7 @@ using FishNet.Object;
 
 ## Networking
 
-MAPI uses FishNet for multiplayer compatibility:
+S1MAPI uses FishNet for multiplayer compatibility:
 
 - Networked prefabs sync across clients
 - Keep networking logic separate from mesh generation
@@ -233,7 +233,7 @@ chore: update dependencies
 
 | Library | Purpose |
 |---------|---------|
-| **MAPI** | Mesh construction, building generation, GLTF loading (no game dependencies) |
+| **S1MAPI** | Mesh construction, building generation, GLTF loading (no game dependencies) |
 | **S1API** | Game component wrappers, entity management, quests (wraps ScheduleOne types) |
 
 Mods typically use both libraries together.

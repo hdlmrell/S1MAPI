@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MAPI.Extensions
+namespace S1MAPI.Extensions
 {
     /// <summary>
     /// Extension methods for Component operations.

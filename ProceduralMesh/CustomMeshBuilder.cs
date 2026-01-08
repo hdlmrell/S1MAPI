@@ -1,9 +1,9 @@
 using UnityEngine;
-using MAPI.Core;
-using MAPI.Utils;
+using S1MAPI.Core;
+using S1MAPI.Utils;
 using System.Collections.Generic;
 
-namespace MAPI.ProceduralMesh
+namespace S1MAPI.ProceduralMesh
 {
     /// <summary>
     /// Simple fluent builder for creating custom meshes from scratch.

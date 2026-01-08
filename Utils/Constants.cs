@@ -1,11 +1,11 @@
-namespace MAPI.Utils
+namespace S1MAPI.Utils
 {
     /// <summary>
-    /// Core constants for MAPI library
+    /// Core constants for S1MAPI library
     /// </summary>
     internal static class Constants
     {
-        public const string LIBRARY_NAME = "MAPI";
+        public const string LIBRARY_NAME = "S1MAPI";
         public const string LIBRARY_VERSION = "1.0.0";
         public const string LIBRARY_AUTHOR = "Bars";
 
@@ -20,7 +20,7 @@ namespace MAPI.Utils
         public const string RECOMMENDED_UNITY_VERSION = "2022.3.62f2";
 
         /// <summary>
-        /// Layer names used by MAPI components
+        /// Layer names used by S1MAPI components
         /// </summary>
         public static class Layers
         {
@@ -29,7 +29,7 @@ namespace MAPI.Utils
         }
 
         /// <summary>
-        /// Tag names used by MAPI components
+        /// Tag names used by S1MAPI components
         /// </summary>
         public static class Tags
         {

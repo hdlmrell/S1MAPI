@@ -1,7 +1,7 @@
-using MAPI.Gltf.Data;
+using S1MAPI.Gltf.Data;
 using UnityEngine;
 
-namespace MAPI.Gltf.Processing
+namespace S1MAPI.Gltf.Processing
 {
     /// <summary>
     /// Processes GLTF nodes and builds the Unity GameObject hierarchy.

@@ -1,7 +1,7 @@
-using MAPI.Utils;
+using S1MAPI.Utils;
 using UnityEngine;
 
-namespace MAPI.Extensions
+namespace S1MAPI.Extensions
 {
     /// <summary>
     /// Extension methods for Mesh operations.

@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace MAPI.Extensions
+namespace S1MAPI.Extensions
 {
     /// <summary>
     /// Extension methods for collection operations.

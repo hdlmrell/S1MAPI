@@ -1,31 +1,31 @@
 # API Overview
 
-This document provides a high-level overview of MAPI's main APIs and namespaces.
+This document provides a high-level overview of S1MAPI's main APIs and namespaces.
 
 ## Namespace Structure
 
-MAPI is organized into logical namespaces that mirror the folder structure:
+S1MAPI is organized into logical namespaces that mirror the folder structure:
 
 | Namespace | Purpose |
 |-----------|---------|
-| `MAPI.Core` | Main entry point, resource tracking, mesh/prefab references |
-| `MAPI.ProceduralMesh` | Fluent builders for generating procedural meshes |
-| `MAPI.Building` | Building construction, walls, floors, furniture |
-| `MAPI.Gltf` | GLTF/GLB file loading and processing |
-| `MAPI.Utils` | Material presets, constants, debug logging |
-| `MAPI.Extensions` | Extension methods for Unity types |
-| `MAPI.S1` | Schedule 1 specific meshes and materials |
+| `S1MAPI.Core` | Main entry point, resource tracking, mesh/prefab references |
+| `S1MAPI.ProceduralMesh` | Fluent builders for generating procedural meshes |
+| `S1MAPI.Building` | Building construction, walls, floors, furniture |
+| `S1MAPI.Gltf` | GLTF/GLB file loading and processing |
+| `S1MAPI.Utils` | Material presets, constants, debug logging |
+| `S1MAPI.Extensions` | Extension methods for Unity types |
+| `S1MAPI.S1` | Schedule 1 specific meshes and materials |
 
-## Core API (MAPI.Core)
+## Core API (S1MAPI.Core)
 
-The `MAPI` static class provides library metadata:
+The `S1MAPI` static class provides library metadata:
 
 ```csharp
 public static string Version => Constants.LIBRARY_VERSION;
 public static string Name => Constants.LIBRARY_NAME;
 ```
 
-## Procedural Mesh API (MAPI.ProceduralMesh)
+## Procedural Mesh API (S1MAPI.ProceduralMesh)
 
 The `ProceduralMeshBuilder` class creates meshes using a fluent API:
 
@@ -53,7 +53,7 @@ new ProceduralMeshBuilder("Name")
 - `Build()` - Create GameObject with MeshFilter and MeshRenderer
 - `BuildMesh()` - Create Mesh object only
 
-## Building API (MAPI.Building)
+## Building API (S1MAPI.Building)
 
 The `BuildingBuilder` class constructs complete buildings:
 
@@ -112,7 +112,7 @@ interior.Build();
 - `DecorBuilder` - Decorative elements (trim, pillars, foundations)
 - `PrefabPlacer` - Prefab instantiation with networking
 
-## GLTF API (MAPI.Gltf)
+## GLTF API (S1MAPI.Gltf)
 
 Load external 3D models:
 
@@ -136,7 +136,7 @@ GameObject? model = new GltfImporter()
     .Load(glbBytes);
 ```
 
-## Utilities API (MAPI.Utils)
+## Utilities API (S1MAPI.Utils)
 
 **Material Presets:**
 ```csharp
@@ -157,7 +157,7 @@ Material? found = MaterialPresets.FindExistingMaterial("materialName");
 
 **Embedded Resource Loading:**
 ```csharp
-using MAPI.Utils;
+using S1MAPI.Utils;
 
 // Load embedded resources from your assembly
 Texture2D? texture = EmbeddedResourceLoader.LoadTexture("Namespace.Resources.image.png");
@@ -165,7 +165,7 @@ Sprite? sprite = EmbeddedResourceLoader.LoadSprite("Namespace.Resources.icon.png
 byte[]? data = EmbeddedResourceLoader.LoadBytes("Namespace.Resources.file.bin");
 ```
 
-## Extension Methods (MAPI.Extensions)
+## Extension Methods (S1MAPI.Extensions)
 
 Convenience methods for Unity types:
 
@@ -182,12 +182,12 @@ transform.ResetLocalTransform();
 component.DestroyIfExists<MeshRenderer>();
 ```
 
-## PrefabRef API (MAPI.Core)
+## PrefabRef API (S1MAPI.Core)
 
 `PrefabRef` provides safe instantiation of FishNet networked prefabs:
 
 ```csharp
-using MAPI.Core;
+using S1MAPI.Core;
 
 // Create a reference to a networked prefab
 var atmPrefab = new PrefabRef("ATM");
@@ -234,7 +234,7 @@ GameObject? decoration = decorationPrefab.Instantiate();
 3. Spawns the object on the FishNet network
 4. Activates the object with valid network state
 
-## S1 Namespace (MAPI.S1)
+## S1 Namespace (S1MAPI.S1)
 
 Schedule 1 specific materials and meshes (requires game assembly at build time):
 
@@ -257,4 +257,4 @@ GameObject computer = Meshes.Computer.Instantiate("Name", position, rotation, pa
 - Product and storage management
 - Door and security systems
 
-Use MAPI for construction and S1API for game logic.
+Use S1MAPI for construction and S1API for game logic.

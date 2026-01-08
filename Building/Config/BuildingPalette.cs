@@ -1,7 +1,7 @@
 using UnityEngine;
-using MAPI.S1;
+using S1MAPI.S1;
 
-namespace MAPI.Building.Config
+namespace S1MAPI.Building.Config
 {
     /// <summary>
     /// Material and color palette for building construction.

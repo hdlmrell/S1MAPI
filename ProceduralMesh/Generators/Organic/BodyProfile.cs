@@ -1,4 +1,4 @@
-namespace MAPI.ProceduralMesh.Generators.Organic
+namespace S1MAPI.ProceduralMesh.Generators.Organic
 {
     /// <summary>
     /// Defines the shape profile for a segmented organic body.

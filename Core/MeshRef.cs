@@ -1,13 +1,13 @@
 using UnityEngine;
-using MAPI.Utils;
+using S1MAPI.Utils;
 using System;
 
-namespace MAPI.Core
+namespace S1MAPI.Core
 {
     /// <summary>
     /// Reference to a static mesh asset in the game (no game logic, just visuals).
     /// Unlike PrefabRef, these are raw meshes without NetworkObject or interaction components.
-    /// Use MAPI.S1.Meshes for known Schedule 1 mesh assets.
+    /// Use S1MAPI.S1.Meshes for known Schedule 1 mesh assets.
     /// </summary>
     public sealed class MeshRef
     {

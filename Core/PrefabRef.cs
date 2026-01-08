@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 using UnityEngine;
-using MAPI.Utils;
+using S1MAPI.Utils;
 
 #if IL2CPP
 using Il2CppFishNet;
@@ -14,13 +14,13 @@ using FishNet.Managing.Object;
 using FishNet.Object;
 #endif
 
-namespace MAPI.Core
+namespace S1MAPI.Core
 {
     /// <summary>
     /// Reference to a prefab in the game.
     /// These are full GameObjects with components (e.g. NetworkObject, interaction scripts, etc.).
     /// For static mesh-only assets (decoration), use MeshRef instead.
-    /// Use MAPI.S1.Prefabs for known Schedule 1 prefab assets.
+    /// Use S1MAPI.S1.Prefabs for known Schedule 1 prefab assets.
     /// </summary>
     public sealed class PrefabRef
     {

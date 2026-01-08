@@ -1,6 +1,6 @@
 # Procedural Mesh Guide
 
-Learn how to generate meshes at runtime using MAPI's fluent API.
+Learn how to generate meshes at runtime using S1MAPI's fluent API.
 
 ## Creating Basic Shapes
 
@@ -133,8 +133,8 @@ renderer.material = MaterialPresets.Opaque(Color.blue);
 ## Example: Complete Object
 
 ```csharp
-using MAPI.ProceduralMesh;
-using MAPI.Utils;
+using S1MAPI.ProceduralMesh;
+using S1MAPI.Utils;
 using UnityEngine;
 
 public static class ProceduralObjects
@@ -178,10 +178,10 @@ public static class ProceduralObjects
 
 3. **Consider vertex limits**: Unity's Mesh uses 16-bit indices by default (65,535 vertices). For larger meshes, set `mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32`.
 
-4. **Register resources**: MAPI automatically tracks created meshes, but for very large numbers, consider manual cleanup.
+4. **Register resources**: S1MAPI automatically tracks created meshes, but for very large numbers, consider manual cleanup.
 
 ## Next Steps
 
 - [Building Guide](building.md) - Create structured buildings
 - [GLTF Loading](gltf-loading.md) - Import external models
-- [API Reference](xref:MAPI.ProceduralMesh.ProceduralMeshBuilder) - Full API docs
+- [API Reference](xref:S1MAPI.ProceduralMesh.ProceduralMeshBuilder) - Full API docs

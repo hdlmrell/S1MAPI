@@ -1,7 +1,7 @@
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace MAPI.Extensions
+namespace S1MAPI.Extensions
 {
     /// <summary>
     /// Extension methods for Transform operations.
