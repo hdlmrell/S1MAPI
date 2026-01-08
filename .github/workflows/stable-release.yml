@@ -134,7 +134,7 @@ jobs:
             --title "MAPI v$VERSION" \
             --generate-notes \
             "bin/Mono/netstandard2.1/MAPI_Mono.dll#MAPI_Mono.dll" \
-            "bin/Il2cpp/netstandard2.1/MAPI_Il2cpp.dll#MAPI_Il2cpp.dll" \
+            "bin/Il2cpp/net6.0/MAPI_Il2cpp.dll#MAPI_Il2cpp.dll" \
             "$NUPKG#NuGet Package"
 
       - name: Publish to NuGet

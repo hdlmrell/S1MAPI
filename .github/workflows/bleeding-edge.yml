@@ -180,22 +180,22 @@ jobs:
           fi
 
           # List what we actually have in IL2CPP assemblies
-           echo "=== IL2CPP Assembly Directory Contents ==="
-           ls -la Assemblies/Il2Cpp/ | head -20
+          echo "=== IL2CPP Assembly Directory Contents ==="
+          ls -la Assemblies/Il2Cpp/ | head -20
 
-       - name: Restore IL2CPP Dependencies
-         run: dotnet restore MAPI.csproj /p:Configuration=Il2cpp
+      - name: Restore IL2CPP Dependencies
+        run: dotnet restore MAPI.csproj /p:Configuration=Il2cpp
 
-       - name: Build IL2CPP
-         run: dotnet build MAPI.csproj --no-restore -c Il2cpp -v normal
+      - name: Build IL2CPP
+        run: dotnet build MAPI.csproj --no-restore -c Il2cpp -v normal
 
-       - name: Restore Mono Assemblies
-         run: |
-           echo "=== Restoring Mono assemblies ==="
-           if [ -d "Assemblies/Mono.backup" ]; then
-             mv Assemblies/Mono.backup Assemblies/Mono
-             echo "Restored Mono assemblies"
-           fi
+      - name: Restore Mono Assemblies
+        run: |
+          echo "=== Restoring Mono assemblies ==="
+          if [ -d "Assemblies/Mono.backup" ]; then
+            mv Assemblies/Mono.backup Assemblies/Mono
+            echo "Restored Mono assemblies"
+          fi
 
       - name: Get Version
         id: get_version
