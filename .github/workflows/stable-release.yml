@@ -110,7 +110,7 @@ jobs:
 
       - name: Restore Dependencies
         if: steps.check_release.outputs.exists != 'true'
-        run: dotnet restore MAPI.csproj
+        run: dotnet restore MAPI.csproj /p:Configuration=Mono
 
       - name: Clear IL2CPP Before Mono Build
         if: steps.check_release.outputs.exists != 'true'
@@ -137,6 +137,10 @@ jobs:
             rm -rf /tmp/Mono.backup 2>/dev/null || true
             mv Assemblies/Mono /tmp/Mono.backup
           fi
+
+      - name: Restore IL2CPP Dependencies
+        if: steps.check_release.outputs.exists != 'true'
+        run: dotnet restore MAPI.csproj /p:Configuration=Il2cpp
 
       - name: Build IL2CPP
         if: steps.check_release.outputs.exists != 'true'
