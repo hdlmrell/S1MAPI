@@ -17,10 +17,10 @@
     <Title>Schedule 1 Mapping API</Title>
     <Authors>MAPI Contributors</Authors>
     <Description>A mapping and construction library for Schedule 1 mods, providing procedural mesh generation, building construction, and GLTF loading while remaining update-resilient.</Description>
-    <PackageTags>schedule-1;mapping;modding;fishnet;il2cpp;mono;procedural-mesh;gltf;building</PackageTags>
+    <PackageTags>schedule-1;mapping;modding;il2cpp;mono;procedural-mesh;gltf</PackageTags>
     <RepositoryUrl>https://github.com/ifBars/MAPI</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Version>0.1.0</Version>
+    <Version>1.0.0</Version>
   </PropertyGroup>
 
   <!-- Mono build for base game mono assemblies -->
@@ -173,20 +173,11 @@
   <!-- Source Files -->
   <ItemGroup>
     <Compile Include="Core\**\*.cs" />
-    <Compile Include="Extensions\CollectionExtensions.cs" />
-    <Compile Include="Extensions\ComponentExtensions.cs" />
-    <Compile Include="Extensions\GameObjectExtensions.cs" />
-    <Compile Include="Extensions\MaterialExtensions.cs" />
-    <Compile Include="Extensions\MeshExtensions.cs" />
-    <Compile Include="Extensions\NavMeshExtensions.cs" />
-    <Compile Include="Extensions\TransformExtensions.cs" />
-    <Compile Include="Extensions\Vector3Extensions.cs" />
+    <Compile Include="Extensions\**\*.cs" />
     <Compile Include="ProceduralMesh\**\*.cs" />
     <Compile Include="Building\**\*.cs" />
     <Compile Include="Gltf\**\*.cs" />
-    <Compile Include="S1\Materials.cs" />
-    <Compile Include="S1\Meshes.cs" />
-    <Compile Include="S1\Prefabs.cs" />
+    <Compile Include="S1\**\*.cs" />
     <Compile Include="Utils\**\*.cs" />
   </ItemGroup>
 
