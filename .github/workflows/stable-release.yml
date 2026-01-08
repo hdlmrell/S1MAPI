@@ -65,35 +65,14 @@ jobs:
           path: game-assemblies
           fetch-depth: 1
 
-      - name: Checkout IL2CPP Assemblies
-        if: steps.check_release.outputs.exists != 'true' && steps.cache-assemblies.outputs.cache-hit != 'true'
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ secrets.IL2CPP_ASSEMBLIES_REPO }}
-          token: ${{ secrets.GAME_REPOS_TOKEN }}
-          path: il2cpp-assemblies
-          fetch-depth: 1
-
-      - name: Populate Assemblies
+      - name: Populate Mono Assemblies
         if: steps.check_release.outputs.exists != 'true' && steps.cache-assemblies.outputs.cache-hit != 'true'
         run: |
           echo "=== Setting up Mono Assemblies ==="
           if [ -d "game-assemblies/Managed" ]; then
             cp -r game-assemblies/Managed/* Assemblies/Mono/
-          fi
-
-          echo "=== Setting up IL2CPP Assemblies ==="
-          if [ -d "il2cpp-assemblies/MelonLoader/Il2CppAssemblies" ]; then
-            cp -r il2cpp-assemblies/MelonLoader/Il2CppAssemblies/* Assemblies/Il2Cpp/
-          elif [ -d "il2cpp-assemblies/Il2CppAssemblies" ]; then
-            cp -r il2cpp-assemblies/Il2CppAssemblies/* Assemblies/Il2Cpp/
-          fi
-
-          if [ ! -f "Assemblies/Il2Cpp/Il2CppFishNet.Runtime.dll" ]; then
-             FN_PATH=$(find il2cpp-assemblies -name "Il2CppFishNet.Runtime.dll" -type f | head -1)
-             if [ -n "$FN_PATH" ]; then
-               cp "$FN_PATH" Assemblies/Il2Cpp/
-             fi
+          else
+            echo "Warning: game-assemblies/Managed not found"
           fi
 
       - name: Create CI Build Properties
@@ -104,6 +83,7 @@ jobs:
               <PropertyGroup>
                   <MonoAssembliesPath>$(MSBuildThisFileDirectory)Assemblies/Mono</MonoAssembliesPath>
                   <Il2CppAssembliesPath>$(MSBuildThisFileDirectory)Assemblies/Il2Cpp</Il2CppAssembliesPath>
+                  <Il2CppMLAssembliesPath>$(MSBuildThisFileDirectory)Assemblies/Il2Cpp</Il2CppMLAssembliesPath>
               </PropertyGroup>
           </Project>
           EOF
@@ -125,18 +105,91 @@ jobs:
         if: steps.check_release.outputs.exists != 'true'
         run: dotnet build MAPI.csproj --no-restore -c Mono -v normal
 
-      - name: Restore IL2CPP and Clear Mono
+      - name: Restore IL2CPP Assemblies from Backup
         if: steps.check_release.outputs.exists != 'true'
         run: |
-          echo "=== Restoring IL2CPP and isolating from Mono ==="
+          echo "=== Restoring IL2CPP assemblies from /tmp backup ==="
           if [ -d "/tmp/Il2Cpp.backup" ]; then
             mkdir -p Assemblies
             mv /tmp/Il2Cpp.backup Assemblies/Il2Cpp
+            echo "Restored IL2CPP assemblies from /tmp"
+          else
+            echo "ERROR: IL2CPP backup not found in /tmp!"
+            echo "This should have been created before Mono build"
+            exit 1
           fi
+
+      - name: Checkout IL2CPP Assemblies
+        if: steps.check_release.outputs.exists != 'true' && steps.cache-assemblies.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.IL2CPP_ASSEMBLIES_REPO }}
+          token: ${{ secrets.GAME_REPOS_TOKEN }}
+          path: il2cpp-assemblies
+          fetch-depth: 1
+
+      - name: Populate IL2CPP Assemblies from Checkout
+        if: steps.check_release.outputs.exists != 'true' && steps.cache-assemblies.outputs.cache-hit != 'true'
+        run: |
+          if [ ! -d "/tmp/Il2Cpp.backup" ]; then
+            echo "=== Setting up IL2CPP Assemblies from checkout ==="
+            # Copy core IL2CPP assemblies
+            if [ -d "il2cpp-assemblies/MelonLoader/Il2CppAssemblies" ]; then
+              cp -r il2cpp-assemblies/MelonLoader/Il2CppAssemblies/* Assemblies/Il2Cpp/
+            elif [ -d "il2cpp-assemblies/Il2CppAssemblies" ]; then
+              cp -r il2cpp-assemblies/Il2CppAssemblies/* Assemblies/Il2Cpp/
+            fi
+
+            # Ensure FishNet for IL2CPP is present
+            if [ ! -f "Assemblies/Il2Cpp/Il2CppFishNet.Runtime.dll" ]; then
+               echo "Searching for Il2CppFishNet.Runtime.dll..."
+               FN_PATH=$(find il2cpp-assemblies -name "Il2CppFishNet.Runtime.dll" -type f | head -1)
+               if [ -n "$FN_PATH" ]; then
+                 cp "$FN_PATH" Assemblies/Il2Cpp/
+                 echo "Copied Il2CppFishNet.Runtime.dll"
+               else
+                 echo "Warning: Il2CppFishNet.Runtime.dll not found!"
+               fi
+            fi
+
+            # Ensure core IL2CPP runtime assemblies are present
+            echo "=== Checking for IL2CPP runtime assemblies ==="
+            if [ ! -f "Assemblies/Il2Cpp/Il2Cppmscorlib.dll" ]; then
+               echo "Searching for Il2Cppmscorlib.dll..."
+               MSCORLIB_PATH=$(find il2cpp-assemblies -name "Il2Cppmscorlib.dll" -type f | head -1)
+               if [ -n "$MSCORLIB_PATH" ]; then
+                 cp "$MSCORLIB_PATH" Assemblies/Il2Cpp/
+                 echo "Copied Il2Cppmscorlib.dll"
+               else
+                 echo "Warning: Il2Cppmscorlib.dll not found!"
+               fi
+            fi
+
+            if [ ! -f "Assemblies/Il2Cpp/Il2CppInterop.Runtime.dll" ]; then
+               echo "Searching for Il2CppInterop.Runtime.dll..."
+               INTEROP_PATH=$(find il2cpp-assemblies -name "Il2CppInterop.Runtime.dll" -type f | head -1)
+               if [ -n "$INTEROP_PATH" ]; then
+                 cp "$INTEROP_PATH" Assemblies/Il2Cpp/
+                 echo "Copied Il2CppInterop.Runtime.dll"
+               else
+                 echo "Warning: Il2CppInterop.Runtime.dll not found!"
+               fi
+            fi
+          fi
+
+      - name: Clear Mono Assemblies Before IL2CPP Build
+        if: steps.check_release.outputs.exists != 'true'
+        run: |
+          echo "=== Clearing Mono assemblies for IL2CPP build ==="
           if [ -d "Assemblies/Mono" ]; then
             rm -rf /tmp/Mono.backup 2>/dev/null || true
             mv Assemblies/Mono /tmp/Mono.backup
+            echo "Moved Mono assemblies outside workspace"
           fi
+
+          # List what we actually have in IL2CPP assemblies
+          echo "=== IL2CPP Assembly Directory Contents ==="
+          ls -la Assemblies/Il2Cpp/ | head -20
 
       - name: Restore IL2CPP Dependencies
         if: steps.check_release.outputs.exists != 'true'
