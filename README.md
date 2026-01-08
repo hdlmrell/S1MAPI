@@ -14,11 +14,18 @@
 
 ## Installation
 
-### For Users
-1. Download the latest release from [GitHub Releases](https://github.com/ifBars/S1MAPI/releases)
-2. Extract the ZIP and copy the contents to your Schedule 1 game directory
-3. The `UserLibs` folder from the release merges with your existing `UserLibs`
-4. S1MAPI loads automatically with MelonLoader
+### For Players
+
+If a mod you want to use requires MAPI:
+
+1. Download the MAPI zip from Thunderstore
+2. Extract the zip - it contains both `MAPI-Mono.dll` and `MAPI-Il2Cpp.dll`
+3. Copy the correct DLL for your Steam branch to your game's `UserLibs` folder:
+   - **Regular Steam branch (default)**: Use `MAPI-Il2Cpp.dll`
+   - **Alternate Steam branch**: Use `MAPI-Mono.dll`
+4. Launch the game - MAPI will load automatically with MelonLoader
+
+**To check your Steam branch:** Right-click Schedule One in Steam → Properties → Betas. If it shows "None" or no selection, you're on the regular branch (use Il2Cpp).
 
 ### For Developers
 Clone the repository and build:
