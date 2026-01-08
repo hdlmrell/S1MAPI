@@ -6,6 +6,7 @@ namespace MAPI.Utils
     /// <summary>
     /// Unified resource loading from embedded assembly resources
     /// Supports loading textures, sprites, and raw bytes from manifest resources
+    /// Use this class to load your embedded GLB file for custom models.
     /// </summary>
     public static class EmbeddedResourceLoader
     {
