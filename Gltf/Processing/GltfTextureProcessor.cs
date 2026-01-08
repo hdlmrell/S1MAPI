@@ -1,7 +1,8 @@
+using MAPI.Gltf.Data;
 using UnityEngine;
 using MAPI.Utils;
 
-namespace MAPI.Gltf
+namespace MAPI.Gltf.Processing
 {
     /// <summary>
     /// Processes GLTF textures and images.

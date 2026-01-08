@@ -2,6 +2,8 @@ using System.Text;
 using UnityEngine;
 using Newtonsoft.Json;
 using MAPI.Utils;
+using MAPI.Gltf.Data;
+using MAPI.Gltf.Processing;
 
 namespace MAPI.Gltf
 {

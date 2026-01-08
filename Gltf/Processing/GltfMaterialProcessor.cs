@@ -1,8 +1,9 @@
+using MAPI.Gltf.Data;
 using UnityEngine;
 using UnityEngine.Rendering;
 using MAPI.Utils;
 
-namespace MAPI.Gltf
+namespace MAPI.Gltf.Processing
 {
     /// <summary>
     /// Processes GLTF materials and converts them to Unity materials.

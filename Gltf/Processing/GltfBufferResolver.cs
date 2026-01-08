@@ -1,7 +1,8 @@
 using System.Text;
+using MAPI.Gltf.Data;
 using MAPI.Utils;
 
-namespace MAPI.Gltf
+namespace MAPI.Gltf.Processing
 {
     /// <summary>
     /// Resolves and loads buffer data from various sources: GLB binary chunks, external files, or base64 data URIs.

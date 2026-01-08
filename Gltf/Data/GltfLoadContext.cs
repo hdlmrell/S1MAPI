@@ -1,7 +1,8 @@
 using UnityEngine;
 using MAPI.Core;
+using MAPI.Gltf.Processing;
 
-namespace MAPI.Gltf
+namespace MAPI.Gltf.Data
 {
     /// <summary>
     /// Encapsulates all loading context for a GLTF import operation.

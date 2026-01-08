@@ -1,6 +1,7 @@
+using MAPI.Gltf.Data;
 using UnityEngine;
 
-namespace MAPI.Gltf
+namespace MAPI.Gltf.Processing
 {
     /// <summary>
     /// Processes GLTF animations and converts them to Unity AnimationClips.

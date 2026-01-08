@@ -1,6 +1,6 @@
 #pragma warning disable CS0649
 
-namespace MAPI.Gltf
+namespace MAPI.Gltf.Data
 {
     #region Core Structure
 

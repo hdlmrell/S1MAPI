@@ -1,3 +1,4 @@
+using MAPI.Gltf.Data;
 using UnityEngine;
 // For IndexFormat
 using MAPI.Utils;
@@ -6,7 +7,7 @@ using MAPI.Utils;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 #endif
 
-namespace MAPI.Gltf
+namespace MAPI.Gltf.Processing
 {
     internal class GltfMeshResult
     {
