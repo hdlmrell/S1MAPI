@@ -49,11 +49,12 @@ Perfect for modders who want to add custom structures and gameplay features with
 
 If a mod you want to use requires MAPI:
 
-1. Download the correct MAPI DLL for your Steam branch from Thunderstore:
-   - **Regular Steam branch (default)**: Download `MAPI-Il2Cpp.dll`
-   - **Alternate Steam branch**: Download `MAPI-Mono.dll`
-2. Place it in your game's `UserLibs` folder (not Mods folder)
-3. Launch the game - MAPI will load automatically with MelonLoader
+1. Download the MAPI zip from Thunderstore
+2. Extract the zip - it contains both `MAPI-Mono.dll` and `MAPI-Il2Cpp.dll`
+3. Copy the correct DLL for your Steam branch to your game's `UserLibs` folder:
+   - **Regular Steam branch (default)**: Use `MAPI-Il2Cpp.dll`
+   - **Alternate Steam branch**: Use `MAPI-Mono.dll`
+4. Launch the game - MAPI will load automatically with MelonLoader
 
 **To check your Steam branch:** Right-click Schedule One in Steam → Properties → Betas. If it shows "None" or no selection, you're on the regular branch (use Il2Cpp).
 
