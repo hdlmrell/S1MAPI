@@ -3,7 +3,7 @@ namespace MAPI.Utils
     /// <summary>
     /// Core constants for MAPI library
     /// </summary>
-    public static class Constants
+    internal static class Constants
     {
         public const string LIBRARY_NAME = "MAPI";
         public const string LIBRARY_VERSION = "0.1.0";
