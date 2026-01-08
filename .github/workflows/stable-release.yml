@@ -206,13 +206,28 @@ jobs:
           VERSION: ${{ steps.get_version.outputs.version }}
         run: |
           NUPKG=$(find bin/Mono -name "*.nupkg" | head -1)
-          
+
           echo "Creating Release v$VERSION"
+
+          # Find actual DLL paths (without _Mono/_Il2cpp suffix)
+          MONO_DLL=$(find bin/Mono -name "MAPI.dll" -type f | head -1)
+          IL2CPP_DLL=$(find bin/Il2cpp -name "MAPI.dll" -type f | head -1)
+
+          echo "Found Mono DLL: $MONO_DLL"
+          echo "Found IL2CPP DLL: $IL2CPP_DLL"
+
+          # Create temp directory for renamed files
+          mkdir -p /tmp/release-files
+
+          # Copy and rename for release (add suffix to distinguish)
+          cp "$MONO_DLL" /tmp/release-files/MAPI_Mono.dll
+          cp "$IL2CPP_DLL" /tmp/release-files/MAPI_Il2cpp.dll
+
           gh release create "v$VERSION" \
             --title "MAPI v$VERSION" \
             --generate-notes \
-            "bin/Mono/netstandard2.1/MAPI.dll#MAPI_Mono.dll" \
-            "bin/Il2cpp/net6.0/MAPI.dll#MAPI_Il2cpp.dll" \
+            "/tmp/release-files/MAPI_Mono.dll" \
+            "/tmp/release-files/MAPI_Il2cpp.dll" \
             "$NUPKG#NuGet Package"
 
       - name: Publish to NuGet
