@@ -54,8 +54,6 @@ S1MAPI and S1API are complementary:
 - **S1MAPI**: Mesh construction, building generation, GLTF loading (no game dependencies)
 - **S1API**: Game component wrappers, entity management, quests (wraps game types)
 
-Most mods use both libraries together.
-
 ## Contributing
 
 Contributions are welcome! See [Contributing Guide](docs/contributing.md) for guidelines.

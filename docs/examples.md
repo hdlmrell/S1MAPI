@@ -161,10 +161,16 @@ GameObject shop = new BuildingBuilder("FurnishedShop")
     .AddCeiling()
     .AddWalls(southDoor: true)
     .AddFurniture(FurnitureType.Counter, "north")
-    .AddFurniture(FurnitureType.DisplayCabinet, "center")
+    .AddFurniture(FurnitureType.Table, "center")
     .AddFurniture(FurnitureType.Chair, "south")
     .AddLights()
     .Build();
+
+// For S1 game furniture meshes, use InteriorBuilder
+var interior = new InteriorBuilder(shop.transform);
+interior.AddDesk(new Vector3(4, 0, 5), Quaternion.identity);
+interior.AddChair(new Vector3(4, 0, 4), Quaternion.Euler(0, 180, 0));
+interior.Build();
 ```
 
 ## GLTF Examples

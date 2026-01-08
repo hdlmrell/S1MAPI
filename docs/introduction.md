@@ -32,9 +32,10 @@ Generate basic shapes and combine them into complex geometries:
 
 ### Building Construction
 Create complete building structures with:
-- Walls, floors, ceilings, roofs
+- Walls, floors, ceilings, decorative trim
 - Windows and doors
-- Interior furniture and decorations
+- Procedural and S1 game furniture
+- Interior decorations
 - Lighting systems
 
 ### GLTF Import

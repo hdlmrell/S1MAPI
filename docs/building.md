@@ -69,7 +69,7 @@ new BuildingBuilder("Shop")
     .Build();
 ```
 
-### Full Palette
+### Custom Palette
 
 ```csharp
 var palette = new BuildingPalette
@@ -85,6 +85,7 @@ var palette = new BuildingPalette
     PillarMaterial = Materials.BrickWallRed,
     PillarColor = new Color(0.6f, 0.3f, 0.2f),
     AccentColor = new Color(0.29f, 0.48f, 0.29f),
+    AccentMaterial = null,
     LightColor = new Color(1f, 0.98f, 0.95f),
     LightIntensity = 1.2f
 };
@@ -169,23 +170,20 @@ using S1MAPI.Building.Structural;
 **Available Furniture Types:**
 - `Desk`, `Counter`, `Table`, `Chair`
 - `Shelf`, `DisplayCabinet`, `CoffeeTable`
-- `Rug`, `Box`, `Sphere`, `Cylinder` (decorative)
+- `Rug`, `Box`, `Sphere`, `Cylinder` (primitive shapes)
+
+**Note:** For S1 game furniture meshes, use `InteriorBuilder` instead.
 
 ## Prefabs
 
-Place Schedule 1 game prefabs inside your building:
+Place Schedule 1 game prefabs inside your building using `BuildingBuilder`:
 
 ```csharp
-// Basic prefab placement
-.AddPrefab(Prefabs.DisplayCabinet, new Vector3(6, 0, 9), Quaternion.Euler(0, 180, 0))
-
-// Networked prefab (syncs across clients)
-.AddPrefab(Prefabs.ATM, position, rotation, networked: true)
-
-// With callback after creation
-.AddPrefab(Prefabs.CoffeeTable, position, rotation,
-    onCreated: (obj) => { /* Post-creation logic */ })
+// Networked prefab (syncs across clients) - ATM has NetworkObject
+.AddPrefab(Prefabs.ATM, position, rotation)
 ```
+
+**Note:** `BuildingBuilder.AddPrefab()` only accepts `PrefabRef` and always spawns networked. For non-networked S1 furniture meshes, use `InteriorBuilder` methods instead.
 
 ### ⚠️ Critical: Networked Parameter
 
@@ -199,14 +197,13 @@ Using `networked: false` (or omitting it) on networked prefabs like ATM, doors, 
 - Storage containers
 - Any prefab with multiplayer synchronization
 
-**Non-networked prefabs include:**
-- DisplayCabinet, WallMountedShelf, CoffeeTable (decorative only)
-- Static decorations
+**Non-networked objects:**
+- Use `InteriorBuilder` methods like `AddDesk()`, `AddChair()`, `AddPlant()` for S1 furniture meshes
+- These are static decorations without network synchronization
 
-**Available Prefabs:**
-- `DisplayCabinet`, `WallMountedShelf`, `CoffeeTable`
-- `ATM`, `ModularSwitch`
-- And more...
+**Common Prefabs:**
+- Networked (require `networked: true`): `ATM`, `ModularSwitch`, `SlidingDoors`
+- Non-networked (decorative): Use `InteriorBuilder` methods instead (e.g., `AddDesk()`, `AddChair()`)
 
 ## Doors
 
@@ -226,23 +223,16 @@ For complex interiors, use `InteriorBuilder`:
 ```csharp
 var interior = new InteriorBuilder(building.transform);
 
-// Place display cabinets (non-networked decoration)
-interior.AddPrefab(
-    Prefabs.DisplayCabinet,
-    new Vector3(6f, 0f, 9.2f),
-    Quaternion.Euler(0f, 180f, 0f),
-    networked: false  // Decorative only
-);
+// Add S1 furniture meshes (non-networked decorative objects)
+interior.AddDesk(new Vector3(6f, 0f, 9.2f), Quaternion.Euler(0f, 180f, 0f));
+interior.AddChair(new Vector3(6f, 0f, 7f), Quaternion.Euler(0f, 0f, 0f));
+interior.AddCabinet(new Vector3(0.2f, 0f, 3f), Quaternion.Euler(0f, 90f, 0f));
 
-// Place shelves on walls (non-networked)
-interior.AddPrefab(
-    Prefabs.WallMountedShelf,
-    new Vector3(0.2f, 1.8f, 3f),
-    Quaternion.Euler(0f, 90f, 0f),
-    networked: false
-);
+// Add decorations
+interior.AddPlant(new Vector3(1f, 0f, 1f));
+interior.AddClock(new Vector3(4f, 2.5f, 9.5f), Quaternion.Euler(0f, 180f, 0f));
 
-// Place ATM (MUST be networked!)
+// Place networked prefabs (MUST use networked: true for NetworkObject prefabs!)
 interior.AddPrefab(
     Prefabs.ATM,
     new Vector3(3f, 0f, 5f),
@@ -254,7 +244,16 @@ interior.AddPrefab(
 interior.Build();
 ```
 
-**Note:** The `networked` parameter is critical. See the warning in the [Prefabs](#prefabs) section above.
+**Available Furniture Methods:**
+- `AddDesk()`, `AddChair()`, `AddArmchair()`, `AddBench()`
+- `AddTable()`, `AddOfficeTable()`, `AddBed()`
+- `AddCabinet()`, `AddDrawer()`, `AddLocker()`, `AddSafe()`
+- `AddBox()`, `AddBarrel()`, `AddBin()`, `AddFridge()`
+- `AddPlant()`, `AddPlanter()`, `AddVase()`, `AddPainting()`
+- `AddClock()`, `AddWallClock()`, `AddToilet()`
+- `AddComputer()`, `AddScreen()`
+
+**Note:** The `networked` parameter is critical for `AddPrefab()`. See the warning in the [Prefabs](#prefabs) section above.
 
 ## Complete Example
 

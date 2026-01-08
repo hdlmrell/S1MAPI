@@ -178,8 +178,6 @@ public static class ProceduralObjects
 
 3. **Consider vertex limits**: Unity's Mesh uses 16-bit indices by default (65,535 vertices). For larger meshes, set `mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32`.
 
-4. **Register resources**: S1MAPI automatically tracks created meshes, but for very large numbers, consider manual cleanup.
-
 ## Next Steps
 
 - [Building Guide](building.md) - Create structured buildings

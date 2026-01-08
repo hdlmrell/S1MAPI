@@ -27,7 +27,9 @@ public static string Name => Constants.LIBRARY_NAME;
 
 ## Procedural Mesh API (S1MAPI.ProceduralMesh)
 
-The `ProceduralMeshBuilder` class creates meshes using a fluent API:
+### ProceduralMeshBuilder
+
+The `ProceduralMeshBuilder` class creates custom meshes using a fluent API:
 
 ```csharp
 new ProceduralMeshBuilder("Name")
@@ -52,6 +54,27 @@ new ProceduralMeshBuilder("Name")
 - `ApplyFlatShading()` - Generate hard-edged normals
 - `Build()` - Create GameObject with MeshFilter and MeshRenderer
 - `BuildMesh()` - Create Mesh object only
+
+### PrimitiveBuilder
+
+The `PrimitiveBuilder` static class creates Unity primitive GameObjects with materials:
+
+```csharp
+// Create a primitive with color
+GameObject cube = PrimitiveBuilder.CreatePrimitive(
+    PrimitiveType.Cube,
+    "MyCube",
+    localPosition: Vector3.zero,
+    localScale: Vector3.one,
+    color: Color.red,
+    parent: parentTransform
+);
+```
+
+**Use Cases:**
+- Quick prototyping with Unity's built-in primitives (Cube, Sphere, Cylinder, Capsule, Plane, Quad)
+- Simpler alternative to ProceduralMeshBuilder for basic shapes
+- Supports parenting and material setup in one call
 
 ## Building API (S1MAPI.Building)
 
@@ -99,15 +122,17 @@ new BuildingConfig
 **Interior Builder:**
 ```csharp
 var interior = new InteriorBuilder(buildingTransform);
-interior.AddPrefab(Prefabs.DisplayCabinet, position, rotation, networked: true);
-interior.AddPrefab(Prefabs.CoffeeTable, position, rotation);
+interior.AddDesk(position, rotation);
+interior.AddChair(position, rotation);
+interior.AddPlant(position, rotation);
+interior.AddPrefab(Prefabs.ATM, position, rotation, networked: true);
 interior.Build();
 ```
 
 **Component Builders:**
 - `WallBuilder` - Wall and opening generation
-- `InteriorBuilder` - Interior object placement
-- `FurnitureBuilder` - Furniture creation
+- `InteriorBuilder` - Interior furniture and decoration placement using S1 meshes
+- `FurnitureBuilder` - Procedural furniture creation (used internally by BuildingBuilder)
 - `LightingBuilder` - Light fixture placement
 - `DecorBuilder` - Decorative elements (trim, pillars, foundations)
 - `PrefabPlacer` - Prefab instantiation with networking
@@ -222,10 +247,10 @@ GameObject? decoration = decorationPrefab.Instantiate();
 - Any prefab from `S1.Prefabs` namespace
 
 **Use `Instantiate()` for:**
-- Static decorations without network sync
+- Static decorations without network sync (rare - prefer using InteriorBuilder or ProceduralMeshBuilder)
 - Client-side visual effects
 - Local UI elements
-- Pure mesh/visual objects
+- Pure mesh/visual objects without NetworkObject component
 
 ### What InstantiateNetworked Does
 
