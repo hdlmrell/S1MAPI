@@ -4,7 +4,6 @@
 
 [![GitHub release](https://img.shields.io/github/v/release/ifBars/S1MAPI?include_prereleases&sort=semver)](https://github.com/ifBars/S1MAPI/releases)
 [![GitHub stars](https://img.shields.io/github/stars/ifBars/S1MAPI)](https://github.com/ifBars/S1MAPI/stargazers)
-[![GitHub license](https://img.shields.io/github/license/ifBars/MAPI)](https://github.com/ifBars/S1MAPI/blob/stable/LICENSE)
 
 ## What S1MAPI Does
 
