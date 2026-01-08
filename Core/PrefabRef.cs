@@ -17,8 +17,8 @@ using FishNet.Object;
 namespace MAPI.Core
 {
     /// <summary>
-    /// Reference to a network-spawnable prefab in the game.
-    /// These are full GameObjects with components (NetworkObject, interaction scripts, etc.).
+    /// Reference to a prefab in the game.
+    /// These are full GameObjects with components (e.g. NetworkObject, interaction scripts, etc.).
     /// For static mesh-only assets (decoration), use MeshRef instead.
     /// Use MAPI.S1.Prefabs for known Schedule 1 prefab assets.
     /// </summary>

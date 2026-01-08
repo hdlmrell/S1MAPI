@@ -6,8 +6,8 @@ namespace MAPI.Utils
     internal static class Constants
     {
         public const string LIBRARY_NAME = "MAPI";
-        public const string LIBRARY_VERSION = "0.1.0";
-        public const string LIBRARY_AUTHOR = "MAPI Contributors";
+        public const string LIBRARY_VERSION = "1.0.0";
+        public const string LIBRARY_AUTHOR = "Bars";
 
         /// <summary>
         /// Minimum supported Unity version
@@ -17,7 +17,7 @@ namespace MAPI.Utils
         /// <summary>
         /// Recommended Unity version
         /// </summary>
-        public const string RECOMMENDED_UNITY_VERSION = "2020.1";
+        public const string RECOMMENDED_UNITY_VERSION = "2022.3.62f2";
 
         /// <summary>
         /// Layer names used by MAPI components

@@ -11,7 +11,7 @@ namespace MAPI.Building
 {
     /// <summary>
     /// Fluent builder for constructing buildings with a clean, chainable API.
-    /// Delegates to specialized builders (WallBuilder, FurnitureBuilder, etc.) for SRP compliance.
+    /// Delegates to specialized builders (WallBuilder, FurnitureBuilder, etc.).
     /// </summary>
     /// <example>
     /// var building = new BuildingBuilder("MyShop")
