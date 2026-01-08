@@ -19,7 +19,7 @@
     <Description>A mapping and construction library for Schedule 1 mods, providing procedural mesh generation, building construction, and GLTF loading while remaining update-resilient.</Description>
     <PackageTags>schedule-1;mapping;modding;il2cpp;mono;procedural-mesh;gltf</PackageTags>
     <RepositoryUrl>https://github.com/ifBars/MAPI</RepositoryUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
     <Version>1.0.0</Version>
   </PropertyGroup>
 
