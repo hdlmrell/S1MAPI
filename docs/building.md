@@ -187,6 +187,22 @@ Place Schedule 1 game prefabs inside your building:
     onCreated: (obj) => { /* Post-creation logic */ })
 ```
 
+### ⚠️ Critical: Networked Parameter
+
+**Always set `networked: true` for prefabs that have a `NetworkObject` component!**
+
+Using `networked: false` (or omitting it) on networked prefabs like ATM, doors, or storage containers will **crash FishNet and break multiplayer**. This cannot be recovered without restarting the game.
+
+**Networked prefabs include:**
+- ATM, ModularSwitch
+- Doors (any interactive doors)
+- Storage containers
+- Any prefab with multiplayer synchronization
+
+**Non-networked prefabs include:**
+- DisplayCabinet, WallMountedShelf, CoffeeTable (decorative only)
+- Static decorations
+
 **Available Prefabs:**
 - `DisplayCabinet`, `WallMountedShelf`, `CoffeeTable`
 - `ATM`, `ModularSwitch`
@@ -210,25 +226,35 @@ For complex interiors, use `InteriorBuilder`:
 ```csharp
 var interior = new InteriorBuilder(building.transform);
 
-// Place display cabinets
+// Place display cabinets (non-networked decoration)
 interior.AddPrefab(
     Prefabs.DisplayCabinet,
     new Vector3(6f, 0f, 9.2f),
     Quaternion.Euler(0f, 180f, 0f),
-    networked: true
+    networked: false  // Decorative only
 );
 
-// Place shelves on walls
+// Place shelves on walls (non-networked)
 interior.AddPrefab(
     Prefabs.WallMountedShelf,
     new Vector3(0.2f, 1.8f, 3f),
     Quaternion.Euler(0f, 90f, 0f),
-    networked: true
+    networked: false
+);
+
+// Place ATM (MUST be networked!)
+interior.AddPrefab(
+    Prefabs.ATM,
+    new Vector3(3f, 0f, 5f),
+    Quaternion.identity,
+    networked: true  // CRITICAL: ATM has NetworkObject component
 );
 
 // Build organizes all objects under an Interior folder
 interior.Build();
 ```
+
+**Note:** The `networked` parameter is critical. See the warning in the [Prefabs](#prefabs) section above.
 
 ## Complete Example
 

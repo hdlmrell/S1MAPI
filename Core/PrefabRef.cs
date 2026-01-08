@@ -78,9 +78,24 @@ namespace MAPI.Core
         }
 
         /// <summary>
-        /// Instantiate this prefab locally (no network spawning).
+        /// Instantiate this prefab locally without network spawning.
         /// </summary>
         /// <returns>The instantiated GameObject or null if prefab not found</returns>
+        /// <remarks>
+        /// <para><strong>WARNING:</strong> Only use this method for prefabs that do NOT have a NetworkObject component.</para>
+        /// <para>
+        /// For prefabs with NetworkObject components (networked prefabs), you MUST use <see cref="InstantiateNetworked"/> instead.
+        /// Using this method on networked prefabs will cause FishNet to crash and break multiplayer functionality.
+        /// </para>
+        /// <para>
+        /// Use this method only for:
+        /// <list type="bullet">
+        /// <item><description>Static decorative objects without network synchronization</description></item>
+        /// <item><description>Client-side visual effects</description></item>
+        /// <item><description>Local UI elements</description></item>
+        /// </list>
+        /// </para>
+        /// </remarks>
         public GameObject? Instantiate()
         {
             var prefab = Find();
@@ -93,12 +108,35 @@ namespace MAPI.Core
         }
 
         /// <summary>
-        /// Instantiate and spawn on the network (server only).
-        /// Instantiates the prefab as inactive to prevent Awake() from running with uninitialized 
-        /// network state, initializes any GUID fields, spawns it on the network, then activates it.
-        /// This fixes issues with prefabs like ATM that require valid GUIDs in Awake().
+        /// Instantiate and spawn a networked prefab on the network (server only).
         /// </summary>
-        /// <returns>The instantiated GameObject or null if prefab not found</returns>
+        /// <returns>The instantiated and network-spawned GameObject, or null if prefab not found</returns>
+        /// <remarks>
+        /// <para><strong>CRITICAL:</strong> You MUST use this method for any prefab that has a NetworkObject component.</para>
+        /// <para>
+        /// Using <see cref="Instantiate"/> on networked prefabs will cause FishNet to crash and completely break 
+        /// multiplayer functionality. This is not recoverable without restarting the game.
+        /// </para>
+        /// <para><strong>What this method does:</strong></para>
+        /// <list type="number">
+        /// <item><description>Instantiates the prefab as inactive to prevent Awake() from running with uninitialized network state</description></item>
+        /// <item><description>Initializes any GUID fields to prevent parse errors (fixes issues with prefabs like ATM)</description></item>
+        /// <item><description>Spawns the object on the FishNet network, assigning it a network ID</description></item>
+        /// <item><description>Activates the object, allowing Awake() to run with valid network state</description></item>
+        /// </list>
+        /// <para><strong>Requirements:</strong></para>
+        /// <list type="bullet">
+        /// <item><description>The prefab must be registered in FishNet's spawnable prefabs list</description></item>
+        /// <item><description>The prefab must have a NetworkObject component</description></item>
+        /// </list>
+        /// <para><strong>Examples of prefabs that require this method:</strong></para>
+        /// <list type="bullet">
+        /// <item><description>S1.Prefabs.ATM</description></item>
+        /// <item><description>S1.Prefabs.Door (any networked doors)</description></item>
+        /// <item><description>S1.Prefabs.Storage (any networked storage containers)</description></item>
+        /// </list>
+        /// </remarks>
+        /// <exception cref="System.InvalidOperationException">Thrown if called on client when not server</exception>
         public GameObject? InstantiateNetworked()
         {
             var prefab = Find();

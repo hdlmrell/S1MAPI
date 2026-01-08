@@ -1,0 +1,480 @@
+/* MAPI Documentation - Custom Article Styling */
+
+/* ===========================
+   Variables & Color Scheme
+   =========================== */
+:root {
+    --mapi-bg: #1a1e23;
+    --mapi-bg-dark: #13161a;
+    --mapi-bg-card: #21262d;
+    --mapi-text: #e6edf3;
+    --mapi-text-muted: #8b949e;
+    --mapi-accent: #d29922;
+    --mapi-accent-glow: rgba(210, 153, 34, 0.15);
+    --mapi-border: #30363d;
+    --mapi-code-bg: #0d1117;
+    --mapi-font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+}
+
+/* ===========================
+   Article Content Spacing
+   =========================== */
+
+/* Main article wrapper - better max-width and padding */
+article.content {
+    max-width: 900px !important;
+    margin: 0 auto;
+    padding: 2rem 3rem !important;
+    line-height: 1.7;
+}
+
+/* Improve spacing between sections */
+article.content > * + * {
+    margin-top: 1.5rem;
+}
+
+article.content > h1 + *,
+article.content > h2 + *,
+article.content > h3 + * {
+    margin-top: 1rem;
+}
+
+/* ===========================
+   Headings - Better Hierarchy
+   =========================== */
+
+article.content h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 2rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--mapi-accent);
+    color: var(--mapi-text);
+    letter-spacing: -0.5px;
+}
+
+article.content h2 {
+    font-size: 1.875rem;
+    font-weight: 600;
+    margin-top: 3rem;
+    margin-bottom: 1.5rem;
+    color: var(--mapi-text);
+    padding-left: 0.5rem;
+    border-left: 4px solid var(--mapi-accent);
+}
+
+article.content h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--mapi-text);
+}
+
+article.content h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 0.875rem;
+    color: var(--mapi-text-muted);
+}
+
+article.content h5,
+article.content h6 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--mapi-text-muted);
+}
+
+/* ===========================
+   Lists - Better Structure
+   =========================== */
+
+article.content ul,
+article.content ol {
+    padding-left: 2rem;
+    margin: 1.25rem 0;
+}
+
+article.content li {
+    margin: 0.75rem 0;
+    line-height: 1.7;
+}
+
+article.content li > ul,
+article.content li > ol {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Nested lists with better indentation */
+article.content ul ul,
+article.content ol ul,
+article.content ul ol,
+article.content ol ol {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding-left: 1.5rem;
+}
+
+/* Style list markers */
+article.content ul > li {
+    list-style-type: disc;
+}
+
+article.content ul > li > ul > li {
+    list-style-type: circle;
+}
+
+article.content ol > li {
+    list-style-type: decimal;
+}
+
+/* ===========================
+   Code Blocks - Enhanced
+   =========================== */
+
+/* Inline code */
+article.content code {
+    background: var(--mapi-code-bg);
+    color: var(--mapi-accent);
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    font-family: var(--mapi-font-mono);
+    font-size: 0.9em;
+    border: 1px solid var(--mapi-border);
+}
+
+/* Code blocks */
+article.content pre {
+    background: var(--mapi-code-bg) !important;
+    border: 1px solid var(--mapi-border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+article.content pre code {
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: var(--mapi-text);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+/* Language label for code blocks */
+article.content pre[class*="language-"]::before {
+    content: attr(class);
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: var(--mapi-accent);
+    color: var(--mapi-bg-dark);
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-bottom-left-radius: 4px;
+    border-top-right-radius: 8px;
+    text-transform: uppercase;
+}
+
+article.content pre {
+    position: relative;
+}
+
+/* ===========================
+   Links - Better Visibility
+   =========================== */
+
+article.content a {
+    color: var(--mapi-accent);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+article.content a:hover {
+    border-bottom-color: var(--mapi-accent);
+    color: #e3a82b;
+}
+
+article.content a code {
+    color: var(--mapi-accent);
+}
+
+/* ===========================
+   Blockquotes & Callouts
+   =========================== */
+
+article.content blockquote {
+    margin: 1.5rem 0;
+    padding: 1rem 1.5rem;
+    border-left: 4px solid var(--mapi-accent);
+    background: rgba(210, 153, 34, 0.05);
+    border-radius: 4px;
+}
+
+article.content blockquote p {
+    margin: 0.5rem 0;
+}
+
+/* Note/Warning boxes */
+article.content .NOTE,
+article.content .TIP,
+article.content .WARNING,
+article.content .IMPORTANT {
+    margin: 1.5rem 0;
+    padding: 1rem 1.5rem;
+    border-radius: 6px;
+    border-left: 4px solid;
+}
+
+article.content .NOTE {
+    background: rgba(88, 166, 255, 0.1);
+    border-left-color: #58a6ff;
+}
+
+article.content .TIP {
+    background: rgba(39, 201, 63, 0.1);
+    border-left-color: #27c93f;
+}
+
+article.content .WARNING {
+    background: rgba(255, 189, 46, 0.1);
+    border-left-color: #ffbd2e;
+}
+
+article.content .IMPORTANT {
+    background: rgba(255, 95, 86, 0.1);
+    border-left-color: #ff5f56;
+}
+
+/* ===========================
+   Tables - Better Organization
+   =========================== */
+
+article.content table {
+    width: 100%;
+    margin: 2rem 0;
+    border-collapse: collapse;
+    background: var(--mapi-bg-card);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+article.content thead {
+    background: var(--mapi-code-bg);
+}
+
+article.content th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--mapi-accent);
+    border-bottom: 2px solid var(--mapi-border);
+}
+
+article.content td {
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid var(--mapi-border);
+}
+
+article.content tr:last-child td {
+    border-bottom: none;
+}
+
+article.content tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* ===========================
+   Images & Media
+   =========================== */
+
+article.content img {
+    max-width: 100%;
+    height: auto;
+    margin: 2rem auto;
+    display: block;
+    border-radius: 8px;
+    border: 1px solid var(--mapi-border);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* ===========================
+   Horizontal Rules
+   =========================== */
+
+article.content hr {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--mapi-border), transparent);
+    margin: 3rem 0;
+}
+
+/* ===========================
+   Table of Contents (Right Sidebar)
+   =========================== */
+
+.affix {
+    background: var(--mapi-bg-card);
+    border: 1px solid var(--mapi-border);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.affix ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.affix li {
+    margin: 0.5rem 0;
+}
+
+.affix a {
+    color: var(--mapi-text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s ease;
+}
+
+.affix a:hover,
+.affix a.active {
+    color: var(--mapi-accent);
+}
+
+.affix > h5 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--mapi-text);
+    margin-bottom: 1rem;
+}
+
+/* ===========================
+   Breadcrumb Navigation
+   =========================== */
+
+.breadcrumb {
+    background: transparent;
+    padding: 1rem 0;
+    margin-bottom: 1rem;
+}
+
+.breadcrumb a {
+    color: var(--mapi-text-muted);
+}
+
+.breadcrumb a:hover {
+    color: var(--mapi-accent);
+}
+
+.breadcrumb .active {
+    color: var(--mapi-text);
+}
+
+/* ===========================
+   API Reference Enhancements
+   =========================== */
+
+/* Method signatures */
+article.content .api .signature {
+    background: var(--mapi-code-bg);
+    padding: 1rem 1.5rem;
+    border-radius: 6px;
+    border: 1px solid var(--mapi-border);
+    margin: 1rem 0;
+    font-family: var(--mapi-font-mono);
+    overflow-x: auto;
+}
+
+/* Parameter lists */
+article.content .parameters dt {
+    font-family: var(--mapi-font-mono);
+    color: var(--mapi-accent);
+    font-weight: 600;
+    margin-top: 1rem;
+}
+
+article.content .parameters dd {
+    margin-left: 2rem;
+    margin-bottom: 1rem;
+    color: var(--mapi-text-muted);
+}
+
+/* ===========================
+   Responsive Design
+   =========================== */
+
+@media (max-width: 900px) {
+    article.content {
+        padding: 1.5rem 2rem !important;
+    }
+    
+    article.content h1 {
+        font-size: 2rem;
+    }
+    
+    article.content h2 {
+        font-size: 1.625rem;
+    }
+    
+    article.content h3 {
+        font-size: 1.375rem;
+    }
+}
+
+@media (max-width: 600px) {
+    article.content {
+        padding: 1rem 1.5rem !important;
+    }
+    
+    article.content ul,
+    article.content ol {
+        padding-left: 1.5rem;
+    }
+    
+    article.content pre {
+        padding: 1rem;
+        font-size: 0.85rem;
+    }
+    
+    article.content table {
+        font-size: 0.875rem;
+    }
+    
+    article.content th,
+    article.content td {
+        padding: 0.75rem;
+    }
+}
+
+/* ===========================
+   Print Styles
+   =========================== */
+
+@media print {
+    article.content {
+        max-width: 100%;
+    }
+    
+    article.content pre {
+        border: 1px solid #000;
+        page-break-inside: avoid;
+    }
+    
+    article.content h1,
+    article.content h2,
+    article.content h3 {
+        page-break-after: avoid;
+    }
+}

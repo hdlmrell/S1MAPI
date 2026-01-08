@@ -182,6 +182,58 @@ transform.ResetLocalTransform();
 component.DestroyIfExists<MeshRenderer>();
 ```
 
+## PrefabRef API (MAPI.Core)
+
+`PrefabRef` provides safe instantiation of FishNet networked prefabs:
+
+```csharp
+using MAPI.Core;
+
+// Create a reference to a networked prefab
+var atmPrefab = new PrefabRef("ATM");
+
+// Find the prefab in FishNet's registry
+GameObject? prefab = atmPrefab.Find();
+```
+
+### ⚠️ CRITICAL: Network vs Local Instantiation
+
+**You MUST use the correct instantiation method based on whether the prefab has a `NetworkObject` component:**
+
+```csharp
+// For NETWORKED prefabs (has NetworkObject component) - SERVER ONLY
+GameObject? atm = atmPrefab.InstantiateNetworked();
+atm.transform.position = new Vector3(10, 0, 5);
+```
+
+```csharp
+// For LOCAL/CLIENT-SIDE objects (no NetworkObject)
+GameObject? decoration = decorationPrefab.Instantiate();
+```
+
+**WARNING:** Using `Instantiate()` on a networked prefab will **crash FishNet and break multiplayer**. This is not recoverable without restarting the game!
+
+### When to Use Each Method
+
+**Use `InstantiateNetworked()` for:**
+- ATMs, doors, storage containers
+- Any prefab with multiplayer synchronization
+- Interactive game objects
+- Any prefab from `S1.Prefabs` namespace
+
+**Use `Instantiate()` for:**
+- Static decorations without network sync
+- Client-side visual effects
+- Local UI elements
+- Pure mesh/visual objects
+
+### What InstantiateNetworked Does
+
+1. Instantiates the prefab as inactive to prevent `Awake()` crashes
+2. Initializes GUID fields to prevent parse errors
+3. Spawns the object on the FishNet network
+4. Activates the object with valid network state
+
 ## S1 Namespace (MAPI.S1)
 
 Schedule 1 specific materials and meshes (requires game assembly at build time):

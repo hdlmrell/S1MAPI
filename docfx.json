@@ -58,7 +58,14 @@
       "_appTitle": "MAPI Documentation",
       "_enableSearch": true,
       "_navbarTitle": "MAPI",
-      "pdf": true
+      "pdf": true,
+      "_appFooter": "MAPI - Procedural Mesh & Building API for Schedule 1",
+      "_enableNewTab": true
+    },
+    "fileMetadata": {
+      "_enableContribution": {
+        "api/*.yml": false
+      }
     }
   }
 }

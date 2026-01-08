@@ -9,8 +9,8 @@ _layout: landing
 <div class="mapi-container">
 <div class="mapi-hero-content">
 <div class="mapi-brand">
-<h1 class="mapi-title">MAPI<span class="mapi-dot">.</span></h1>
-<div class="mapi-tagline">The Schedule 1 Mapping & Construction Framework</div>
+<h1 class="mapi-title">MAPI</h1>
+<div class="mapi-tagline">The Schedule 1 Mapping Framework</div>
 </div>
 <div class="mapi-badges">
 <span class="mapi-badge"><i class="icon">📐</i> Procedural Geometry</span>
@@ -20,7 +20,7 @@ _layout: landing
 <div class="mapi-hero-split">
 <div class="mapi-hero-text">
 <p class="mapi-description">
-Construct complex structures, generate procedural meshes, and import 3D models at runtime. 
+Construct structures with interiors, generate procedural meshes, and import 3D models at runtime. 
 Designed for stability, performance, and seamless integration.
 </p>
 <div class="mapi-cta-group">
@@ -31,22 +31,24 @@ Designed for stability, performance, and seamless integration.
 <a class="mapi-btn mapi-btn-outline" href="xref:MAPI.Core.MAPI">API Reference</a>
 </div>
 </div>
-<div class="mapi-code-card">
-<div class="mapi-card-header">
-<span class="dot red"></span>
-<span class="dot yellow"></span>
-<span class="dot green"></span>
-<span class="filename">OfficeBuilding.cs</span>
-</div>
-<pre><code class="lang-csharp">var office = new BuildingBuilder()
-    .WithWalls(walls => walls
-    .AddRoom(width: 10f, length: 8f, height: 3f)
-    .WithWindow(WallSide.Front, offset: 2f))
-    .WithInterior(interior => interior
-    .AddDesk(style: FurnitureStyle.Modern)
-    .AddChair(position: new Vector3(2, 0, 2)))
-    .Build();</code></pre>
-</div>
+            <div class="mapi-code-card">
+                <div class="mapi-card-header">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                    <span class="filename">MyBuilding.cs</span>
+                </div>
+                <pre><code class="lang-csharp">var building = new BuildingBuilder("MyShop")
+    .WithConfig(BuildingConfig.Medium)
+    .AddFloor()
+    .AddCeiling()
+    .AddWalls(southDoor: true, eastWindow: true)
+    .AddRoofTrim()
+    .AddLights(intensity: 1.2f)
+    .Build();
+
+building.transform.position = new Vector3(100, 0, 50);</code></pre>
+            </div>
 </div>
 </div>
 </div>

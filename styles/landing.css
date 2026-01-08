@@ -172,28 +172,45 @@ body[data-layout="landing"] .actionbar {
     transition: all 0.2s ease;
 }
 
-.mapi-btn-primary {
-    background-color: var(--mapi-accent);
-    color: #0d1117;
+/* Style all links in CTA group as buttons */
+.mapi-cta-group > a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 2rem;
+    border-radius: 6px;
+    text-decoration: none !important;
+    font-weight: 600;
+    transition: all 0.2s ease;
 }
 
-.mapi-btn-primary:hover {
+.mapi-btn-primary,
+.mapi-cta-group > a:first-child {
+    background-color: var(--mapi-accent);
+    color: #0d1117 !important;
+}
+
+.mapi-btn-primary:hover,
+.mapi-cta-group > a:first-child:hover {
     background-color: #e3a82b;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px var(--mapi-accent-glow);
-    color: #0d1117;
+    color: #0d1117 !important;
 }
 
-.mapi-btn-outline {
+.mapi-btn-outline,
+.mapi-cta-group > a:not(:first-child) {
     border: 1px solid var(--mapi-border);
-    color: var(--mapi-text);
+    color: var(--mapi-text) !important;
     background: transparent;
 }
 
-.mapi-btn-outline:hover {
+.mapi-btn-outline:hover,
+.mapi-cta-group > a:not(:first-child):hover {
     border-color: var(--mapi-text);
-    color: var(--mapi-text);
+    color: var(--mapi-text) !important;
     background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-2px);
 }
 
 /* Code Card */
@@ -369,14 +386,14 @@ body[data-layout="landing"] .actionbar {
 }
 
 .mapi-links a {
-    color: var(--mapi-text);
-    text-decoration: none;
+    color: var(--mapi-text) !important;
+    text-decoration: none !important;
     border-bottom: 1px solid transparent;
-    transition: border-color 0.2s;
+    transition: all 0.2s ease;
 }
 
 .mapi-links a:hover {
-    color: var(--mapi-accent);
+    color: var(--mapi-accent) !important;
     border-bottom-color: var(--mapi-accent);
 }
 
