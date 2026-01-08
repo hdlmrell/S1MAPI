@@ -120,7 +120,6 @@ jobs:
           fi
 
       - name: Checkout IL2CPP Assemblies
-        if: steps.check_release.outputs.exists != 'true' && steps.cache-assemblies.outputs.cache-hit != 'true'
         uses: actions/checkout@v4
         with:
           repository: ${{ secrets.IL2CPP_ASSEMBLIES_REPO }}
@@ -129,9 +128,8 @@ jobs:
           fetch-depth: 1
 
       - name: Populate IL2CPP Assemblies from Checkout
-        if: steps.check_release.outputs.exists != 'true' && steps.cache-assemblies.outputs.cache-hit != 'true'
         run: |
-          if [ ! -d "/tmp/Il2Cpp.backup" ]; then
+          if [ ! -d "Assemblies/Il2Cpp" ] || [ -z "$(ls -A Assemblies/Il2Cpp 2>/dev/null)" ]; then
             echo "=== Setting up IL2CPP Assemblies from checkout ==="
             # Copy core IL2CPP assemblies
             if [ -d "il2cpp-assemblies/MelonLoader/Il2CppAssemblies" ]; then
@@ -175,6 +173,8 @@ jobs:
                  echo "Warning: Il2CppInterop.Runtime.dll not found!"
                fi
             fi
+          else
+            echo "IL2CPP assemblies already populated from cache, skipping checkout population"
           fi
 
       - name: Clear Mono Assemblies Before IL2CPP Build
