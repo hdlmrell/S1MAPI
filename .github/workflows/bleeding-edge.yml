@@ -101,12 +101,13 @@ jobs:
         run: |
           echo "=== Clearing IL2CPP assemblies for Mono build ==="
           if [ -d "Assemblies/Il2Cpp" ]; then
-            mv Assemblies/Il2Cpp Assemblies/Il2Cpp.backup
-            echo "Backed up IL2CPP assemblies"
+            rm -rf /tmp/Il2Cpp.backup 2>/dev/null || true
+            mv Assemblies/Il2Cpp /tmp/Il2Cpp.backup
+            echo "Moved IL2CPP assemblies outside workspace"
           fi
 
       - name: Build Mono
-        run: dotnet build MAPI.csproj --no-restore /p:Configuration=Mono -v normal
+        run: dotnet build MAPI.csproj --no-restore /p:Configuration=Mono /p:AssemblySearchPaths="{RawFileName};{TargetFrameworkDirectory}" -v normal
 
       # Checkout IL2CPP Assemblies
       - name: Checkout IL2CPP Assemblies
@@ -121,62 +122,63 @@ jobs:
       - name: Populate IL2CPP Assemblies
         if: steps.cache-assemblies.outputs.cache-hit != 'true'
         run: |
-          echo "=== Setting up IL2CPP Assemblies ==="
-          # Copy core IL2CPP assemblies
-          if [ -d "il2cpp-assemblies/MelonLoader/Il2CppAssemblies" ]; then
-            cp -r il2cpp-assemblies/MelonLoader/Il2CppAssemblies/* Assemblies/Il2Cpp/
-          elif [ -d "il2cpp-assemblies/Il2CppAssemblies" ]; then
-            cp -r il2cpp-assemblies/Il2CppAssemblies/* Assemblies/Il2Cpp/
-          fi
+          echo "=== Restoring IL2CPP assemblies from backup ==="
+          if [ -d "/tmp/Il2Cpp.backup" ]; then
+            mkdir -p Assemblies/Il2Cpp
+            cp -r /tmp/Il2Cpp.backup/* Assemblies/Il2Cpp/
+            echo "Restored IL2CPP assemblies from /tmp"
+          else
+            echo "=== Setting up IL2CPP Assemblies ==="
+            # Copy core IL2CPP assemblies
+            if [ -d "il2cpp-assemblies/MelonLoader/Il2CppAssemblies" ]; then
+              cp -r il2cpp-assemblies/MelonLoader/Il2CppAssemblies/* Assemblies/Il2Cpp/
+            elif [ -d "il2cpp-assemblies/Il2CppAssemblies" ]; then
+              cp -r il2cpp-assemblies/Il2CppAssemblies/* Assemblies/Il2Cpp/
+            fi
 
-          # Ensure FishNet for IL2CPP is present
-          if [ ! -f "Assemblies/Il2Cpp/Il2CppFishNet.Runtime.dll" ]; then
-             echo "Searching for Il2CppFishNet.Runtime.dll..."
-             FN_PATH=$(find il2cpp-assemblies -name "Il2CppFishNet.Runtime.dll" -type f | head -1)
-             if [ -n "$FN_PATH" ]; then
-               cp "$FN_PATH" Assemblies/Il2Cpp/
-               echo "Copied Il2CppFishNet.Runtime.dll"
-             else
-               echo "Warning: Il2CppFishNet.Runtime.dll not found!"
-             fi
-          fi
+            # Ensure FishNet for IL2CPP is present
+            if [ ! -f "Assemblies/Il2Cpp/Il2CppFishNet.Runtime.dll" ]; then
+               echo "Searching for Il2CppFishNet.Runtime.dll..."
+               FN_PATH=$(find il2cpp-assemblies -name "Il2CppFishNet.Runtime.dll" -type f | head -1)
+               if [ -n "$FN_PATH" ]; then
+                 cp "$FN_PATH" Assemblies/Il2Cpp/
+                 echo "Copied Il2CppFishNet.Runtime.dll"
+               else
+                 echo "Warning: Il2CppFishNet.Runtime.dll not found!"
+               fi
+            fi
 
-          # Ensure core IL2CPP runtime assemblies are present
-          echo "=== Checking for IL2CPP runtime assemblies ==="
-          if [ ! -f "Assemblies/Il2Cpp/Il2Cppmscorlib.dll" ]; then
-             echo "Searching for Il2Cppmscorlib.dll..."
-             MSCORLIB_PATH=$(find il2cpp-assemblies -name "Il2Cppmscorlib.dll" -type f | head -1)
-             if [ -n "$MSCORLIB_PATH" ]; then
-               cp "$MSCORLIB_PATH" Assemblies/Il2Cpp/
-               echo "Copied Il2Cppmscorlib.dll"
-             else
-               echo "Warning: Il2Cppmscorlib.dll not found!"
-             fi
-          fi
+            # Ensure core IL2CPP runtime assemblies are present
+            echo "=== Checking for IL2CPP runtime assemblies ==="
+            if [ ! -f "Assemblies/Il2Cpp/Il2Cppmscorlib.dll" ]; then
+               echo "Searching for Il2Cppmscorlib.dll..."
+               MSCORLIB_PATH=$(find il2cpp-assemblies -name "Il2Cppmscorlib.dll" -type f | head -1)
+               if [ -n "$MSCORLIB_PATH" ]; then
+                 cp "$MSCORLIB_PATH" Assemblies/Il2Cpp/
+                 echo "Copied Il2Cppmscorlib.dll"
+               else
+                 echo "Warning: Il2Cppmscorlib.dll not found!"
+               fi
+            fi
 
-          if [ ! -f "Assemblies/Il2Cpp/Il2CppInterop.Runtime.dll" ]; then
-             echo "Searching for Il2CppInterop.Runtime.dll..."
-             INTEROP_PATH=$(find il2cpp-assemblies -name "Il2CppInterop.Runtime.dll" -type f | head -1)
-             if [ -n "$INTEROP_PATH" ]; then
-               cp "$INTEROP_PATH" Assemblies/Il2Cpp/
-               echo "Copied Il2CppInterop.Runtime.dll"
-             else
-               echo "Warning: Il2CppInterop.Runtime.dll not found!"
-             fi
-          fi
-
-          # Restore IL2CPP assemblies if backed up
-          echo "=== Restoring IL2CPP assemblies for IL2CPP build ==="
-          if [ -d "Assemblies/Il2Cpp.backup" ]; then
-            mv Assemblies/Il2Cpp.backup Assemblies/Il2Cpp
-            echo "Restored IL2CPP assemblies"
+            if [ ! -f "Assemblies/Il2Cpp/Il2CppInterop.Runtime.dll" ]; then
+               echo "Searching for Il2CppInterop.Runtime.dll..."
+               INTEROP_PATH=$(find il2cpp-assemblies -name "Il2CppInterop.Runtime.dll" -type f | head -1)
+               if [ -n "$INTEROP_PATH" ]; then
+                 cp "$INTEROP_PATH" Assemblies/Il2Cpp/
+                 echo "Copied Il2CppInterop.Runtime.dll"
+               else
+                 echo "Warning: Il2CppInterop.Runtime.dll not found!"
+               fi
+            fi
           fi
 
           # Clear Mono assemblies before IL2CPP build
           echo "=== Clearing Mono assemblies for IL2CPP build ==="
           if [ -d "Assemblies/Mono" ]; then
-            mv Assemblies/Mono Assemblies/Mono.backup
-            echo "Backed up Mono assemblies"
+            rm -rf /tmp/Mono.backup 2>/dev/null || true
+            mv Assemblies/Mono /tmp/Mono.backup
+            echo "Moved Mono assemblies outside workspace"
           fi
 
           # List what we actually have in IL2CPP assemblies
@@ -187,14 +189,15 @@ jobs:
         run: dotnet restore MAPI.csproj /p:Configuration=Il2cpp
 
       - name: Build IL2CPP
-        run: dotnet build MAPI.csproj --no-restore -c Il2cpp -v normal
+        run: dotnet build MAPI.csproj --no-restore -c Il2cpp /p:AssemblySearchPaths="{RawFileName};{TargetFrameworkDirectory}" -v normal
 
       - name: Restore Mono Assemblies
         run: |
           echo "=== Restoring Mono assemblies ==="
-          if [ -d "Assemblies/Mono.backup" ]; then
-            mv Assemblies/Mono.backup Assemblies/Mono
-            echo "Restored Mono assemblies"
+          if [ -d "/tmp/Mono.backup" ]; then
+            mkdir -p Assemblies/Mono
+            cp -r /tmp/Mono.backup/* Assemblies/Mono/
+            echo "Restored Mono assemblies from /tmp"
           fi
 
       - name: Get Version
