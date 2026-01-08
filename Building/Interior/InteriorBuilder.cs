@@ -17,7 +17,7 @@ namespace MAPI.Building.Interior
         
         private readonly string _name;
         private readonly List<GameObject> _furniture = new List<GameObject>();
-        private Transform _parent;
+        private Transform? _parent;
         
         #endregion
 
