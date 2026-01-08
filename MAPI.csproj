@@ -1,11 +1,11 @@
   <Project Sdk="Microsoft.NET.Sdk">
    <!-- Import local overrides for contributor paths from repository root -->
-   <Import Project="local.build.props" Condition="Exists('local.build.props')" />
-
-  <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <Import Project="local.build.props" Condition="Exists('local.build.props')" />
+ 
+   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>MAPI</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <LangVersion>default</LangVersion>
     <NeutralLanguage>en-US</NeutralLanguage>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
@@ -13,27 +13,28 @@
     <Configurations>Mono;Il2cpp</Configurations>
     <Nullable>enable</Nullable>
     <OutputType>Library</OutputType>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>MAPI</PackageId>
     <Title>Schedule 1 Mapping API</Title>
     <Authors>MAPI Contributors</Authors>
     <Description>A mapping and construction library for Schedule 1 mods, providing procedural mesh generation, building construction, and GLTF loading while remaining update-resilient.</Description>
-    <PackageTags>schedule-1;mapping;modding;fishnet;il2cpp;mono;procedural-mesh;gltf;building</PackageTags>
+    <PackageTags>schedule-1;mapping;modding;il2cpp;mono;procedural-mesh;gltf</PackageTags>
     <RepositoryUrl>https://github.com/ifBars/MAPI</RepositoryUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Version>0.1.0</Version>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+    <Version>1.0.0</Version>
   </PropertyGroup>
 
   <!-- Mono build for base game mono assemblies -->
-  <PropertyGroup Condition="'$(Configuration)'=='Mono'">
-    <DefineConstants>MONO</DefineConstants>
-    <AssemblyName>MAPI_Mono</AssemblyName>
+   <PropertyGroup Condition="'$(Configuration)'=='Mono'">
+     <TargetFramework>netstandard2.1</TargetFramework>
+     <DefineConstants>MONO</DefineConstants>
+     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <!-- Il2Cpp build for MelonLoader net6 assemblies -->
-  <PropertyGroup Condition="'$(Configuration)'=='Il2cpp'">
-    <DefineConstants>IL2CPP</DefineConstants>
-    <AssemblyName>MAPI_Il2cpp</AssemblyName>
+   <PropertyGroup Condition="'$(Configuration)'=='Il2cpp'">
+     <TargetFramework>net6.0</TargetFramework>
+     <DefineConstants>IL2CPP</DefineConstants>
+     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <!-- Mono Unity references -->
@@ -153,6 +154,15 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>$(Il2CppAssembliesPath)\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <!-- Core IL2CPP Runtime -->
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>$(Il2CppAssembliesPath)\Il2Cppmscorlib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Il2CppInterop.Runtime">
+      <HintPath>$(Il2CppMLAssembliesPath)\Il2CppInterop.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <!-- FishNet (Il2Cpp) -->
     <Reference Include="Il2CppFishNet.Runtime">
       <HintPath>$(Il2CppAssembliesPath)\Il2CppFishNet.Runtime.dll</HintPath>
@@ -163,21 +173,29 @@
   <!-- Source Files -->
   <ItemGroup>
     <Compile Include="Core\**\*.cs" />
+    <Compile Include="Extensions\**\*.cs" />
     <Compile Include="ProceduralMesh\**\*.cs" />
     <Compile Include="Building\**\*.cs" />
     <Compile Include="Gltf\**\*.cs" />
-    <Compile Include="S1\Materials.cs" />
-    <Compile Include="S1\Meshes.cs" />
-    <Compile Include="S1\Prefabs.cs" />
+    <Compile Include="S1\**\*.cs" />
     <Compile Include="Utils\**\*.cs" />
   </ItemGroup>
 
    <!-- Embedded Resources -->
    <ItemGroup>
      <EmbeddedResource Include="Resources\**\*" />
+     <EmbeddedResource Remove="api\**" />
+     <EmbeddedResource Remove="_site\**" />
    </ItemGroup>
    <ItemGroup>
      <None Remove="local.build.props.example" />
+     <None Remove="AGENTS.md" />
+     <None Remove="CODING_STANDARDS.md" />
+     <None Remove="api\**" />
+     <None Remove="_site\**" />
+   </ItemGroup>
+   <ItemGroup>
+     <PackageReference Include="Newtonsoft.Json" Version="13.0.5-beta1" />
    </ItemGroup>
 
    <!-- Post-build: Copy to game UserLibs folder -->

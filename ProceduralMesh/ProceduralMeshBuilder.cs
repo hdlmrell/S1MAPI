@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 using MAPI.Core;
 using MAPI.Utils;
-using MAPI.ProceduralMesh.Generators;
+using MAPI.ProceduralMesh.Generators.Primitives;
 
 namespace MAPI.ProceduralMesh
 {
@@ -13,7 +11,7 @@ namespace MAPI.ProceduralMesh
     /// </summary>
     /// <remarks>
     /// Use the builder pattern to add shapes, configure materials, then call Build() to create the final mesh.
-    /// All generated meshes are automatically registered with ResourceTracker for cleanup.
+    /// Unity automatically handles cleanup on scene unload and application quit.
     /// </remarks>
     public sealed class ProceduralMeshBuilder
     {
@@ -203,7 +201,6 @@ namespace MAPI.ProceduralMesh
             }
 
             mesh.RecalculateBounds();
-            ResourceTracker.Register(mesh);
 
             DebugLog.Info($"Built mesh: {_name} ({_vertices.Count} vertices, {_triangles.Count / 3} triangles)");
             return mesh;

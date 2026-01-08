@@ -1,63 +1,19 @@
-using System;
-using UnityEngine;
 using MAPI.Utils;
 
 namespace MAPI.Core
 {
     /// <summary>
-    /// Main entry point and initialization for MAPI library.
-    /// Handles library initialization and provides global configuration.
+    /// Main entry point for MAPI library.
+    /// Provides library metadata and optional configuration.
     /// </summary>
     /// <remarks>
-    /// Call Initialize() from consuming mods during their initialization phase.
-    /// Call Shutdown() during mod cleanup to properly release resources.
+    /// MAPI requires no initialization - all APIs work immediately.
+    /// Unity automatically handles resource cleanup on scene unload and application quit.
+    /// Use MaterialPresets.DefaultShader to override the default shader if needed.
     /// </remarks>
     public static class MAPI
     {
-        #region Internal Members
-
-        /// <summary>
-        /// INTERNAL: Whether the library has been initialized.
-        /// </summary>
-        internal static bool _initialized = false;
-
-        /// <summary>
-        /// INTERNAL: Initialize subsystems.
-        /// </summary>
-        internal static void InitializeSubsystems()
-        {
-            DebugLog.Info("Initializing subsystems...");
-
-            // Initialize resource management
-            ResourceTracker.Initialize();
-
-            // Future: Initialize building system
-            // Future: Initialize additional subsystems
-        }
-
-        /// <summary>
-        /// INTERNAL: Cleanup subsystems.
-        /// </summary>
-        internal static void CleanupSubsystems()
-        {
-            DebugLog.Info("Cleaning up subsystems...");
-
-            // Cleanup resource management
-            ResourceTracker.Shutdown();
-
-            // Future: Cleanup building system
-            // Future: Cleanup additional subsystems
-        }
-
-        #endregion
-
         #region Public Members
-
-        /// <summary>
-        /// Gets whether MAPI has been initialized.
-        /// </summary>
-        public static bool IsInitialized =>
-            _initialized;
 
         /// <summary>
         /// Gets the MAPI library version.
@@ -66,70 +22,10 @@ namespace MAPI.Core
             Constants.LIBRARY_VERSION;
 
         /// <summary>
-        /// Initialize the MAPI library.
-        /// This should be called by consuming mods during their initialization.
+        /// Gets the MAPI library name.
         /// </summary>
-        /// <param name="defaultShader">Optional default shader for materials</param>
-        public static void Initialize(Shader? defaultShader = null)
-        {
-            if (_initialized)
-            {
-                DebugLog.Warning("MAPI is already initialized");
-                return;
-            }
-
-            try
-            {
-                DebugLog.Info($"Initializing {Constants.LIBRARY_NAME} v{Constants.LIBRARY_VERSION}");
-
-                // Initialize subsystems
-                InitializeSubsystems();
-
-                // Set default shader if provided
-                if (defaultShader != null)
-                {
-                    MaterialPresets.DefaultShader = defaultShader;
-                }
-
-                _initialized = true;
-                DebugLog.Info($"{Constants.LIBRARY_NAME} initialization complete");
-            }
-            catch (Exception ex)
-            {
-                DebugLog.Error($"Failed to initialize {Constants.LIBRARY_NAME}");
-                DebugLog.Exception(ex);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Shutdown the MAPI library.
-        /// This should be called by consuming mods during their cleanup.
-        /// </summary>
-        public static void Shutdown()
-        {
-            if (!_initialized)
-            {
-                DebugLog.Warning("MAPI is not initialized");
-                return;
-            }
-
-            try
-            {
-                DebugLog.Info($"Shutting down {Constants.LIBRARY_NAME}");
-
-                // Cleanup subsystems
-                CleanupSubsystems();
-
-                _initialized = false;
-                DebugLog.Info($"{Constants.LIBRARY_NAME} shutdown complete");
-            }
-            catch (Exception ex)
-            {
-                DebugLog.Error($"Error during {Constants.LIBRARY_NAME} shutdown");
-                DebugLog.Exception(ex);
-            }
-        }
+        public static string Name =>
+            Constants.LIBRARY_NAME;
 
         #endregion
     }

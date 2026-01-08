@@ -1,6 +1,6 @@
-using System.Collections.Generic;
 using UnityEngine;
 using MAPI.Core;
+using MAPI.Extensions;
 using MAPI.Utils;
 
 namespace MAPI.ProceduralMesh
@@ -35,7 +35,7 @@ namespace MAPI.ProceduralMesh
             int[] triangles = mesh.triangles;
             Vector3[] vertices = new Vector3[triangles.Length];
             Vector3[] normals = new Vector3[triangles.Length];
-            Vector2[] uvs = mesh.uv.Length > 0 ? new Vector2[triangles.Length] : null;
+            Vector2[]? uvs = mesh.uv.Length > 0 ? new Vector2[triangles.Length] : null;
 
             for (int i = 0; i < triangles.Length; i += 3)
             {
@@ -187,7 +187,6 @@ namespace MAPI.ProceduralMesh
             }
 
             mergedMesh.RecalculateBounds();
-            ResourceTracker.Register(mergedMesh);
 
             DebugLog.Info($"Merged {meshes.Length} meshes into: {name} ({vertices.Count} vertices)");
             return mergedMesh;
@@ -214,7 +213,7 @@ namespace MAPI.ProceduralMesh
         #endregion
 
         #region Public API - Mesh Validation
-        
+
         /// <summary>
         /// Validate that a mesh is within Unity's limitations
         /// </summary>
@@ -228,21 +227,8 @@ namespace MAPI.ProceduralMesh
                 return false;
             }
 
-            if (mesh.vertices.Length == 0)
+            if (!mesh.IsValid())
             {
-                DebugLog.Error($"Mesh {mesh.name} has no vertices");
-                return false;
-            }
-
-            if (mesh.triangles.Length == 0)
-            {
-                DebugLog.Error($"Mesh {mesh.name} has no triangles");
-                return false;
-            }
-
-            if (mesh.vertices.Length > MaxVerticesPerMesh)
-            {
-                DebugLog.Error($"Mesh {mesh.name} has {mesh.vertices.Length} vertices, exceeding limit of {MaxVerticesPerMesh}");
                 return false;
             }
 
@@ -254,7 +240,7 @@ namespace MAPI.ProceduralMesh
 
             return true;
         }
-        
+
         #endregion
     }
 

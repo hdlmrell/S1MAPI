@@ -1,6 +1,7 @@
 using UnityEngine;
+using MAPI.S1;
 
-namespace MAPI.Building
+namespace MAPI.Building.Config
 {
     /// <summary>
     /// Configuration for building dimensions and style.
@@ -29,7 +30,7 @@ namespace MAPI.Building
         public float CeilingThickness { get; set; } = 0.1f;
 
         /// <summary>Material and color palette</summary>
-        public BuildingPalette Palette { get; set; } = BuildingPalette.Default;
+        public BuildingPalette Palette { get; set; } = new();
 
         #endregion
 
@@ -101,47 +102,29 @@ namespace MAPI.Building
         };
 
         /// <summary>
-        /// Small retail shop (6m x 3m x 5m) with Industrial palette.
-        /// </summary>
-        public static BuildingConfig SmallShop => new()
-        {
-            Width = 6f,
-            Height = 3f,
-            Depth = 5f,
-            Palette = BuildingPalette.Modern
-        };
-
-        /// <summary>
-        /// Medium retail store (10m x 3.5m x 8m) with Modern palette.
-        /// </summary>
-        public static BuildingConfig RetailStore => new()
-        {
-            Width = 10f,
-            Height = 3.5f,
-            Depth = 8f,
-            Palette = BuildingPalette.Modern
-        };
-
-        /// <summary>
-        /// Dispensary style (12m x 4m x 10m) with Industrial palette.
-        /// </summary>
-        public static BuildingConfig Dispensary => new()
-        {
-            Width = 12f,
-            Height = 4f,
-            Depth = 10f,
-            Palette = BuildingPalette.Industrial
-        };
-
-        /// <summary>
-        /// Warehouse style (20m x 6m x 15m) with Industrial palette.
+        /// Warehouse style (20m x 6m x 15m) with industrial palette.
         /// </summary>
         public static BuildingConfig Warehouse => new()
         {
             Width = 20f,
             Height = 6f,
             Depth = 15f,
-            Palette = BuildingPalette.Industrial
+            Palette = new BuildingPalette
+            {
+                FloorMaterial = Materials.ConcreteLightGrey,
+                FloorColor = new Color(0.75f, 0.75f, 0.75f),
+                WallMaterial = Materials.GraniteDullSalmonLighter,
+                WallColor = new Color(0.94f, 0.94f, 0.94f),
+                CeilingMaterial = Materials.ConcreteLightGrey,
+                CeilingColor = new Color(0.94f, 0.94f, 0.94f),
+                TrimMaterial = Materials.BrickWallRed,
+                TrimColor = new Color(0.6f, 0.3f, 0.2f),
+                PillarMaterial = Materials.BrickWallRed,
+                PillarColor = new Color(0.6f, 0.3f, 0.2f),
+                AccentColor = new Color(0.29f, 0.48f, 0.29f),
+                LightColor = new Color(1f, 0.98f, 0.95f),
+                LightIntensity = 1.2f
+            }
         };
 
         #endregion

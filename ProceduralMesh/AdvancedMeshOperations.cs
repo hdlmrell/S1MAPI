@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 using MAPI.Utils;
 
@@ -17,7 +16,7 @@ namespace MAPI.ProceduralMesh
         /// <param name="mesh">The mesh to optimize</param>
         /// <param name="threshold">Distance threshold for merging vertices</param>
         /// <returns>A new optimized mesh</returns>
-        public static Mesh WeldVertices(Mesh mesh, float threshold = Constants.Mesh.VertexWeldThreshold)
+        public static Mesh? WeldVertices(Mesh mesh, float threshold = Constants.Mesh.VertexWeldThreshold)
         {
             if (mesh == null) return null;
 

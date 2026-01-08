@@ -3,10 +3,9 @@ using MAPI.Core;
 namespace MAPI.S1
 {
     /// <summary>
-    /// Registry of known Schedule 1 network-spawnable prefabs.
-    /// These have full game logic: NetworkObject, pickup/drop, interaction triggers, etc.
-    /// Use these for functional items that need multiplayer sync or player interaction.
-    /// For static decoration meshes, use Meshes instead.
+    /// Registry of known Schedule 1 prefabs.
+    /// These have full game logic (e.g. NetworkObject, pickup/drop, interaction triggers, etc.)
+    /// Use these for functional items. For static decoration meshes, use Meshes instead.
     /// </summary>
     public static class Prefabs
     {
@@ -50,11 +49,6 @@ namespace MAPI.S1
         #endregion
 
         #region Items
-
-        /// <summary>
-        /// Glass bong item.
-        /// </summary>
-        public static readonly PrefabRef Bong = new("Bong_Trash");
 
         /// <summary>
         /// Cash register.
@@ -270,6 +264,20 @@ namespace MAPI.S1
         /// Safe (Built version).
         /// </summary>
         public static readonly PrefabRef SafeBuilt = new("Safe_Built");
+
+        #endregion
+
+        #region Security
+
+        /// <summary>
+        /// Functional passcode panel for secure access control.
+        /// </summary>
+        public static readonly PrefabRef PasscodePanel = new("Passcode Panel (Functional)");
+
+        /// <summary>
+        /// Modular switch for electrical control.
+        /// </summary>
+        public static readonly PrefabRef ModularSwitch = new("ModularSwitch");
 
         #endregion
 

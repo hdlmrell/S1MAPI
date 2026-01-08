@@ -1,0 +1,228 @@
+name: Bleeding Edge Build
+
+on:
+  push:
+    branches: [ bleeding-edge ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout MAPI
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Create Assembly Directory Structure
+        run: |
+          mkdir -p Assemblies/Il2Cpp
+          mkdir -p Assemblies/Mono
+
+      - name: Cache Assemblies
+        id: cache-assemblies
+        uses: actions/cache@v4
+        with:
+          path: Assemblies
+          key: mapi-assemblies-${{ hashFiles('MAPI.csproj') }}
+          restore-keys: |
+            mapi-assemblies-
+
+      # Checkout Game Assemblies (Mono)
+      - name: Checkout Game Assemblies
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.GAME_ASSEMBLIES_REPO }}
+          token: ${{ secrets.GAME_REPOS_TOKEN }}
+          path: game-assemblies
+          fetch-depth: 1
+        if: steps.cache-assemblies.outputs.cache-hit != 'true'
+
+      - name: Populate Mono Assemblies
+        if: steps.cache-assemblies.outputs.cache-hit != 'true'
+        run: |
+          echo "=== Setting up Mono Assemblies ==="
+          if [ -d "game-assemblies/Managed" ]; then
+            cp -r game-assemblies/Managed/* Assemblies/Mono/
+          else
+            echo "Warning: game-assemblies/Managed not found"
+          fi
+
+      - name: Create CI Build Properties
+        run: |
+          cat > local.build.props << 'EOF'
+          <Project>
+              <PropertyGroup>
+                  <MonoAssembliesPath>$(MSBuildThisFileDirectory)Assemblies/Mono</MonoAssembliesPath>
+                  <Il2CppAssembliesPath>$(MSBuildThisFileDirectory)Assemblies/Il2Cpp</Il2CppAssembliesPath>
+                  <Il2CppMLAssembliesPath>$(MSBuildThisFileDirectory)Assemblies/Il2Cpp</Il2CppMLAssembliesPath>
+              </PropertyGroup>
+          </Project>
+          EOF
+
+      - name: Restore Dependencies
+        run: dotnet restore MAPI.csproj /p:Configuration=Mono
+
+      - name: Check Mono Assemblies
+        run: |
+          echo "=== Mono Assembly Directory Contents ==="
+          if [ -d "Assemblies/Mono" ]; then
+            ls -la Assemblies/Mono/ | head -20
+            echo ""
+            echo "=== Checking for TextMeshPro ==="
+            if [ -f "Assemblies/Mono/Unity.TextMeshPro.dll" ]; then
+              echo "✓ Unity.TextMeshPro.dll found"
+              echo "File size: $(stat -c%s Assemblies/Mono/Unity.TextMeshPro.dll) bytes"
+              # Use ildasm-like tool if available, or just check if file is valid
+              file Assemblies/Mono/Unity.TextMeshPro.dll || true
+            else
+              echo "✗ Unity.TextMeshPro.dll NOT found - searching for it..."
+              find game-assemblies -name "*TextMeshPro*.dll" -type f
+            fi
+            echo ""
+            echo "=== Checking for potential assembly conflicts ==="
+            if [ -d "Assemblies/Il2Cpp" ]; then
+              echo "IL2CPP assemblies directory exists (may cause conflicts)"
+              ls Assemblies/Il2Cpp/*.dll 2>/dev/null | wc -l
+            fi
+          else
+            echo "ERROR: Assemblies/Mono directory not found!"
+            echo "This likely means the game-assemblies checkout failed."
+            exit 1
+          fi
+
+      - name: Clear IL2CPP Assemblies Before Mono Build
+        run: |
+          echo "=== Clearing IL2CPP assemblies for Mono build ==="
+          if [ -d "Assemblies/Il2Cpp" ]; then
+            rm -rf /tmp/Il2Cpp.backup 2>/dev/null || true
+            mv Assemblies/Il2Cpp /tmp/Il2Cpp.backup
+            echo "Moved IL2CPP assemblies outside workspace"
+          fi
+
+      - name: Build Mono
+        run: dotnet build MAPI.csproj --no-restore /p:Configuration=Mono -v normal
+
+      - name: Restore IL2CPP Assemblies from Backup
+        run: |
+          echo "=== Restoring IL2CPP assemblies from /tmp backup ==="
+          if [ -d "/tmp/Il2Cpp.backup" ]; then
+            mkdir -p Assemblies/Il2Cpp
+            cp -r /tmp/Il2Cpp.backup/* Assemblies/Il2Cpp/
+            echo "Restored IL2CPP assemblies from /tmp"
+          else
+            echo "ERROR: IL2CPP backup not found in /tmp!"
+            echo "This should have been created before Mono build"
+            exit 1
+          fi
+
+      # Checkout IL2CPP Assemblies
+      - name: Checkout IL2CPP Assemblies
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.IL2CPP_ASSEMBLIES_REPO }}
+          token: ${{ secrets.GAME_REPOS_TOKEN }}
+          path: il2cpp-assemblies
+          fetch-depth: 1
+        if: steps.cache-assemblies.outputs.cache-hit != 'true'
+
+      - name: Populate IL2CPP Assemblies from Checkout
+        if: steps.cache-assemblies.outputs.cache-hit != 'true'
+        run: |
+          if [ ! -d "/tmp/Il2Cpp.backup" ]; then
+            echo "=== Setting up IL2CPP Assemblies from checkout ==="
+            # Copy core IL2CPP assemblies
+            if [ -d "il2cpp-assemblies/MelonLoader/Il2CppAssemblies" ]; then
+              cp -r il2cpp-assemblies/MelonLoader/Il2CppAssemblies/* Assemblies/Il2Cpp/
+            elif [ -d "il2cpp-assemblies/Il2CppAssemblies" ]; then
+              cp -r il2cpp-assemblies/Il2CppAssemblies/* Assemblies/Il2Cpp/
+            fi
+
+            # Ensure FishNet for IL2CPP is present
+            if [ ! -f "Assemblies/Il2Cpp/Il2CppFishNet.Runtime.dll" ]; then
+               echo "Searching for Il2CppFishNet.Runtime.dll..."
+               FN_PATH=$(find il2cpp-assemblies -name "Il2CppFishNet.Runtime.dll" -type f | head -1)
+               if [ -n "$FN_PATH" ]; then
+                 cp "$FN_PATH" Assemblies/Il2Cpp/
+                 echo "Copied Il2CppFishNet.Runtime.dll"
+               else
+                 echo "Warning: Il2CppFishNet.Runtime.dll not found!"
+               fi
+            fi
+
+            # Ensure core IL2CPP runtime assemblies are present
+            echo "=== Checking for IL2CPP runtime assemblies ==="
+            if [ ! -f "Assemblies/Il2Cpp/Il2Cppmscorlib.dll" ]; then
+               echo "Searching for Il2Cppmscorlib.dll..."
+               MSCORLIB_PATH=$(find il2cpp-assemblies -name "Il2Cppmscorlib.dll" -type f | head -1)
+               if [ -n "$MSCORLIB_PATH" ]; then
+                 cp "$MSCORLIB_PATH" Assemblies/Il2Cpp/
+                 echo "Copied Il2Cppmscorlib.dll"
+               else
+                 echo "Warning: Il2Cppmscorlib.dll not found!"
+               fi
+            fi
+
+            if [ ! -f "Assemblies/Il2Cpp/Il2CppInterop.Runtime.dll" ]; then
+               echo "Searching for Il2CppInterop.Runtime.dll..."
+               INTEROP_PATH=$(find il2cpp-assemblies -name "Il2CppInterop.Runtime.dll" -type f | head -1)
+               if [ -n "$INTEROP_PATH" ]; then
+                 cp "$INTEROP_PATH" Assemblies/Il2Cpp/
+                 echo "Copied Il2CppInterop.Runtime.dll"
+               else
+                 echo "Warning: Il2CppInterop.Runtime.dll not found!"
+               fi
+            fi
+          fi
+
+      - name: Clear Mono Assemblies Before IL2CPP Build
+        run: |
+          echo "=== Clearing Mono assemblies for IL2CPP build ==="
+          if [ -d "Assemblies/Mono" ]; then
+            rm -rf /tmp/Mono.backup 2>/dev/null || true
+            mv Assemblies/Mono /tmp/Mono.backup
+            echo "Moved Mono assemblies outside workspace"
+          fi
+
+          # List what we actually have in IL2CPP assemblies
+          echo "=== IL2CPP Assembly Directory Contents ==="
+          ls -la Assemblies/Il2Cpp/ | head -20
+
+      - name: Restore IL2CPP Dependencies
+        run: dotnet restore MAPI.csproj /p:Configuration=Il2cpp
+
+      - name: Build IL2CPP
+        run: dotnet build MAPI.csproj --no-restore -c Il2cpp -v normal
+
+      - name: Restore Mono Assemblies
+        run: |
+          echo "=== Restoring Mono assemblies ==="
+          if [ -d "/tmp/Mono.backup" ]; then
+            mkdir -p Assemblies/Mono
+            cp -r /tmp/Mono.backup/* Assemblies/Mono/
+            echo "Restored Mono assemblies from /tmp"
+          fi
+
+      - name: Get Version
+        id: get_version
+        run: |
+          VERSION=$(grep -oP '(?<=<Version>)[^<]+' MAPI.csproj)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Upload Mono Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MAPI-Mono-${{ steps.get_version.outputs.version }}-bleeding-edge
+          path: bin/Mono/netstandard2.1/MAPI.dll
+
+      - name: Upload IL2CPP Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MAPI-Il2cpp-${{ steps.get_version.outputs.version }}-bleeding-edge
+          path: bin/Il2cpp/net6.0/MAPI.dll

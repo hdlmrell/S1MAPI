@@ -5,7 +5,7 @@ namespace MAPI.S1
     /// <summary>
     /// Registry of known Schedule 1 static mesh assets.
     /// Use these for decorative elements that don't need game logic.
-    /// For interactive items (pickup, network sync), use Prefabs instead.
+    /// For interactive items, use Prefabs instead.
     /// </summary>
     public static class Meshes
     {
@@ -111,8 +111,8 @@ namespace MAPI.S1
         #region Props - Decorative
 
         /// <summary>
-        /// Vase/bong mesh (visual only, no pickup logic).
-        /// The actual Bong item prefab uses this mesh internally.
+        /// Vase/bong mesh.
+        /// The Bong trash item uses this mesh internally.
         /// </summary>
         public static readonly MeshRef Vase = new("SM_Prop_Vase_02");
 

@@ -1,3 +1,5 @@
+using System;
+using System.Reflection;
 using UnityEngine;
 using MAPI.Utils;
 
@@ -8,7 +10,6 @@ using Il2CppFishNet.Managing.Object;
 using Il2CppFishNet.Object;
 #else
 using FishNet;
-using FishNet.Managing;
 using FishNet.Managing.Object;
 using FishNet.Object;
 #endif
@@ -16,8 +17,8 @@ using FishNet.Object;
 namespace MAPI.Core
 {
     /// <summary>
-    /// Reference to a network-spawnable prefab in the game.
-    /// These are full GameObjects with components (NetworkObject, interaction scripts, etc.).
+    /// Reference to a prefab in the game.
+    /// These are full GameObjects with components (e.g. NetworkObject, interaction scripts, etc.).
     /// For static mesh-only assets (decoration), use MeshRef instead.
     /// Use MAPI.S1.Prefabs for known Schedule 1 prefab assets.
     /// </summary>
@@ -77,9 +78,24 @@ namespace MAPI.Core
         }
 
         /// <summary>
-        /// Instantiate this prefab locally (no network spawning).
+        /// Instantiate this prefab locally without network spawning.
         /// </summary>
         /// <returns>The instantiated GameObject or null if prefab not found</returns>
+        /// <remarks>
+        /// <para><strong>WARNING:</strong> Only use this method for prefabs that do NOT have a NetworkObject component.</para>
+        /// <para>
+        /// For prefabs with NetworkObject components (networked prefabs), you MUST use <see cref="InstantiateNetworked"/> instead.
+        /// Using this method on networked prefabs will cause FishNet to crash and break multiplayer functionality.
+        /// </para>
+        /// <para>
+        /// Use this method only for:
+        /// <list type="bullet">
+        /// <item><description>Static decorative objects without network synchronization</description></item>
+        /// <item><description>Client-side visual effects</description></item>
+        /// <item><description>Local UI elements</description></item>
+        /// </list>
+        /// </para>
+        /// </remarks>
         public GameObject? Instantiate()
         {
             var prefab = Find();
@@ -92,14 +108,63 @@ namespace MAPI.Core
         }
 
         /// <summary>
-        /// Instantiate and spawn on the network (server only).
+        /// Instantiate and spawn a networked prefab on the network (server only).
         /// </summary>
-        /// <returns>The instantiated GameObject or null if prefab not found</returns>
+        /// <returns>The instantiated and network-spawned GameObject, or null if prefab not found</returns>
+        /// <remarks>
+        /// <para><strong>CRITICAL:</strong> You MUST use this method for any prefab that has a NetworkObject component.</para>
+        /// <para>
+        /// Using <see cref="Instantiate"/> on networked prefabs will cause FishNet to crash and completely break 
+        /// multiplayer functionality. This is not recoverable without restarting the game.
+        /// </para>
+        /// <para><strong>What this method does:</strong></para>
+        /// <list type="number">
+        /// <item><description>Instantiates the prefab as inactive to prevent Awake() from running with uninitialized network state</description></item>
+        /// <item><description>Initializes any GUID fields to prevent parse errors (fixes issues with prefabs like ATM)</description></item>
+        /// <item><description>Spawns the object on the FishNet network, assigning it a network ID</description></item>
+        /// <item><description>Activates the object, allowing Awake() to run with valid network state</description></item>
+        /// </list>
+        /// <para><strong>Requirements:</strong></para>
+        /// <list type="bullet">
+        /// <item><description>The prefab must be registered in FishNet's spawnable prefabs list</description></item>
+        /// <item><description>The prefab must have a NetworkObject component</description></item>
+        /// </list>
+        /// <para><strong>Examples of prefabs that require this method:</strong></para>
+        /// <list type="bullet">
+        /// <item><description>S1.Prefabs.ATM</description></item>
+        /// <item><description>S1.Prefabs.Door (any networked doors)</description></item>
+        /// <item><description>S1.Prefabs.Storage (any networked storage containers)</description></item>
+        /// </list>
+        /// </remarks>
+        /// <exception cref="System.InvalidOperationException">Thrown if called on client when not server</exception>
         public GameObject? InstantiateNetworked()
         {
-            var instance = Instantiate();
+            var prefab = Find();
+            if (prefab == null)
+            {
+                DebugLog.Warning($"[PrefabRef] Could not find prefab: {Name}");
+                return null;
+            }
+
+            // Store original active state
+            bool originalState = prefab.activeSelf;
+            
+            // Temporarily disable the prefab to prevent Awake() during instantiation
+            prefab.SetActive(false);
+
+            // Instantiate with components inactive
+            GameObject? instance = UnityEngine.Object.Instantiate(prefab);
+
+            // Restore prefab's original state
+            prefab.SetActive(originalState);
+
             if (instance == null) return null;
 
+            // Initialize GUID fields on components before Awake() runs
+            // This fixes prefabs like ATM that parse GUIDs in Awake()
+            InitializeGuidFields(instance);
+
+            // Spawn on network (assigns network GUID and calls OnStartServer)
             if (InstanceFinder.NetworkManager != null && InstanceFinder.NetworkManager.IsServer)
             {
                 var netObj = instance.GetComponent<NetworkObject>();
@@ -109,16 +174,80 @@ namespace MAPI.Core
                 }
             }
 
-            ResourceTracker.Register(instance);
+            // Now activate the instance - Awake() will run with valid GUIDs
+            instance.SetActive(true);
+            
             return instance;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Initialize GUID/guid string fields on all components to prevent parse errors in Awake().
+        /// Uses reflection to find and populate empty GUID fields without requiring ScheduleOne references.
+        /// </summary>
+        private static void InitializeGuidFields(GameObject instance)
+        {
+            var components = instance.GetComponentsInChildren<MonoBehaviour>(includeInactive: true);
+            foreach (var component in components)
+            {
+                if (component == null) continue;
+
+                var type = component.GetType();
+                var fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+                foreach (var field in fields)
+                {
+                    try
+                    {
+                        // Handle string fields named "guid" or "GUID" that are empty or contain empty GUID
+                        if (field.FieldType == typeof(string) && 
+                            (field.Name.Equals("guid", StringComparison.OrdinalIgnoreCase) ||
+                             field.Name.Contains("guid", StringComparison.OrdinalIgnoreCase)))
+                        {
+                            var value = field.GetValue(component) as string;
+                            if (string.IsNullOrEmpty(value) || value == "00000000-0000-0000-0000-000000000000")
+                            {
+                                field.SetValue(component, Guid.NewGuid().ToString());
+                                DebugLog.Info($"[PrefabRef] Initialized GUID field '{field.Name}' on {type.Name}");
+                            }
+                        }
+                        // Handle System.Guid fields
+                        else if (field.FieldType == typeof(Guid))
+                        {
+                            if (field.GetValue(component) is Guid value)
+                            {
+                                if (value == Guid.Empty)
+                                {
+                                    field.SetValue(component, Guid.NewGuid());
+                                    DebugLog.Info($"[PrefabRef] Initialized Guid field '{field.Name}' on {type.Name}");
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        DebugLog.Warning($"[PrefabRef] Failed to initialize field '{field.Name}' on {type.Name}: {e.Message}");
+                    }
+                }
+            }
         }
 
         #endregion
 
         #region Operators
 
+        /// <summary>
+        /// Returns the prefab name as a string.
+        /// </summary>
         public override string ToString() => Name;
 
+        /// <summary>
+        /// Implicitly converts PrefabRef to its underlying prefab name string.
+        /// </summary>
+        /// <param name="prefab">The prefab reference to convert.</param>
         public static implicit operator string(PrefabRef prefab) => prefab.Name;
 
         #endregion

@@ -1,3 +1,4 @@
+using MAPI.Extensions;
 using UnityEngine;
 using UnityEngine.AI;
 using MAPI.Utils;
@@ -28,12 +29,7 @@ namespace MAPI.Building
                 return;
             }
 
-            NavMeshObstacle obstacle = gameObject.GetComponent<NavMeshObstacle>();
-            if (obstacle == null)
-            {
-                obstacle = gameObject.AddComponent<NavMeshObstacle>();
-            }
-
+            NavMeshObstacle obstacle = gameObject.GetOrAddComponent<NavMeshObstacle>();
             obstacle.carving = carving;
             obstacle.carveOnlyStationary = carveOnlyStationary;
 
@@ -113,26 +109,6 @@ namespace MAPI.Building
         
         #endregion
 
-        #region Public API - Layer Management
-        
-        /// <summary>
-        /// Set the layer for a GameObject and optionally all its children
-        /// </summary>
-        public static void SetLayer(GameObject gameObject, int layer, bool includeChildren = true)
-        {
-            GameObjectUtilities.SetLayerRecursively(gameObject, layer, includeChildren);
-        }
-
-        /// <summary>
-        /// Set the layer by name
-        /// </summary>
-        public static void SetLayer(GameObject gameObject, string layerName, bool includeChildren = true)
-        {
-            GameObjectUtilities.SetLayerRecursively(gameObject, layerName, includeChildren);
-        }
-        
-        #endregion
-
         #region Public API - Occlusion
         
         /// <summary>
@@ -180,16 +156,14 @@ namespace MAPI.Building
         /// <summary>
         /// Create an empty GameObject to serve as a folder/container
         /// </summary>
-        public static GameObject CreateFolder(string name, Transform parent = null)
+        public static GameObject CreateFolder(string name, Transform? parent = null)
         {
             GameObject folder = new GameObject(name);
-            
+
             if (parent != null)
             {
                 folder.transform.SetParent(parent);
-                folder.transform.localPosition = Vector3.zero;
-                folder.transform.localRotation = Quaternion.identity;
-                folder.transform.localScale = Vector3.one;
+                folder.transform.Reset();
             }
 
             return folder;

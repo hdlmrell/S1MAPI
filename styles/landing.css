@@ -1,0 +1,462 @@
+/* MAPI Unique Landing Style */
+:root {
+    --mapi-bg: #1a1e23;
+    --mapi-bg-dark: #13161a;
+    --mapi-bg-card: #21262d;
+    --mapi-text: #e6edf3;
+    --mapi-text-muted: #8b949e;
+    --mapi-accent: #d29922; /* Construction Amber */
+    --mapi-accent-glow: rgba(210, 153, 34, 0.15);
+    --mapi-border: #30363d;
+    --mapi-grid-color: rgba(255, 255, 255, 0.03);
+    --mapi-font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+    --navbar-height: 64px; /* DocFX navbar height */
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+body {
+    background-color: var(--mapi-bg) !important;
+    color: var(--mapi-text) !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+}
+
+/* Override DocFX main container spacing for landing page */
+body[data-layout="landing"] main.container-xxl {
+    padding: 0 !important;
+    max-width: 100% !important;
+}
+
+body[data-layout="landing"] .content {
+    padding: 0 !important;
+}
+
+body[data-layout="landing"] .actionbar {
+    display: none !important;
+}
+
+/* Layout Container */
+.mapi-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 clamp(1rem, 4vw, 2rem);
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Hero Section */
+.mapi-hero-wrapper {
+    position: relative;
+    min-height: calc(100vh - var(--navbar-height));
+    display: flex;
+    align-items: center;
+    padding: 4rem 0;
+    overflow: hidden;
+    background: radial-gradient(circle at top right, #2d333b 0%, var(--mapi-bg) 60%);
+    border-bottom: 1px solid var(--mapi-border);
+}
+
+.mapi-hero-content {
+    width: 100%;
+    position: relative;
+    z-index: 2;
+}
+
+/* Animated Grid Background */
+.mapi-grid-bg {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: 
+        linear-gradient(var(--mapi-grid-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--mapi-grid-color) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+    pointer-events: none;
+}
+
+.mapi-brand {
+    margin-bottom: 2.5rem;
+}
+
+.mapi-title {
+    font-size: 5rem;
+    font-weight: 800;
+    line-height: 1;
+    margin: 0;
+    letter-spacing: -2px;
+    background: linear-gradient(180deg, #fff 0%, #a5b3ce 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.mapi-dot {
+    color: var(--mapi-accent);
+    -webkit-text-fill-color: var(--mapi-accent);
+}
+
+.mapi-tagline {
+    font-size: 1.5rem;
+    color: var(--mapi-text-muted);
+    font-weight: 300;
+    margin-top: 1rem;
+    border-left: 3px solid var(--mapi-accent);
+    padding-left: 1rem;
+}
+
+/* Badges */
+.mapi-badges {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+
+.mapi-badge {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--mapi-border);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: var(--mapi-text-muted);
+    font-family: var(--mapi-font-mono);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Split Hero Layout */
+.mapi-hero-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.mapi-hero-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.mapi-description {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    color: var(--mapi-text-muted);
+    margin-bottom: 2.5rem;
+}
+
+/* Buttons */
+.mapi-cta-group {
+    display: flex;
+    gap: 1rem;
+}
+
+.mapi-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 2rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+/* Style all links in CTA group as buttons */
+.mapi-cta-group > a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 2rem;
+    border-radius: 6px;
+    text-decoration: none !important;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.mapi-btn-primary,
+.mapi-cta-group > a:first-child {
+    background-color: var(--mapi-accent);
+    color: #0d1117 !important;
+}
+
+.mapi-btn-primary:hover,
+.mapi-cta-group > a:first-child:hover {
+    background-color: #e3a82b;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--mapi-accent-glow);
+    color: #0d1117 !important;
+}
+
+.mapi-btn-outline,
+.mapi-cta-group > a:not(:first-child) {
+    border: 1px solid var(--mapi-border);
+    color: var(--mapi-text) !important;
+    background: transparent;
+}
+
+.mapi-btn-outline:hover,
+.mapi-cta-group > a:not(:first-child):hover {
+    border-color: var(--mapi-text);
+    color: var(--mapi-text) !important;
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-2px);
+}
+
+/* Code Card */
+.mapi-code-card {
+    background: #0d1117;
+    border: 1px solid var(--mapi-border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    max-width: 100%;
+    height: fit-content;
+    align-self: flex-start;
+    margin-top: -2rem;
+    margin-right: -2rem;
+}
+
+.mapi-card-header {
+    background: #161b22;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--mapi-border);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mapi-card-header .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+}
+.red { background: #ff5f56; }
+.yellow { background: #ffbd2e; }
+.green { background: #27c93f; }
+
+.filename {
+    margin-left: 1rem;
+    font-family: var(--mapi-font-mono);
+    font-size: 0.8rem;
+    color: var(--mapi-text-muted);
+}
+
+.mapi-code-card pre {
+    margin: 0;
+    padding: 1.5rem;
+    background: transparent;
+    border: none;
+}
+
+.mapi-code-card code {
+    font-family: var(--mapi-font-mono);
+    font-size: 0.9rem;
+}
+
+/* Sections */
+.mapi-section {
+    padding: 5rem 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.mapi-section-dark {
+    background-color: var(--mapi-bg-dark);
+    border-top: 1px solid var(--mapi-border);
+    border-bottom: 1px solid var(--mapi-border);
+}
+
+.mapi-section-header {
+    margin-bottom: 3rem;
+    position: relative;
+}
+
+.mapi-section-header h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.mapi-divider {
+    width: 60px;
+    height: 4px;
+    background: var(--mapi-accent);
+    border-radius: 2px;
+}
+
+/* Feature Grid */
+.mapi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    width: 100%;
+}
+
+.mapi-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    width: 100%;
+}
+
+.mapi-feature-card {
+    background: var(--mapi-bg-card);
+    border: 1px solid var(--mapi-border);
+    padding: 2rem;
+    border-radius: 8px;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.mapi-feature-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--mapi-accent);
+}
+
+.card-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.mapi-feature-card h3 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: var(--mapi-text);
+}
+
+.mapi-feature-card p {
+    color: var(--mapi-text-muted);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Tech Cards */
+.mapi-tech-card {
+    padding: 2rem;
+    border-left: 3px solid var(--mapi-border);
+    background: linear-gradient(90deg, rgba(255,255,255,0.02) 0%, transparent 100%);
+    transition: border-color 0.2s ease;
+}
+
+.mapi-tech-card p {
+    color: var(--mapi-text-muted);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.mapi-tech-card:hover {
+    border-left-color: var(--mapi-accent);
+}
+
+.mapi-tech-card h3 {
+    font-family: var(--mapi-font-mono);
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: var(--mapi-accent);
+}
+
+/* Footer CTA */
+.mapi-footer-cta {
+    padding: 5rem 0;
+    text-align: center;
+}
+
+.mapi-footer-cta h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--mapi-text);
+}
+
+.mapi-links {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    font-family: var(--mapi-font-mono);
+    color: var(--mapi-text-muted);
+}
+
+.mapi-links a {
+    color: var(--mapi-text) !important;
+    text-decoration: none !important;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.mapi-links a:hover {
+    color: var(--mapi-accent) !important;
+    border-bottom-color: var(--mapi-accent);
+}
+
+.separator {
+    color: var(--mapi-border);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    :root {
+        --navbar-height: 56px; /* Smaller navbar on mobile */
+    }
+    
+    .mapi-hero-wrapper {
+        min-height: calc(100vh - var(--navbar-height));
+        padding: 3rem 0;
+    }
+    
+    .mapi-hero-split {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+    }
+    
+    .mapi-title {
+        font-size: 3.5rem;
+    }
+    
+    .mapi-grid-3 {
+        grid-template-columns: 1fr;
+    }
+    
+    .mapi-section {
+        padding: 4rem 0;
+    }
+    
+    .mapi-section-header {
+        margin-bottom: 2.5rem;
+    }
+    
+    .mapi-footer-cta {
+        padding: 4rem 0;
+    }
+}
+
+@media (max-width: 600px) {
+    .mapi-title {
+        font-size: 2.5rem;
+    }
+    
+    .mapi-tagline {
+        font-size: 1.2rem;
+    }
+    
+    .mapi-description {
+        font-size: 1.1rem;
+    }
+    
+    .mapi-cta-group {
+        flex-direction: column;
+    }
+    
+    .mapi-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

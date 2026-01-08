@@ -3,11 +3,11 @@ namespace MAPI.Utils
     /// <summary>
     /// Core constants for MAPI library
     /// </summary>
-    public static class Constants
+    internal static class Constants
     {
         public const string LIBRARY_NAME = "MAPI";
-        public const string LIBRARY_VERSION = "0.1.0";
-        public const string LIBRARY_AUTHOR = "MAPI Contributors";
+        public const string LIBRARY_VERSION = "1.0.0";
+        public const string LIBRARY_AUTHOR = "Bars";
 
         /// <summary>
         /// Minimum supported Unity version
@@ -17,7 +17,7 @@ namespace MAPI.Utils
         /// <summary>
         /// Recommended Unity version
         /// </summary>
-        public const string RECOMMENDED_UNITY_VERSION = "2020.1";
+        public const string RECOMMENDED_UNITY_VERSION = "2022.3.62f2";
 
         /// <summary>
         /// Layer names used by MAPI components
@@ -108,6 +108,37 @@ namespace MAPI.Utils
             /// Default grid cell size for snapping operations
             /// </summary>
             public const float DefaultGridSize = 0.5f;
+        }
+
+        /// <summary>
+        /// GLTF file format constants
+        /// </summary>
+        public static class Gltf
+        {
+            /// <summary>
+            /// GLB magic number ("glTF" in little-endian)
+            /// </summary>
+            public const uint GlbMagic = 0x46546C67;
+
+            /// <summary>
+            /// JSON chunk type identifier
+            /// </summary>
+            public const uint ChunkTypeJson = 0x4E4F534A;
+
+            /// <summary>
+            /// Binary chunk type identifier
+            /// </summary>
+            public const uint ChunkTypeBin = 0x004E4942;
+
+            /// <summary>
+            /// Current supported GLTF version
+            /// </summary>
+            public const int SupportedVersion = 2;
+
+            /// <summary>
+            /// Default name for imported models
+            /// </summary>
+            public const string DefaultModelName = "GltfModel";
         }
     }
 }

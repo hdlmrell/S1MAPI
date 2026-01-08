@@ -369,3 +369,6 @@ FodyWeavers.xsd
 # Cursor Memory Files
 assets/memories/
 ideas.txt
+
+_site/
+api/

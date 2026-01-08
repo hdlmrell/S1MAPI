@@ -1,419 +1,481 @@
-using System.Collections.Generic;
+using MAPI.Building.Config;
+using MAPI.Building.Structural;
+using MAPI.Building.Interior;
+using MAPI.Building.Components;
 using UnityEngine;
+using MAPI.Core;
+using MAPI.S1;
 using MAPI.Utils;
 
 namespace MAPI.Building
 {
     /// <summary>
-    /// Fluent builder for constructing buildings from Unity primitives.
-    /// Provides a chainable API for creating architectural structures.
+    /// Fluent builder for constructing buildings with a clean, chainable API.
+    /// Delegates to specialized builders (WallBuilder, FurnitureBuilder, etc.).
     /// </summary>
-    /// <remarks>
-    /// Use the builder pattern to configure dimensions, colors, and add structural components.
-    /// Call Build() to finalize and position the building in the scene.
-    /// </remarks>
+    /// <example>
+    /// var building = new BuildingBuilder("MyShop")
+    ///     .WithConfig(BuildingConfig.Dispensary)
+    ///     .AddFloor()
+    ///     .AddCeiling()
+    ///     .AddWalls(southDoor: true, eastWindow: true, westWindow: true)
+    ///     .AddLights()
+    ///     .AddFurniture(FurnitureType.Counter, "north")
+    ///     .Build();
+    /// </example>
     public sealed class BuildingBuilder
     {
-        #region Internal Members
+        #region Fields
 
-        /// <summary>
-        /// INTERNAL: The name for the building.
-        /// </summary>
-        internal readonly string _name;
+        private readonly string _name;
+        private readonly GameObject _root;
+        private BuildingConfig _config;
+        private Vector3 _roomSize;
 
-        /// <summary>
-        /// INTERNAL: The root GameObject for the building hierarchy.
-        /// </summary>
-        internal readonly GameObject _root;
-
-        /// <summary>
-        /// INTERNAL: The folder containing building components.
-        /// </summary>
-        internal readonly GameObject _buildingFolder;
-
-        /// <summary>
-        /// INTERNAL: Building footprint dimensions (width, 0, depth).
-        /// </summary>
-        internal Vector3 _footprint = new Vector3(6f, 0f, 9f);
-
-        /// <summary>
-        /// INTERNAL: Building height.
-        /// </summary>
-        internal float _height = 6f;
-
-        /// <summary>
-        /// INTERNAL: Global scale multiplier.
-        /// </summary>
-        internal float _scale = 1f;
-
-        /// <summary>
-        /// INTERNAL: List of created building components.
-        /// </summary>
-        internal readonly List<GameObject> _components = new List<GameObject>();
-
-        /// <summary>
-        /// INTERNAL: Floor color.
-        /// </summary>
-        internal Color _floorColor = new Color(0.5f, 0.5f, 0.5f);
-
-        /// <summary>
-        /// INTERNAL: Wall color.
-        /// </summary>
-        internal Color _wallColor = new Color(0.85f, 0.85f, 0.82f);
-
-        /// <summary>
-        /// INTERNAL: Trim/molding color.
-        /// </summary>
-        internal Color _trimColor = new Color(0.3f, 0.25f, 0.2f);
-
-        /// <summary>
-        /// INTERNAL: Roof color.
-        /// </summary>
-        internal Color _roofColor = new Color(0.4f, 0.35f, 0.3f);
+        // Lazy-initialized builders
+        private WallBuilder? _wallBuilder;
+        private FurnitureBuilder? _furnitureBuilder;
+        private LightingBuilder? _lightingBuilder;
+        private DecorBuilder? _decorBuilder;
+        private PrefabPlacer? _prefabPlacer;
 
         #endregion
 
-        #region Public Members
+        #region Constructor
 
         /// <summary>
         /// Create a new building builder.
         /// </summary>
-        /// <param name="name">Name for the building</param>
+        /// <param name="name">Name for the building GameObject</param>
         public BuildingBuilder(string name)
         {
             _name = name;
-            _root = BuildingUtilities.CreateFolder(name);
-            _buildingFolder = BuildingUtilities.CreateFolder("Building", _root.transform);
+            _root = new GameObject(name);
+            _config = BuildingConfig.Default;
+            _roomSize = _config.Size;
         }
 
+        #endregion
+
+        #region Configuration
+
         /// <summary>
-        /// Set the building footprint (width and depth).
+        /// Apply a building configuration preset.
         /// </summary>
-        /// <param name="width">Building width</param>
-        /// <param name="depth">Building depth</param>
-        /// <returns>This builder for method chaining</returns>
-        public BuildingBuilder SetFootprint(float width, float depth)
+        /// <param name="config">Building configuration</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder WithConfig(BuildingConfig config)
         {
-            _footprint = new Vector3(width, 0f, depth);
+            _config = config;
+            _roomSize = config.Size;
+            InvalidateBuilders();
             return this;
         }
 
         /// <summary>
-        /// Set the building height.
+        /// Apply a palette to the current config.
         /// </summary>
-        /// <param name="height">Building height</param>
-        /// <returns>This builder for method chaining</returns>
-        public BuildingBuilder SetHeight(float height)
+        /// <param name="palette">Building palette</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder WithPalette(BuildingPalette palette)
         {
-            _height = height;
+            _config.Palette = palette;
+            InvalidateBuilders();
             return this;
         }
 
         /// <summary>
-        /// Set the global scale multiplier.
+        /// Define room dimensions directly.
         /// </summary>
-        /// <param name="scale">Scale factor</param>
-        /// <returns>This builder for method chaining</returns>
-        public BuildingBuilder SetScale(float scale)
+        /// <param name="width">Room width (X axis) in meters</param>
+        /// <param name="height">Room height (Y axis) in meters</param>
+        /// <param name="depth">Room depth (Z axis) in meters</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder DefineRoom(float width, float height, float depth)
         {
-            _scale = scale;
+            _config.Width = width;
+            _config.Height = height;
+            _config.Depth = depth;
+            _roomSize = new Vector3(width, height, depth);
+            InvalidateBuilders();
             return this;
         }
 
-        /// <summary>
-        /// Set the floor color.
-        /// </summary>
-        /// <param name="color">Floor color</param>
-        /// <returns>This builder for method chaining</returns>
-        public BuildingBuilder SetFloorColor(Color color)
-        {
-            _floorColor = color;
-            return this;
-        }
+        #endregion
+
+        #region Structure
 
         /// <summary>
-        /// Set the wall color.
+        /// Add floor to the room.
         /// </summary>
-        /// <param name="color">Wall color</param>
-        /// <returns>This builder for method chaining</returns>
-        public BuildingBuilder SetWallColor(Color color)
+        /// <param name="color">Optional color override</param>
+        /// <param name="material">Optional material override</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddFloor(Color? color = null, Material? material = null)
         {
-            _wallColor = color;
-            return this;
-        }
-
-        /// <summary>
-        /// Set the trim/molding color.
-        /// </summary>
-        /// <param name="color">Trim color</param>
-        /// <returns>This builder for method chaining</returns>
-        public BuildingBuilder SetTrimColor(Color color)
-        {
-            _trimColor = color;
-            return this;
-        }
-
-        /// <summary>
-        /// Set the roof color.
-        /// </summary>
-        /// <param name="color">Roof color</param>
-        /// <returns>This builder for method chaining</returns>
-        public BuildingBuilder SetRoofColor(Color color)
-        {
-            _roofColor = color;
-            return this;
-        }
-
-        /// <summary>
-        /// Add a floor to the building.
-        /// </summary>
-        /// <param name="thickness">Floor thickness</param>
-        /// <returns>This builder for method chaining</returns>
-        public BuildingBuilder AddFloor(float thickness = 0.1f)
-        {
-            GameObject floor = PrimitiveBuilder.CreateBox(
-                "Floor",
-                new Vector3(0f, -thickness / 2f, 0f),
-                new Vector3(_footprint.x, thickness, _footprint.z),
-                _floorColor,
-                _buildingFolder.transform
-            );
-
-            _components.Add(floor);
-            return this;
-        }
-
-        /// <summary>
-        /// Add walls to the building (back, left, right).
-        /// </summary>
-        /// <param name="thickness">Wall thickness</param>
-        /// <returns>This builder for method chaining</returns>
-        public BuildingBuilder AddWalls(float thickness = 0.2f)
-        {
-            float halfWidth = _footprint.x / 2f;
-            float halfDepth = _footprint.z / 2f;
-            float halfHeight = _height / 2f;
-
-            // Back wall
-            GameObject backWall = PrimitiveBuilder.CreateBox(
-                "Wall_Back",
-                new Vector3(0f, halfHeight, -halfDepth + thickness / 2f),
-                new Vector3(_footprint.x, _height, thickness),
-                _wallColor,
-                _buildingFolder.transform
-            );
-            _components.Add(backWall);
-            BuildingUtilities.AddNavMeshObstacle(backWall);
-
-            // Left wall
-            GameObject leftWall = PrimitiveBuilder.CreateBox(
-                "Wall_Left",
-                new Vector3(-halfWidth + thickness / 2f, halfHeight, 0f),
-                new Vector3(thickness, _height, _footprint.z),
-                _wallColor,
-                _buildingFolder.transform
-            );
-            _components.Add(leftWall);
-            BuildingUtilities.AddNavMeshObstacle(leftWall);
-
-            // Right wall
-            GameObject rightWall = PrimitiveBuilder.CreateBox(
-                "Wall_Right",
-                new Vector3(halfWidth - thickness / 2f, halfHeight, 0f),
-                new Vector3(thickness, _height, _footprint.z),
-                _wallColor,
-                _buildingFolder.transform
-            );
-            _components.Add(rightWall);
-            BuildingUtilities.AddNavMeshObstacle(rightWall);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Add a flat roof to the building.
-        /// </summary>
-        /// <param name="thickness">Roof thickness</param>
-        /// <returns>This builder for method chaining</returns>
-        public BuildingBuilder AddRoof(float thickness = 0.3f)
-        {
-            GameObject roof = PrimitiveBuilder.CreateBox(
-                "Roof",
-                new Vector3(0f, _height + thickness / 2f, 0f),
-                new Vector3(_footprint.x * 1.1f, thickness, _footprint.z * 1.1f),
-                _roofColor,
-                _buildingFolder.transform
-            );
-
-            _components.Add(roof);
-            BuildingUtilities.AddNavMeshObstacle(roof);
-            return this;
-        }
-
-        /// <summary>
-        /// Add windows to the front of the building.
-        /// </summary>
-        /// <param name="count">Number of windows</param>
-        /// <param name="windowHeight">Height of each window</param>
-        /// <param name="glassColor">Color of the glass</param>
-        /// <returns>This builder for method chaining</returns>
-        public BuildingBuilder AddWindows(int count = 4, float windowHeight = 5f, Color? glassColor = null)
-        {
-            Color glass = glassColor ?? new Color(0.7f, 0.85f, 0.9f);
-            float windowWidth = _footprint.x / count;
-            float halfDepth = _footprint.z / 2f;
-
-            for (int i = 0; i < count; i++)
+            var palette = color.HasValue || material != null 
+                ? _config.Palette.Clone().WithFloor(material!) 
+                : _config.Palette;
+            
+            if (color.HasValue)
             {
-                // Only add actual windows at positions 0 and 3 (like the pet shop)
-                if (i != 0 && i != count - 1)
-                {
-                    continue;
-                }
-
-                float xPos = -_footprint.x / 2f + windowWidth * (i + 0.5f);
-
-                // Glass panel
-                GameObject windowPanel = PrimitiveBuilder.CreateBox(
-                    $"Window_Panel_{i}",
-                    new Vector3(xPos, _height * 0.37f, halfDepth + 0.03f),
-                    new Vector3(windowWidth * 0.92f, windowHeight, 0.06f),
-                    glass,
-                    _buildingFolder.transform
-                );
-                _components.Add(windowPanel);
-
-                // Window frames
-                float frameThickness = 0.04f;
-                float frameDepth = 0.12f;
-
-                // Left frame
-                GameObject leftFrame = PrimitiveBuilder.CreateBox(
-                    $"Window_Frame_Left_{i}",
-                    new Vector3(xPos - windowWidth / 2f + frameThickness / 2f, _height * 0.37f, halfDepth + 0.06f),
-                    new Vector3(frameThickness, windowHeight + frameThickness, frameDepth),
-                    _trimColor,
-                    _buildingFolder.transform
-                );
-                _components.Add(leftFrame);
-
-                // Right frame
-                GameObject rightFrame = PrimitiveBuilder.CreateBox(
-                    $"Window_Frame_Right_{i}",
-                    new Vector3(xPos + windowWidth / 2f - frameThickness / 2f, _height * 0.37f, halfDepth + 0.06f),
-                    new Vector3(frameThickness, windowHeight + frameThickness, frameDepth),
-                    _trimColor,
-                    _buildingFolder.transform
-                );
-                _components.Add(rightFrame);
-
-                // Top frame
-                GameObject topFrame = PrimitiveBuilder.CreateBox(
-                    $"Window_Frame_Top_{i}",
-                    new Vector3(xPos, _height * 0.37f + windowHeight / 2f, halfDepth + 0.06f),
-                    new Vector3(windowWidth, frameThickness, frameDepth),
-                    _trimColor,
-                    _buildingFolder.transform
-                );
-                _components.Add(topFrame);
-
-                // Bottom frame
-                GameObject bottomFrame = PrimitiveBuilder.CreateBox(
-                    $"Window_Frame_Bottom_{i}",
-                    new Vector3(xPos, _height * 0.37f - windowHeight / 2f, halfDepth + 0.06f),
-                    new Vector3(windowWidth, frameThickness, frameDepth),
-                    _trimColor,
-                    _buildingFolder.transform
-                );
-                _components.Add(bottomFrame);
+                palette.FloorColor = color.Value;
+            }
+            if (material != null)
+            {
+                palette.FloorMaterial = material;
             }
 
+            GetDecorBuilder(palette).AddFloor(_config.FloorThickness);
             return this;
         }
 
         /// <summary>
-        /// Add base molding around the building.
+        /// Add ceiling to the room.
         /// </summary>
-        /// <param name="height">Molding height</param>
-        /// <param name="depth">Molding depth</param>
-        /// <returns>This builder for method chaining</returns>
-        public BuildingBuilder AddBaseMolding(float height = 0.3f, float depth = 0.1f)
+        /// <param name="color">Optional color override</param>
+        /// <param name="material">Optional material override</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddCeiling(Color? color = null, Material? material = null)
         {
-            float halfWidth = _footprint.x / 2f;
-            float halfDepth = _footprint.z / 2f;
+            var palette = _config.Palette;
+            if (color.HasValue || material != null)
+            {
+                palette = palette.Clone();
+                if (color.HasValue) palette.CeilingColor = color.Value;
+                if (material != null) palette.CeilingMaterial = material;
+            }
 
-            // Back molding
-            GameObject backMolding = PrimitiveBuilder.CreateBox(
-                "BaseMolding_Back",
-                new Vector3(0f, height / 2f, -halfDepth - depth / 2f),
-                new Vector3(_footprint.x + depth * 2f, height, depth),
-                _trimColor,
-                _buildingFolder.transform
-            );
-            _components.Add(backMolding);
+            GetDecorBuilder(palette).AddCeiling(_config.CeilingThickness);
+            return this;
+        }
 
-            // Left molding
-            GameObject leftMolding = PrimitiveBuilder.CreateBox(
-                "BaseMolding_Left",
-                new Vector3(-halfWidth - depth / 2f, height / 2f, 0f),
-                new Vector3(depth, height, _footprint.z),
-                _trimColor,
-                _buildingFolder.transform
-            );
-            _components.Add(leftMolding);
 
-            // Right molding
-            GameObject rightMolding = PrimitiveBuilder.CreateBox(
-                "BaseMolding_Right",
-                new Vector3(halfWidth + depth / 2f, height / 2f, 0f),
-                new Vector3(depth, height, _footprint.z),
-                _trimColor,
-                _buildingFolder.transform
-            );
-            _components.Add(rightMolding);
+
+        /// <summary>
+        /// Add walls with specified openings.
+        /// </summary>
+        /// <param name="northDoor">Add door on north wall</param>
+        /// <param name="southDoor">Add door on south wall</param>
+        /// <param name="eastWindow">Add window on east wall</param>
+        /// <param name="westWindow">Add window on west wall</param>
+        /// <param name="color">Optional wall color override</param>
+        /// <param name="material">Optional wall material override</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddWalls(
+            bool northDoor = false,
+            bool southDoor = false,
+            bool eastWindow = false,
+            bool westWindow = false,
+            Color? color = null,
+            Material? material = null)
+        {
+            var palette = _config.Palette;
+            if (color.HasValue || material != null)
+            {
+                palette = palette.Clone();
+                if (color.HasValue) palette.WallColor = color.Value;
+                if (material != null) palette.WallMaterial = material;
+            }
+
+            var builder = GetWallBuilder(palette);
+            builder.BuildWalls(
+                northOpening: northDoor ? WallOpening.Door() : null,
+                southOpening: southDoor ? WallOpening.Door() : null,
+                eastOpening: eastWindow ? WallOpening.Window() : null,
+                westOpening: westWindow ? WallOpening.Window() : null);
 
             return this;
         }
 
         /// <summary>
-        /// Build the complete building GameObject.
+        /// Add walls with fine-grained control over openings.
         /// </summary>
-        /// <param name="position">World position for the building</param>
-        /// <param name="rotation">World rotation for the building</param>
-        /// <returns>The root GameObject of the building</returns>
-        public GameObject Build(Vector3 position, Quaternion rotation)
+        /// <param name="north">North wall opening configuration</param>
+        /// <param name="south">South wall opening configuration</param>
+        /// <param name="east">East wall opening configuration</param>
+        /// <param name="west">West wall opening configuration</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddWalls(
+            WallOpening? north = null,
+            WallOpening? south = null,
+            WallOpening? east = null,
+            WallOpening? west = null)
         {
-            _root.transform.position = position;
-            _root.transform.rotation = rotation;
-            _root.transform.localScale = Vector3.one * _scale;
+            GetWallBuilder().BuildWalls(north, south, east, west);
+            return this;
+        }
 
-            // Apply occlusion settings to all renderers
-            BuildingUtilities.ApplyOcclusionSettings(_root, false);
+        #endregion
 
-            DebugLog.Info($"Built building: {_name} with {_components.Count} components");
+        #region Decoration
+
+        /// <summary>
+        /// Add decorative trim around the roofline.
+        /// </summary>
+        /// <param name="height">Trim height in meters</param>
+        /// <param name="material">Optional material override</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddRoofTrim(float height = 0.3f, Material? material = null)
+        {
+            GetDecorBuilder().AddRoofTrim(height, material);
+            return this;
+        }
+
+        /// <summary>
+        /// Add a secondary decorative trim above the roofline.
+        /// </summary>
+        /// <param name="height">Trim height in meters</param>
+        /// <param name="material">Optional material override</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddSecondaryRoofTrim(float height = 0.15f, Material? material = null)
+        {
+            GetDecorBuilder().AddSecondaryRoofTrim(height, material);
+            return this;
+        }
+
+        /// <summary>
+        /// Add structural pillars at corners.
+        /// </summary>
+        /// <param name="width">Pillar width in meters</param>
+        /// <param name="material">Optional material override</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddCornerPillars(float width = 0.4f, Material? material = null)
+        {
+            GetDecorBuilder().AddCornerPillars(width, material);
+            return this;
+        }
+
+        /// <summary>
+        /// Add foundation beneath the building.
+        /// </summary>
+        /// <param name="height">Foundation depth in meters</param>
+        /// <param name="expandX">Extra expansion on X axis</param>
+        /// <param name="expandZ">Extra expansion on Z axis</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddFoundation(float height = 2.0f, float expandX = 0f, float expandZ = 0f)
+        {
+            GetDecorBuilder().AddFoundation(height, expandX, expandZ);
+            return this;
+        }
+
+        /// <summary>
+        /// Add base molding around the bottom of the building.
+        /// </summary>
+        /// <param name="height">Molding height in meters</param>
+        /// <param name="depth">Molding depth in meters</param>
+        /// <param name="material">Optional material override</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddBaseMolding(float height = 0.3f, float depth = 0.1f, Material? material = null)
+        {
+            GetDecorBuilder().AddBaseMolding(height, depth, material);
+            return this;
+        }
+
+        #endregion
+
+        #region Lighting
+
+        /// <summary>
+        /// Add ceiling lights distributed across the room.
+        /// </summary>
+        /// <param name="intensity">Light intensity</param>
+        /// <param name="color">Light color</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddLights(float? intensity = null, Color? color = null)
+        {
+            GetLightingBuilder().AddCeilingLights(intensity, color);
+            return this;
+        }
+
+        /// <summary>
+        /// Add ambient fill lighting.
+        /// </summary>
+        /// <param name="intensity">Ambient light intensity</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddAmbientLighting(float intensity = 0.3f)
+        {
+            GetLightingBuilder().AddAmbientLighting(intensity);
+            return this;
+        }
+
+        #endregion
+
+        #region Furniture
+
+        /// <summary>
+        /// Add furniture at a semantic position.
+        /// </summary>
+        /// <param name="type">Type of furniture</param>
+        /// <param name="position">Semantic position (center, north, south, east, west, northeast, etc.)</param>
+        /// <param name="color">Optional color override</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddFurniture(FurnitureType type, string position, Color? color = null)
+        {
+            (Vector3 pos, Quaternion rot) = ParseSemanticPosition(position, GetOptimalMargin(type));
+            GetFurnitureBuilder().Create(type, pos, rot, color);
+            return this;
+        }
+
+        /// <summary>
+        /// Add furniture at exact coordinates.
+        /// </summary>
+        /// <param name="type">Type of furniture</param>
+        /// <param name="position">Local position</param>
+        /// <param name="rotation">Local rotation</param>
+        /// <param name="color">Optional color override</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddFurniture(FurnitureType type, Vector3 position, Quaternion rotation, Color? color = null)
+        {
+            GetFurnitureBuilder().Create(type, position, rotation, color);
+            return this;
+        }
+
+        #endregion
+
+        #region Prefabs
+
+        /// <summary>
+        /// Place a game prefab at the specified position.
+        /// </summary>
+        /// <param name="prefab">Prefab reference from GamePrefabs</param>
+        /// <param name="position">Local position</param>
+        /// <param name="rotation">Local rotation</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddPrefab(PrefabRef prefab, Vector3 position, Quaternion rotation)
+        {
+            GetPrefabPlacer().Place(prefab, position, rotation);
+            return this;
+        }
+
+        /// <summary>
+        /// Add sliding double doors at a door opening.
+        /// </summary>
+        /// <param name="position">Local position for doors</param>
+        /// <param name="rotation">Local rotation</param>
+        /// <param name="openingHours">Text for opening hours sign</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddSlidingDoors(Vector3 position, Quaternion rotation, string openingHours = "6AM-6PM")
+        {
+            GetPrefabPlacer().PlaceSlidingDoors(position, rotation, openingHours, Materials.MetalDarkGrey);
+            return this;
+        }
+
+        #endregion
+
+        #region Build
+
+        /// <summary>
+        /// Finalize and return the building GameObject.
+        /// </summary>
+        /// <returns>The completed building</returns>
+        public GameObject Build()
+        {
+            DebugLog.Info($"[BuildingBuilder] Built '{_name}' ({_roomSize.x}x{_roomSize.y}x{_roomSize.z}m)");
             return _root;
         }
 
         /// <summary>
-        /// Build the building at the origin.
+        /// Finalize and return the building, then execute a post-build action.
         /// </summary>
-        /// <returns>The root GameObject of the building</returns>
-        public GameObject Build() =>
-            Build(Vector3.zero, Quaternion.identity);
+        /// <param name="postBuild">Action to execute with the completed building</param>
+        /// <returns>The completed building</returns>
+        public GameObject Build(Action<GameObject> postBuild)
+        {
+            var building = Build();
+            postBuild?.Invoke(building);
+            return building;
+        }
 
         /// <summary>
-        /// Get the root GameObject (can be used before Build() is called).
+        /// Get the root GameObject before Build() is called.
         /// </summary>
-        /// <returns>The root GameObject</returns>
-        public GameObject GetRoot() =>
-            _root;
+        public GameObject Root => _root;
 
         /// <summary>
-        /// Get the building folder GameObject.
+        /// Get the current room size.
         /// </summary>
-        /// <returns>The building folder GameObject</returns>
-        public GameObject GetBuildingFolder() =>
-            _buildingFolder;
+        public Vector3 RoomSize => _roomSize;
+
+        /// <summary>
+        /// Get the current configuration.
+        /// </summary>
+        public BuildingConfig Config => _config;
+
+        #endregion
+
+        #region Private Methods - Builder Access
+
+        private void InvalidateBuilders()
+        {
+            _wallBuilder = null;
+            _furnitureBuilder = null;
+            _lightingBuilder = null;
+            _decorBuilder = null;
+            // PrefabPlacer doesn't depend on room size
+        }
+
+        private WallBuilder GetWallBuilder(BuildingPalette? palette = null)
+        {
+            return _wallBuilder ??= new WallBuilder(_root.transform, _roomSize, _config.WallThickness, palette ?? _config.Palette);
+        }
+
+        private FurnitureBuilder GetFurnitureBuilder()
+        {
+            if (_furnitureBuilder == null)
+            {
+                var container = BuildingUtilities.CreateFolder("Furniture", _root.transform);
+                _furnitureBuilder = new FurnitureBuilder(container.transform, _config.Palette);
+            }
+            return _furnitureBuilder;
+        }
+
+        private LightingBuilder GetLightingBuilder()
+        {
+            return _lightingBuilder ??= new LightingBuilder(_root.transform, _roomSize, _config.Palette);
+        }
+
+        private DecorBuilder GetDecorBuilder(BuildingPalette? palette = null)
+        {
+            return _decorBuilder ??= new DecorBuilder(_root.transform, _roomSize, palette ?? _config.Palette);
+        }
+
+        private PrefabPlacer GetPrefabPlacer()
+        {
+            return _prefabPlacer ??= new PrefabPlacer(_root.transform);
+        }
+
+        #endregion
+
+        #region Private Methods - Positioning
+
+        private float GetOptimalMargin(FurnitureType type)
+        {
+            float baseOffset = 0.15f; // Wall half-thickness + gap
+            var footprint = FurnitureBuilder.GetFootprint(type);
+            return Mathf.Max(footprint.x, footprint.z) / 2f + baseOffset;
+        }
+
+        private (Vector3 position, Quaternion rotation) ParseSemanticPosition(string position, float margin)
+        {
+            float x = _roomSize.x / 2f;
+            float z = _roomSize.z / 2f;
+            float cornerMargin = margin * 2.2f;
+
+            return position.ToLowerInvariant() switch
+            {
+                "center" => (new Vector3(x, 0f, z), Quaternion.identity),
+                "north" => (new Vector3(x, 0f, _roomSize.z - margin), Quaternion.Euler(0f, 180f, 0f)),
+                "south" => (new Vector3(x, 0f, margin), Quaternion.identity),
+                "east" => (new Vector3(_roomSize.x - margin, 0f, z), Quaternion.Euler(0f, -90f, 0f)),
+                "west" => (new Vector3(margin, 0f, z), Quaternion.Euler(0f, 90f, 0f)),
+                "northeast" => (new Vector3(_roomSize.x - cornerMargin, 0f, _roomSize.z - cornerMargin), Quaternion.Euler(0f, -135f, 0f)),
+                "northwest" => (new Vector3(cornerMargin, 0f, _roomSize.z - cornerMargin), Quaternion.Euler(0f, 135f, 0f)),
+                "southeast" => (new Vector3(_roomSize.x - cornerMargin, 0f, cornerMargin), Quaternion.Euler(0f, -45f, 0f)),
+                "southwest" => (new Vector3(cornerMargin, 0f, cornerMargin), Quaternion.Euler(0f, 45f, 0f)),
+                _ => (new Vector3(x, 0f, z), Quaternion.identity)
+            };
+        }
 
         #endregion
     }

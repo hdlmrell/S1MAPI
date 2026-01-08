@@ -104,16 +104,8 @@ GameObject building = new BuildingBuilder("MyShop")
 ```
 
 ## Resource Management
-* Register created `Mesh` objects with `ResourceTracker` to prevent memory leaks.
 
-```csharp
-Mesh mesh = new Mesh { name = _name };
-// ... populate mesh ...
-ResourceTracker.Register(mesh);
-return mesh;
-```
-
-* Use `MAPI.Utils.DebugLog` for logging, not `Debug.Log` directly.
+Unity automatically handles resource cleanup when GameObjects are destroyed. Use `MAPI.Utils.DebugLog` for logging:
 
 ```csharp
 DebugLog.Info($"Built mesh: {_name} ({_vertices.Count} vertices)");
@@ -202,6 +194,6 @@ var builder = new ProceduralMeshBuilder("Test");
 ```
 feat(ProceduralMesh): add cylinder mesh generator
 fix(Building): null reference in BuildingBuilder.Build
-docs(Core): update ResourceTracker documentation
+docs(Core): update core documentation
 refactor(Gltf): extract node processing logic
 ```

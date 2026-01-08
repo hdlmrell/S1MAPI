@@ -1,0 +1,22 @@
+- name: Home
+  href: index.md
+- name: Guides
+  items:
+    - name: Introduction
+      href: docs/introduction.md
+    - name: Getting Started
+      href: docs/getting-started.md
+    - name: API Overview
+      href: docs/api-overview.md
+    - name: Procedural Mesh
+      href: docs/procedural-mesh.md
+    - name: Building
+      href: docs/building.md
+    - name: GLTF Loading
+      href: docs/gltf-loading.md
+    - name: Examples
+      href: docs/examples.md
+    - name: Contributing
+      href: docs/contributing.md
+- name: API Reference
+  href: api/
