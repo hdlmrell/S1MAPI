@@ -52,11 +52,6 @@ namespace MAPI.S1
         #region Items
 
         /// <summary>
-        /// Glass bong item.
-        /// </summary>
-        public static readonly PrefabRef Bong = new("Bong_Trash");
-
-        /// <summary>
         /// Cash register.
         /// </summary>
         public static readonly PrefabRef CashRegister = new("CashRegister");
