@@ -33,18 +33,17 @@ jobs:
 
       - name: Create Assembly Directory Structure
         run: |
-          mkdir -p MAPI/ScheduleOneAssemblies/Managed
-          mkdir -p MAPI/ScheduleOneAssemblies/MelonLoader
+          mkdir -p Assemblies/Mono
+          mkdir -p Assemblies/Il2Cpp
 
-      # Try to restore assemblies from cache first (for external PRs)
-      - name: Cache Game Assemblies
+      - name: Cache Assemblies
         id: cache-assemblies
         uses: actions/cache@v4
         with:
-          path: MAPI/ScheduleOneAssemblies
-          key: game-assemblies-${{ hashFiles('MAPI/MAPI.csproj') }}
+          path: Assemblies
+          key: mapi-assemblies-${{ hashFiles('MAPI.csproj') }}
           restore-keys: |
-            game-assemblies-
+            mapi-assemblies-
 
       # Only checkout game assemblies if cache miss AND we have access to secrets
       - name: Checkout Game Assemblies
@@ -56,129 +55,30 @@ jobs:
           fetch-depth: 1
         if: steps.cache-assemblies.outputs.cache-hit != 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
 
-      - name: Debug Game Assemblies Structure
-        run: |
-          echo "=== Game Assemblies Repository Structure ==="
-          find game-assemblies -type f -name "*.dll" | head -20
-          echo ""
-          echo "=== Looking for Assembly-CSharp.dll ==="
-          find game-assemblies -name "Assembly-CSharp.dll" -type f
+      - name: Populate Mono Assemblies
         if: steps.cache-assemblies.outputs.cache-hit != 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-
-      - name: Copy Game Assemblies
         run: |
-          # Copy Mono assemblies
+          echo "=== Setting up Mono Assemblies ==="
           if [ -d "game-assemblies/Managed" ]; then
-            cp -r game-assemblies/Managed/* MAPI/ScheduleOneAssemblies/Managed/ || echo "Failed to copy Mono assemblies"
+            cp -r game-assemblies/Managed/* Assemblies/Mono/
             echo "Copied Mono assemblies from game-assemblies/Managed/"
           else
-            echo "No game-assemblies/Managed directory found"
-          fi
-
-          # Copy mod loader assemblies
-          if [ -d "game-assemblies/MelonLoader" ]; then
-            cp -r game-assemblies/MelonLoader/* MAPI/ScheduleOneAssemblies/MelonLoader/ || echo "Failed to copy MelonLoader assemblies"
-            echo "Copied MelonLoader assemblies"
-          else
-            echo "No game-assemblies/MelonLoader directory found"
-          fi
-
-          # Ensure Unity.TextMeshPro.dll is available
-          if [ ! -f "MAPI/ScheduleOneAssemblies/Managed/Unity.TextMeshPro.dll" ]; then
-            echo "Unity.TextMeshPro.dll not found in Managed folder, searching for it..."
-            TMPRO_PATH=$(find game-assemblies -name "Unity.TextMeshPro.dll" -type f | head -1)
-            if [ -n "$TMPRO_PATH" ]; then
-              echo "Found Unity.TextMeshPro.dll at: $TMPRO_PATH"
-              cp "$TMPRO_PATH" MAPI/ScheduleOneAssemblies/Managed/ || echo "Failed to copy Unity.TextMeshPro.dll"
-              echo "Copied Unity.TextMeshPro.dll to Managed folder"
-            else
-              echo "Warning: Unity.TextMeshPro.dll not found in game-assemblies repository"
-              echo "This may cause build failures for files that use TMPro"
-            fi
-          fi
-        if: steps.cache-assemblies.outputs.cache-hit != 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-
-      - name: Verify Assembly Copies
-        run: |
-          echo "=== Verifying Assembly Structure ==="
-          ls -la MAPI/ScheduleOneAssemblies/
-          echo ""
-          echo "=== Managed Assemblies ==="
-          ls -la MAPI/ScheduleOneAssemblies/Managed/ | head -10
-          echo ""
-          echo "=== MelonLoader Assemblies ==="
-          ls -la MAPI/ScheduleOneAssemblies/MelonLoader/ | head -10
-          echo ""
-          echo "=== Critical Assembly Check ==="
-          if [ -f MAPI/ScheduleOneAssemblies/Managed/Assembly-CSharp.dll ]; then
-            echo "✓ Found Assembly-CSharp.dll"
-            ls -l MAPI/ScheduleOneAssemblies/Managed/Assembly-CSharp.dll
-          else
-            echo "✗ Missing Assembly-CSharp.dll"
-            if [ -d "game-assemblies" ]; then
-              echo "Attempting auto-discovery..."
-              find game-assemblies -name "Assembly-CSharp.dll" -type f -exec ls -l {} \;
-            fi
-          fi
-          echo ""
-          echo "=== TextMeshPro Assembly Check ==="
-          if [ -f MAPI/ScheduleOneAssemblies/Managed/Unity.TextMeshPro.dll ]; then
-            echo "✓ Found Unity.TextMeshPro.dll"
-            ls -l MAPI/ScheduleOneAssemblies/Managed/Unity.TextMeshPro.dll
-          else
-            echo "✗ Missing Unity.TextMeshPro.dll"
-            if [ -d "game-assemblies" ]; then
-              echo "Attempting auto-discovery..."
-              find game-assemblies -name "Unity.TextMeshPro.dll" -type f -exec ls -l {} \;
-              echo "Searching for TextMeshPro assemblies..."
-              find game-assemblies -name "*TextMeshPro*" -type f -exec ls -l {} \;
-            fi
-          fi
-          echo ""
-          if [ "${{ steps.cache-assemblies.outputs.cache-hit }}" == "true" ]; then
-            echo "✓ Using cached assemblies for build"
-          else
-            echo "✓ Using fresh assemblies from repository"
+            echo "Warning: game-assemblies/Managed not found"
           fi
 
       - name: Create CI Build Properties
         run: |
-          cat > ci.build.props << 'EOF'
+          cat > local.build.props << 'EOF'
           <Project>
               <PropertyGroup>
-                  <AutomateLocalDeployment>false</AutomateLocalDeployment>
-
-                  <!-- CI Assembly Paths (relative to MAPI/MAPI.csproj) -->
-                  <MelonLoaderAssembliesPath>../ScheduleOneAssemblies/MelonLoader</MelonLoaderAssembliesPath>
-
-                  <!-- Mono Configuration -->
-                  <LocalMonoDeploymentPath>null</LocalMonoDeploymentPath>
-                  <MonoAssembliesPath>../ScheduleOneAssemblies/Managed</MonoAssembliesPath>
+                  <MonoAssembliesPath>$(MSBuildThisFileDirectory)Assemblies/Mono</MonoAssembliesPath>
+                  <Il2CppAssembliesPath>$(MSBuildThisFileDirectory)Assemblies/Il2Cpp</Il2CppAssembliesPath>
               </PropertyGroup>
           </Project>
           EOF
 
-      - name: Verify Build Properties
-        run: |
-          echo "=== CI Build Properties ==="
-          cat ci.build.props
-          echo ""
-          echo "=== MSBuild Property Resolution Test ==="
-          cd MAPI
-          echo "Testing MonoAssembliesPath resolution (expect ./ScheduleOneAssemblies from project dir)..."
-          if [ -f "./ScheduleOneAssemblies/Managed/Assembly-CSharp.dll" ]; then
-            echo "✓ Assembly-CSharp.dll accessible from build context"
-            ls -l ./ScheduleOneAssemblies/Managed/Assembly-CSharp.dll
-          else
-            echo "✗ Assembly-CSharp.dll NOT accessible from build context"
-            echo "Current directory: $(pwd)"
-            echo "Looking for: ./ScheduleOneAssemblies/Managed/Assembly-CSharp.dll"
-            ls -la ./ScheduleOneAssemblies/Managed/ || echo "Directory doesn't exist"
-          fi
-          echo ""
-
-      - name: Restore dependencies
-        run: dotnet restore MAPI.sln
+      - name: Restore Dependencies
+        run: dotnet restore MAPI.csproj /p:Configuration=Mono
 
       - name: Build MAPI
         run: dotnet build MAPI.csproj --no-restore -c Mono -v normal
@@ -187,20 +87,18 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: MAPI-Mono
-          path: MAPI/bin/Mono/netstandard2.1/MAPI.dll
+          path: bin/Mono/netstandard2.1/MAPI.dll
 
       - name: Install DocFX
         run: dotnet tool install -g docfx
 
       - name: Build documentation
-        run: |
-          cd MAPI
-          docfx docfx.json
+        run: docfx docfx.json
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./MAPI/_site
+          path: ./_site
         if: github.event_name != 'pull_request'
 
   deploy:
