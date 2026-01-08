@@ -73,8 +73,7 @@ namespace MAPI.ProceduralMesh.Generators.Organic
 
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
-
-            ResourceTracker.Register(mesh);
+            
             DebugLog.Info($"Generated organic shape mesh: {_name} ({vertices.Count} vertices)");
 
             return mesh;

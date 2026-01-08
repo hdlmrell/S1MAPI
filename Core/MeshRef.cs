@@ -143,8 +143,7 @@ namespace MAPI.Core
             {
                 instance.AddComponent<BoxCollider>();
             }
-
-            ResourceTracker.Register(instance);
+            
             return instance;
         }
 
@@ -212,7 +211,6 @@ namespace MAPI.Core
             {
                 clone.name = name ?? Name;
                 if (parent != null) clone.transform.SetParent(parent);
-                ResourceTracker.Register(clone);
             }
 
             return clone;

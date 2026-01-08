@@ -138,8 +138,7 @@ namespace MAPI.Core
 
             // Now activate the instance - Awake() will run with valid GUIDs
             instance.SetActive(true);
-
-            ResourceTracker.Register(instance);
+            
             return instance;
         }
 

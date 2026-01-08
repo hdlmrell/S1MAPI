@@ -7,6 +7,7 @@ MAPI is a mesh and building construction library for Schedule 1 mods. It avoids 
 - `ProceduralMesh/` — Fluent mesh builders, organic shapes, mesh utilities
 - `Building/` — Building construction, primitives, interior generation
 - `Gltf/` — GLTF file loading and processing
+- `Extensions/` — Extension methods for Unity types (Transform, GameObject, Component, Mesh, etc.)
 - `Utils/` — Constants, logging, material presets, game object utilities
 
 Namespaces mirror folder structure (e.g., `MAPI.ProceduralMesh`, `MAPI.Building`).

@@ -1,5 +1,6 @@
 using UnityEngine;
 using MAPI.Core;
+using MAPI.Extensions;
 using MAPI.S1;
 
 #if IL2CPP
@@ -63,7 +64,7 @@ namespace MAPI.Building.Components
             // Optionally enable game logic components
             if (enableComponents)
             {
-                ComponentEnabler.EnableAllComponents(instance, recursive: true);
+                instance.EnableAllComponents(recursive: true);
             }
 
             return instance;
@@ -89,7 +90,7 @@ namespace MAPI.Building.Components
             instance.transform.localRotation = localRotation;
 
             // Enable specific components by name
-            ComponentEnabler.EnableComponentsByName(instance, componentNames, recursive: true);
+            instance.EnableComponentsByName(componentNames, recursive: true);
 
             return instance;
         }

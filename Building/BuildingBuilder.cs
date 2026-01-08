@@ -371,7 +371,6 @@ namespace MAPI.Building
         /// <returns>The completed building</returns>
         public GameObject Build()
         {
-            ResourceTracker.Register(_root);
             DebugLog.Info($"[BuildingBuilder] Built '{_name}' ({_roomSize.x}x{_roomSize.y}x{_roomSize.z}m)");
             return _root;
         }

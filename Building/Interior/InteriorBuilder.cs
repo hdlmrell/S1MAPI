@@ -18,6 +18,7 @@ namespace MAPI.Building.Interior
         private readonly string _name;
         private readonly List<GameObject> _furniture = new List<GameObject>();
         private Transform? _parent;
+        private GameObject? _interiorContainer;
         
         #endregion
 
@@ -45,6 +46,40 @@ namespace MAPI.Building.Interior
         
         #endregion
 
+        #region Private Methods
+
+        private GameObject GetOrCreateContainer()
+        {
+            if (_interiorContainer != null)
+            {
+                return _interiorContainer;
+            }
+
+            if (_parent == null)
+            {
+                DebugLog.Warning("InteriorBuilder: No parent set. Furniture will not be organized in a container.");
+                return null!;
+            }
+
+            _interiorContainer = BuildingUtilities.CreateFolder(_name, _parent);
+            return _interiorContainer;
+        }
+
+        private void ParentToContainer(GameObject obj, Vector3 localPosition, Quaternion? rotation = null)
+        {
+            GameObject? container = GetOrCreateContainer();
+            if (container == null)
+            {
+                return;
+            }
+
+            obj.transform.SetParent(container.transform);
+            obj.transform.localPosition = localPosition;
+            obj.transform.localRotation = rotation ?? Quaternion.identity;
+        }
+
+        #endregion
+
         #region Public API - Furniture
 
         /// <summary>
@@ -58,6 +93,7 @@ namespace MAPI.Building.Interior
             
             if (desk != null)
             {
+                ParentToContainer(desk, position, rotation);
                 _furniture.Add(desk);
                 BuildingUtilities.AddNavMeshObstacle(desk);
             }
@@ -80,6 +116,7 @@ namespace MAPI.Building.Interior
             
             if (locker != null)
             {
+                ParentToContainer(locker, position, rotation);
                 _furniture.Add(locker);
                 BuildingUtilities.AddNavMeshObstacle(locker);
             }
@@ -102,6 +139,7 @@ namespace MAPI.Building.Interior
             
             if (chair != null)
             {
+                ParentToContainer(chair, position, rotation);
                 _furniture.Add(chair);
                 BuildingUtilities.AddNavMeshObstacle(chair);
             }
@@ -124,6 +162,7 @@ namespace MAPI.Building.Interior
             
             if (armchair != null)
             {
+                ParentToContainer(armchair, position, rotation);
                 _furniture.Add(armchair);
                 BuildingUtilities.AddNavMeshObstacle(armchair);
             }
@@ -146,6 +185,7 @@ namespace MAPI.Building.Interior
             
             if (table != null)
             {
+                ParentToContainer(table, position, rotation);
                 _furniture.Add(table);
                 BuildingUtilities.AddNavMeshObstacle(table);
             }
@@ -168,6 +208,7 @@ namespace MAPI.Building.Interior
             
             if (table != null)
             {
+                ParentToContainer(table, position, rotation);
                 _furniture.Add(table);
                 BuildingUtilities.AddNavMeshObstacle(table);
             }
@@ -190,6 +231,7 @@ namespace MAPI.Building.Interior
             
             if (bench != null)
             {
+                ParentToContainer(bench, position, rotation);
                 _furniture.Add(bench);
                 BuildingUtilities.AddNavMeshObstacle(bench);
             }
@@ -212,6 +254,7 @@ namespace MAPI.Building.Interior
             
             if (bed != null)
             {
+                ParentToContainer(bed, position, rotation);
                 _furniture.Add(bed);
                 BuildingUtilities.AddNavMeshObstacle(bed);
             }
@@ -234,6 +277,7 @@ namespace MAPI.Building.Interior
             
             if (fridge != null)
             {
+                ParentToContainer(fridge, position, rotation);
                 _furniture.Add(fridge);
                 BuildingUtilities.AddNavMeshObstacle(fridge);
             }
@@ -260,6 +304,7 @@ namespace MAPI.Building.Interior
             
             if (box != null)
             {
+                ParentToContainer(box, position, rotation);
                 _furniture.Add(box);
             }
             else
@@ -281,6 +326,7 @@ namespace MAPI.Building.Interior
             
             if (barrel != null)
             {
+                ParentToContainer(barrel, position, rotation);
                 _furniture.Add(barrel);
             }
             else
@@ -302,6 +348,7 @@ namespace MAPI.Building.Interior
             
             if (cabinet != null)
             {
+                ParentToContainer(cabinet, position, rotation);
                 _furniture.Add(cabinet);
                 BuildingUtilities.AddNavMeshObstacle(cabinet);
             }
@@ -324,6 +371,7 @@ namespace MAPI.Building.Interior
             
             if (drawer != null)
             {
+                ParentToContainer(drawer, position, rotation);
                 _furniture.Add(drawer);
                 BuildingUtilities.AddNavMeshObstacle(drawer);
             }
@@ -346,6 +394,7 @@ namespace MAPI.Building.Interior
             
             if (safe != null)
             {
+                ParentToContainer(safe, position, rotation);
                 _furniture.Add(safe);
                 BuildingUtilities.AddNavMeshObstacle(safe);
             }
@@ -368,6 +417,7 @@ namespace MAPI.Building.Interior
             
             if (bin != null)
             {
+                ParentToContainer(bin, position, rotation);
                 _furniture.Add(bin);
             }
             else
@@ -393,6 +443,7 @@ namespace MAPI.Building.Interior
             
             if (plant != null)
             {
+                ParentToContainer(plant, position, rotation);
                 _furniture.Add(plant);
             }
             else
@@ -414,6 +465,7 @@ namespace MAPI.Building.Interior
             
             if (planter != null)
             {
+                ParentToContainer(planter, position, rotation);
                 _furniture.Add(planter);
             }
             else
@@ -435,6 +487,7 @@ namespace MAPI.Building.Interior
             
             if (vase != null)
             {
+                ParentToContainer(vase, position, rotation);
                 _furniture.Add(vase);
             }
             else
@@ -456,6 +509,7 @@ namespace MAPI.Building.Interior
             
             if (painting != null)
             {
+                ParentToContainer(painting, position, rotation);
                 _furniture.Add(painting);
             }
             else
@@ -477,6 +531,7 @@ namespace MAPI.Building.Interior
             
             if (clock != null)
             {
+                ParentToContainer(clock, position, rotation);
                 _furniture.Add(clock);
             }
             else
@@ -498,6 +553,7 @@ namespace MAPI.Building.Interior
             
             if (wallClock != null)
             {
+                ParentToContainer(wallClock, position, rotation);
                 _furniture.Add(wallClock);
             }
             else
@@ -519,6 +575,7 @@ namespace MAPI.Building.Interior
             
             if (toilet != null)
             {
+                ParentToContainer(toilet, position, rotation);
                 _furniture.Add(toilet);
                 BuildingUtilities.AddNavMeshObstacle(toilet);
             }
@@ -541,6 +598,7 @@ namespace MAPI.Building.Interior
             
             if (computer != null)
             {
+                ParentToContainer(computer, position, rotation);
                 _furniture.Add(computer);
             }
             else
@@ -562,6 +620,7 @@ namespace MAPI.Building.Interior
             
             if (screen != null)
             {
+                ParentToContainer(screen, position, rotation);
                 _furniture.Add(screen);
             }
             else
@@ -585,11 +644,7 @@ namespace MAPI.Building.Interior
         {
             if (gameObject != null)
             {
-                if (_parent != null)
-                {
-                    gameObject.transform.SetParent(_parent);
-                }
-                gameObject.transform.localPosition = position;
+                ParentToContainer(gameObject, position);
                 _furniture.Add(gameObject);
             }
 
@@ -609,6 +664,7 @@ namespace MAPI.Building.Interior
             
             if (obj != null)
             {
+                ParentToContainer(obj, position, rotation);
                 _furniture.Add(obj);
             }
             else
@@ -652,6 +708,7 @@ namespace MAPI.Building.Interior
 
             if (obj != null)
             {
+                ParentToContainer(obj, position, rotation);
                 _furniture.Add(obj);
                 onCreated?.Invoke(obj);
             }
@@ -694,7 +751,13 @@ namespace MAPI.Building.Interior
                 return _furniture.ToArray();
             }
 
-            GameObject interiorFolder = BuildingUtilities.CreateFolder(_name, parent.transform);
+            if (_parent == null || parent != _parent.gameObject)
+            {
+                _parent = parent.transform;
+                _interiorContainer = null;
+            }
+
+            GameObject interiorFolder = GetOrCreateContainer();
 
             foreach (GameObject furniture in _furniture)
             {

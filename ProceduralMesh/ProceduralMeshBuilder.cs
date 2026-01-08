@@ -202,7 +202,6 @@ namespace MAPI.ProceduralMesh
             }
 
             mesh.RecalculateBounds();
-            ResourceTracker.Register(mesh);
 
             DebugLog.Info($"Built mesh: {_name} ({_vertices.Count} vertices, {_triangles.Count / 3} triangles)");
             return mesh;

@@ -127,9 +127,6 @@ namespace MAPI.Core
 
             _postProcessAction?.Invoke(clone);
 
-            // Register with resource tracker if it's a root object created by MAPI
-            ResourceTracker.Register(clone);
-
             return clone;
         }
 

@@ -136,8 +136,7 @@ namespace MAPI.ProceduralMesh
 
             instance.transform.localPosition = localPosition;
             instance.transform.localRotation = localRotation;
-
-            ResourceTracker.Register(instance);
+            
             return instance;
         }
 
@@ -184,8 +183,6 @@ namespace MAPI.ProceduralMesh
 
             renderer.material = material;
             renderer.allowOcclusionWhenDynamic = false;
-
-            ResourceTracker.Register(material);
         }
         
         #endregion
@@ -280,8 +277,7 @@ namespace MAPI.ProceduralMesh
             light.range = range;
             light.intensity = intensity;
             light.shadows = LightShadows.Soft;
-
-            ResourceTracker.Register(lightObj);
+            
             return lightObj;
         }
 

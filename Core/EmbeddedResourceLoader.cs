@@ -76,7 +76,6 @@ namespace MAPI.Core
             }
 
             texture.name = $"MAPI_{Path.GetFileNameWithoutExtension(resourceName)}";
-            ResourceTracker.Register(texture);
 
             DebugLog.Info($"Loaded texture: {texture.name} ({texture.width}x{texture.height})");
             return texture;
@@ -105,7 +104,6 @@ namespace MAPI.Core
             );
 
             sprite.name = $"MAPI_{Path.GetFileNameWithoutExtension(resourceName)}_Sprite";
-            ResourceTracker.Register(sprite);
 
             DebugLog.Info($"Created sprite from texture: {sprite.name}");
             return sprite;

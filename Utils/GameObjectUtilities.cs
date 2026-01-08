@@ -1,3 +1,4 @@
+using MAPI.Extensions;
 using UnityEngine;
 
 namespace MAPI.Utils
@@ -8,7 +9,7 @@ namespace MAPI.Utils
     public static class GameObjectUtilities
     {
         #region Public API - Layer Management
-        
+
         /// <summary>
         /// Set the layer for a GameObject and optionally all its children recursively
         /// </summary>
@@ -23,15 +24,7 @@ namespace MAPI.Utils
                 return;
             }
 
-            gameObject.layer = layer;
-
-            if (includeChildren)
-            {
-                foreach (Transform child in gameObject.transform)
-                {
-                    SetLayerRecursively(child.gameObject, layer, true);
-                }
-            }
+            gameObject.SetLayerRecursively(layer);
         }
 
         /// <summary>
@@ -49,9 +42,9 @@ namespace MAPI.Utils
                 return;
             }
 
-            SetLayerRecursively(gameObject, layer, includeChildren);
+            gameObject.SetLayerRecursively(layer);
         }
-        
+
         #endregion
     }
 }

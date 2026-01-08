@@ -1,3 +1,4 @@
+using MAPI.Extensions;
 using UnityEngine;
 using UnityEngine.AI;
 using MAPI.Utils;
@@ -28,12 +29,7 @@ namespace MAPI.Building
                 return;
             }
 
-            NavMeshObstacle obstacle = gameObject.GetComponent<NavMeshObstacle>();
-            if (obstacle == null)
-            {
-                obstacle = gameObject.AddComponent<NavMeshObstacle>();
-            }
-
+            NavMeshObstacle obstacle = gameObject.GetOrAddComponent<NavMeshObstacle>();
             obstacle.carving = carving;
             obstacle.carveOnlyStationary = carveOnlyStationary;
 
@@ -183,13 +179,11 @@ namespace MAPI.Building
         public static GameObject CreateFolder(string name, Transform? parent = null)
         {
             GameObject folder = new GameObject(name);
-            
+
             if (parent != null)
             {
                 folder.transform.SetParent(parent);
-                folder.transform.localPosition = Vector3.zero;
-                folder.transform.localRotation = Quaternion.identity;
-                folder.transform.localScale = Vector3.one;
+                folder.transform.Reset();
             }
 
             return folder;

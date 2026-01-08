@@ -110,7 +110,6 @@ namespace MAPI.Gltf.Data
             if (mesh == null) return;
             
             _meshes.Add(mesh);
-            ResourceTracker.Register(mesh);
         }
 
         /// <summary>
@@ -122,7 +121,6 @@ namespace MAPI.Gltf.Data
             if (material == null) return;
             
             _materials.Add(material);
-            ResourceTracker.Register(material);
         }
 
         /// <summary>
@@ -138,7 +136,6 @@ namespace MAPI.Gltf.Data
             }
             
             _textures.Add(texture);
-            ResourceTracker.Register(texture);
         }
 
         /// <summary>
@@ -150,7 +147,6 @@ namespace MAPI.Gltf.Data
             if (clip == null) return;
             
             _animations.Add(clip);
-            ResourceTracker.Register(clip);
         }
 
         /// <summary>
