@@ -1,6 +1,6 @@
 # S1MAPI - Schedule 1 Mapping API
 
-**S1MAPI** is a mapping and construction library for Schedule 1 mods. Create procedural meshes, build structures, and load GLTF assets without depending on game assemblies.
+**S1MAPI** is a mapping and construction library for Schedule 1 mods. Create procedural meshes, build structures, and load GLTF assets without asset bundles.
 
 [![GitHub release](https://img.shields.io/github/v/release/ifBars/S1MAPI?include_prereleases&sort=semver)](https://github.com/ifBars/S1MAPI/releases)
 [![GitHub stars](https://img.shields.io/github/stars/ifBars/S1MAPI)](https://github.com/ifBars/S1MAPI/stargazers)
