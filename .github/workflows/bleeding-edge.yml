@@ -109,6 +109,19 @@ jobs:
       - name: Build Mono
         run: dotnet build MAPI.csproj --no-restore /p:Configuration=Mono -v normal
 
+      - name: Restore IL2CPP Assemblies from Backup
+        run: |
+          echo "=== Restoring IL2CPP assemblies from /tmp backup ==="
+          if [ -d "/tmp/Il2Cpp.backup" ]; then
+            mkdir -p Assemblies/Il2Cpp
+            cp -r /tmp/Il2Cpp.backup/* Assemblies/Il2Cpp/
+            echo "Restored IL2CPP assemblies from /tmp"
+          else
+            echo "ERROR: IL2CPP backup not found in /tmp!"
+            echo "This should have been created before Mono build"
+            exit 1
+          fi
+
       # Checkout IL2CPP Assemblies
       - name: Checkout IL2CPP Assemblies
         uses: actions/checkout@v4
@@ -119,16 +132,11 @@ jobs:
           fetch-depth: 1
         if: steps.cache-assemblies.outputs.cache-hit != 'true'
 
-      - name: Populate IL2CPP Assemblies
+      - name: Populate IL2CPP Assemblies from Checkout
         if: steps.cache-assemblies.outputs.cache-hit != 'true'
         run: |
-          echo "=== Restoring IL2CPP assemblies from backup ==="
-          if [ -d "/tmp/Il2Cpp.backup" ]; then
-            mkdir -p Assemblies/Il2Cpp
-            cp -r /tmp/Il2Cpp.backup/* Assemblies/Il2Cpp/
-            echo "Restored IL2CPP assemblies from /tmp"
-          else
-            echo "=== Setting up IL2CPP Assemblies ==="
+          if [ ! -d "/tmp/Il2Cpp.backup" ]; then
+            echo "=== Setting up IL2CPP Assemblies from checkout ==="
             # Copy core IL2CPP assemblies
             if [ -d "il2cpp-assemblies/MelonLoader/Il2CppAssemblies" ]; then
               cp -r il2cpp-assemblies/MelonLoader/Il2CppAssemblies/* Assemblies/Il2Cpp/
@@ -173,7 +181,8 @@ jobs:
             fi
           fi
 
-          # Clear Mono assemblies before IL2CPP build
+      - name: Clear Mono Assemblies Before IL2CPP Build
+        run: |
           echo "=== Clearing Mono assemblies for IL2CPP build ==="
           if [ -d "Assemblies/Mono" ]; then
             rm -rf /tmp/Mono.backup 2>/dev/null || true
