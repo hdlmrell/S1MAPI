@@ -1,7 +1,7 @@
 using MAPI.Building.Config;
 using UnityEngine;
 
-namespace MAPI.Building.Builders
+namespace MAPI.Building.Components
 {
     /// <summary>
     /// Creates lighting for buildings.

@@ -3,7 +3,7 @@ using MAPI.Core;
 using MAPI.Utils;
 using Object = UnityEngine.Object;
 
-namespace MAPI.Building
+namespace MAPI.ProceduralMesh
 {
     /// <summary>
     /// Helper for creating and configuring Unity primitive GameObjects

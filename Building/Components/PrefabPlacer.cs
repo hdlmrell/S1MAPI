@@ -12,7 +12,7 @@ using Il2CppTMPro;
 using TMPro;
 #endif
 
-namespace MAPI.Building.Builders
+namespace MAPI.Building.Components
 {
     /// <summary>
     /// Places network-spawnable prefabs from the game.

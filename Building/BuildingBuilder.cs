@@ -1,5 +1,7 @@
-using MAPI.Building.Builders;
 using MAPI.Building.Config;
+using MAPI.Building.Structural;
+using MAPI.Building.Interior;
+using MAPI.Building.Components;
 using UnityEngine;
 using MAPI.Core;
 using MAPI.S1;
@@ -9,7 +11,7 @@ namespace MAPI.Building
 {
     /// <summary>
     /// Fluent builder for constructing buildings with a clean, chainable API.
-    /// Delegates to specialized builders (WallBuilder, FurnitureFactory, etc.) for SRP compliance.
+    /// Delegates to specialized builders (WallBuilder, FurnitureBuilder, etc.) for SRP compliance.
     /// </summary>
     /// <example>
     /// var building = new BuildingBuilder("MyShop")
@@ -32,7 +34,7 @@ namespace MAPI.Building
 
         // Lazy-initialized builders
         private WallBuilder? _wallBuilder;
-        private FurnitureFactory? _furnitureFactory;
+        private FurnitureBuilder? _furnitureBuilder;
         private LightingBuilder? _lightingBuilder;
         private DecorBuilder? _decorBuilder;
         private PrefabPlacer? _prefabPlacer;
@@ -311,7 +313,7 @@ namespace MAPI.Building
         public BuildingBuilder AddFurniture(FurnitureType type, string position, Color? color = null)
         {
             (Vector3 pos, Quaternion rot) = ParseSemanticPosition(position, GetOptimalMargin(type));
-            GetFurnitureFactory().Create(type, pos, rot, color);
+            GetFurnitureBuilder().Create(type, pos, rot, color);
             return this;
         }
 
@@ -325,7 +327,7 @@ namespace MAPI.Building
         /// <returns>This builder for chaining</returns>
         public BuildingBuilder AddFurniture(FurnitureType type, Vector3 position, Quaternion rotation, Color? color = null)
         {
-            GetFurnitureFactory().Create(type, position, rotation, color);
+            GetFurnitureBuilder().Create(type, position, rotation, color);
             return this;
         }
 
@@ -408,7 +410,7 @@ namespace MAPI.Building
         private void InvalidateBuilders()
         {
             _wallBuilder = null;
-            _furnitureFactory = null;
+            _furnitureBuilder = null;
             _lightingBuilder = null;
             _decorBuilder = null;
             // PrefabPlacer doesn't depend on room size
@@ -419,14 +421,14 @@ namespace MAPI.Building
             return _wallBuilder ??= new WallBuilder(_root.transform, _roomSize, _config.WallThickness, palette ?? _config.Palette);
         }
 
-        private FurnitureFactory GetFurnitureFactory()
+        private FurnitureBuilder GetFurnitureBuilder()
         {
-            if (_furnitureFactory == null)
+            if (_furnitureBuilder == null)
             {
                 var container = BuildingUtilities.CreateFolder("Furniture", _root.transform);
-                _furnitureFactory = new FurnitureFactory(container.transform, _config.Palette);
+                _furnitureBuilder = new FurnitureBuilder(container.transform, _config.Palette);
             }
-            return _furnitureFactory;
+            return _furnitureBuilder;
         }
 
         private LightingBuilder GetLightingBuilder()
@@ -451,7 +453,7 @@ namespace MAPI.Building
         private float GetOptimalMargin(FurnitureType type)
         {
             float baseOffset = 0.15f; // Wall half-thickness + gap
-            var footprint = FurnitureFactory.GetFootprint(type);
+            var footprint = FurnitureBuilder.GetFootprint(type);
             return Mathf.Max(footprint.x, footprint.z) / 2f + baseOffset;
         }
 

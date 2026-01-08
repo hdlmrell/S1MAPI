@@ -3,9 +3,9 @@ using MAPI.Utils;
 using MAPI.S1;
 using System;
 using System.Collections.Generic;
-using MAPI.Building.Builders;
+using MAPI.Building.Components;
 
-namespace MAPI.Building
+namespace MAPI.Building.Interior
 {
     /// <summary>
     /// Fluent builder for creating interior furnishings and decorations using Schedule 1 assets
