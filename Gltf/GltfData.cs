@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 
+#pragma warning disable CS0649
+
 namespace MAPI.Gltf
 {
     #region Core Structure
@@ -10,7 +12,7 @@ namespace MAPI.Gltf
     /// Conforms to the GLTF 2.0 specification.
     /// </summary>
     [Serializable]
-    public sealed class GltfRoot
+    internal sealed class GltfRoot
     {
         /// <summary>Metadata about the GLTF asset</summary>
         public GltfAsset? asset;
@@ -56,7 +58,7 @@ namespace MAPI.Gltf
     /// Metadata about the GLTF asset.
     /// </summary>
     [Serializable]
-    public sealed class GltfAsset
+    internal sealed class GltfAsset
     {
         /// <summary>GLTF version (e.g., "2.0")</summary>
         public string? version;
@@ -76,7 +78,7 @@ namespace MAPI.Gltf
     /// Defines a scene containing a list of root nodes.
     /// </summary>
     [Serializable]
-    public sealed class GltfScene
+    internal sealed class GltfScene
     {
         /// <summary>Name of the scene</summary>
         public string? name;
@@ -93,7 +95,7 @@ namespace MAPI.Gltf
     /// Nodes can have transforms, meshes, children, and skinning data.
     /// </summary>
     [Serializable]
-    public sealed class GltfNode
+    internal sealed class GltfNode
     {
         /// <summary>Name of the node</summary>
         public string? name;
@@ -129,7 +131,7 @@ namespace MAPI.Gltf
     /// Defines a mesh containing one or more primitives.
     /// </summary>
     [Serializable]
-    public sealed class GltfMesh
+    internal sealed class GltfMesh
     {
         /// <summary>Name of the mesh</summary>
         public string? name;
@@ -147,7 +149,7 @@ namespace MAPI.Gltf
     /// Defines a mesh primitive (triangle-based geometry).
     /// </summary>
     [Serializable]
-    public sealed class GltfPrimitive
+    internal sealed class GltfPrimitive
     {
         /// <summary>Map of attribute names to accessor indices (POSITION, NORMAL, TEXCOORD_0, etc.)</summary>
         public Dictionary<string, int>? attributes;
@@ -173,7 +175,7 @@ namespace MAPI.Gltf
     /// Defines a binary data buffer.
     /// </summary>
     [Serializable]
-    public sealed class GltfBuffer
+    internal sealed class GltfBuffer
     {
         /// <summary>Length of the buffer in bytes</summary>
         public int byteLength;
@@ -192,7 +194,7 @@ namespace MAPI.Gltf
     /// Defines a view into a buffer.
     /// </summary>
     [Serializable]
-    public sealed class GltfBufferView
+    internal sealed class GltfBufferView
     {
         /// <summary>Index of the buffer</summary>
         public int buffer;
@@ -216,7 +218,7 @@ namespace MAPI.Gltf
     /// Defines how to access binary data in a buffer view.
     /// </summary>
     [Serializable]
-    public sealed class GltfAccessor
+    internal sealed class GltfAccessor
     {
         /// <summary>Index of the buffer view</summary>
         public int? bufferView;
@@ -248,7 +250,7 @@ namespace MAPI.Gltf
     /// Sparse storage of accessor data.
     /// </summary>
     [Serializable]
-    public sealed class GltfAccessorSparse
+    internal sealed class GltfAccessorSparse
     {
         /// <summary>Number of entries stored in the sparse array</summary>
         public int count;
@@ -262,7 +264,7 @@ namespace MAPI.Gltf
     /// Indices for sparse accessor data.
     /// </summary>
     [Serializable]
-    public sealed class GltfAccessorSparseIndices
+    internal sealed class GltfAccessorSparseIndices
     {
         /// <summary>Index of the buffer view containing indices</summary>
         public int bufferView;
@@ -276,7 +278,7 @@ namespace MAPI.Gltf
     /// Values for sparse accessor data.
     /// </summary>
     [Serializable]
-    public sealed class GltfAccessorSparseValues
+    internal sealed class GltfAccessorSparseValues
     {
         /// <summary>Index of the buffer view containing values</summary>
         public int bufferView;
@@ -292,7 +294,7 @@ namespace MAPI.Gltf
     /// Defines a material for rendering.
     /// </summary>
     [Serializable]
-    public sealed class GltfMaterial
+    internal sealed class GltfMaterial
     {
         /// <summary>Name of the material</summary>
         public string? name;
@@ -322,7 +324,7 @@ namespace MAPI.Gltf
     /// Defines PBR metallic-roughness material properties.
     /// </summary>
     [Serializable]
-    public sealed class GltfPbrMetallicRoughness
+    internal sealed class GltfPbrMetallicRoughness
     {
         /// <summary>Base color factor [r, g, b, a]</summary>
         public float[]? baseColorFactor;
@@ -344,7 +346,7 @@ namespace MAPI.Gltf
     /// Reference to a texture with optional transform.
     /// </summary>
     [Serializable]
-    public sealed class GltfTextureInfo
+    internal sealed class GltfTextureInfo
     {
         /// <summary>Index of the texture</summary>
         public int index;
@@ -360,7 +362,7 @@ namespace MAPI.Gltf
     /// Normal texture info with scale.
     /// </summary>
     [Serializable]
-    public sealed class GltfNormalTextureInfo
+    internal sealed class GltfNormalTextureInfo
     {
         /// <summary>Index of the texture</summary>
         public int index;
@@ -378,7 +380,7 @@ namespace MAPI.Gltf
     /// Occlusion texture info with strength.
     /// </summary>
     [Serializable]
-    public sealed class GltfOcclusionTextureInfo
+    internal sealed class GltfOcclusionTextureInfo
     {
         /// <summary>Index of the texture</summary>
         public int index;
@@ -400,7 +402,7 @@ namespace MAPI.Gltf
     /// Defines a texture, pointing to an image and a sampler.
     /// </summary>
     [Serializable]
-    public sealed class GltfTexture
+    internal sealed class GltfTexture
     {
         /// <summary>Index of the sampler</summary>
         public int? sampler;
@@ -418,7 +420,7 @@ namespace MAPI.Gltf
     /// Defines an image source.
     /// </summary>
     [Serializable]
-    public sealed class GltfImage
+    internal sealed class GltfImage
     {
         /// <summary>URI to external image data or base64 data URI</summary>
         public string? uri;
@@ -438,7 +440,7 @@ namespace MAPI.Gltf
     /// Defines texture filtering and wrapping modes.
     /// </summary>
     [Serializable]
-    public sealed class GltfSampler
+    internal sealed class GltfSampler
     {
         /// <summary>Magnification filter</summary>
         public int? magFilter;
@@ -464,7 +466,7 @@ namespace MAPI.Gltf
     /// Defines a skin for skeletal animation.
     /// </summary>
     [Serializable]
-    public sealed class GltfSkin
+    internal sealed class GltfSkin
     {
         /// <summary>Name of the skin</summary>
         public string? name;
@@ -488,7 +490,7 @@ namespace MAPI.Gltf
     /// Defines an animation with channels and samplers.
     /// </summary>
     [Serializable]
-    public sealed class GltfAnimation
+    internal sealed class GltfAnimation
     {
         /// <summary>Name of the animation</summary>
         public string? name;
@@ -506,7 +508,7 @@ namespace MAPI.Gltf
     /// Defines an animation channel targeting a node property.
     /// </summary>
     [Serializable]
-    public sealed class GltfAnimationChannel
+    internal sealed class GltfAnimationChannel
     {
         /// <summary>Index of the sampler</summary>
         public int sampler;
@@ -518,7 +520,7 @@ namespace MAPI.Gltf
     /// Target for an animation channel.
     /// </summary>
     [Serializable]
-    public sealed class GltfAnimationChannelTarget
+    internal sealed class GltfAnimationChannelTarget
     {
         /// <summary>Index of the target node</summary>
         public int? node;
@@ -530,7 +532,7 @@ namespace MAPI.Gltf
     /// Defines keyframe data for an animation.
     /// </summary>
     [Serializable]
-    public sealed class GltfAnimationSampler
+    internal sealed class GltfAnimationSampler
     {
         /// <summary>Index of accessor containing keyframe times</summary>
         public int input;
@@ -548,7 +550,7 @@ namespace MAPI.Gltf
     /// Defines a camera (perspective or orthographic).
     /// </summary>
     [Serializable]
-    public sealed class GltfCamera
+    internal sealed class GltfCamera
     {
         /// <summary>Name of the camera</summary>
         public string? name;
@@ -568,7 +570,7 @@ namespace MAPI.Gltf
     /// Perspective camera properties.
     /// </summary>
     [Serializable]
-    public sealed class GltfCameraPerspective
+    internal sealed class GltfCameraPerspective
     {
         /// <summary>Aspect ratio (width/height)</summary>
         public float? aspectRatio;
@@ -584,7 +586,7 @@ namespace MAPI.Gltf
     /// Orthographic camera properties.
     /// </summary>
     [Serializable]
-    public sealed class GltfCameraOrthographic
+    internal sealed class GltfCameraOrthographic
     {
         /// <summary>Horizontal magnification</summary>
         public float xmag;
@@ -728,3 +730,5 @@ namespace MAPI.Gltf
 
     #endregion
 }
+
+#pragma warning restore CS0649

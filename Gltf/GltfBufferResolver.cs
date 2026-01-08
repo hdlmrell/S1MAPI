@@ -9,7 +9,7 @@ namespace MAPI.Gltf
     /// Resolves and loads buffer data from various sources: GLB binary chunks, external files, or base64 data URIs.
     /// Implements the single responsibility of buffer data resolution.
     /// </summary>
-    public sealed class GltfBufferResolver
+    internal sealed class GltfBufferResolver
     {
         #region Fields
 

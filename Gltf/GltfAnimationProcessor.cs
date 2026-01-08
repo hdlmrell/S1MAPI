@@ -9,7 +9,7 @@ namespace MAPI.Gltf
     /// Processes GLTF animations and converts them to Unity AnimationClips.
     /// Supports translation, rotation, scale, and morph target animations.
     /// </summary>
-    public static class GltfAnimationProcessor
+    internal static class GltfAnimationProcessor
     {
         #region Public API
 

@@ -7,7 +7,7 @@ namespace MAPI.Gltf
     /// Processes GLTF nodes and builds the Unity GameObject hierarchy.
     /// Handles coordinate system conversion and mesh attachment.
     /// </summary>
-    public static class GltfNodeProcessor
+    internal static class GltfNodeProcessor
     {
         /// <summary>
         /// Process GLTF nodes and create Unity GameObjects with proper hierarchy.

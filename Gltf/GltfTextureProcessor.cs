@@ -7,7 +7,7 @@ namespace MAPI.Gltf
     /// <summary>
     /// Processes GLTF textures and images.
     /// </summary>
-    public static class GltfTextureProcessor
+    internal static class GltfTextureProcessor
     {
         /// <summary>
         /// Process GLTF textures and convert them to Unity Textures.

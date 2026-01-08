@@ -9,7 +9,7 @@ namespace MAPI.Gltf
     /// Processes GLTF materials and converts them to Unity materials.
     /// Uses URP (Universal Render Pipeline) shaders for Schedule 1 compatibility.
     /// </summary>
-    public static class GltfMaterialProcessor
+    internal static class GltfMaterialProcessor
     {
         #region Shader Property Names
 

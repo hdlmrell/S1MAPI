@@ -9,7 +9,7 @@ namespace MAPI.Gltf
     /// Encapsulates all loading context for a GLTF import operation.
     /// Manages the GLTF root, buffer resolution, and Unity resource creation.
     /// </summary>
-    public sealed class GltfLoadContext
+    internal sealed class GltfLoadContext
     {
         #region Fields
 

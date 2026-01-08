@@ -10,7 +10,7 @@ using Il2CppInterop.Runtime.InteropTypes.Arrays;
 
 namespace MAPI.Gltf
 {
-    public class GltfMeshResult
+    internal class GltfMeshResult
     {
         public Mesh mesh = default!;
         public int[] materialIndices = default!;
@@ -20,7 +20,7 @@ namespace MAPI.Gltf
     /// Processes GLTF mesh primitives and converts them to Unity meshes.
     /// Handles vertex data extraction, coordinate system conversion, and UV flipping.
     /// </summary>
-    public static class GltfMeshProcessor
+    internal static class GltfMeshProcessor
     {
         /// <summary>
         /// Process GLTF meshes and convert them to Unity meshes.
