@@ -1,8 +1,7 @@
 using System.Reflection;
 using UnityEngine;
-using MAPI.Utils;
 
-namespace MAPI.Core
+namespace MAPI.Utils
 {
     /// <summary>
     /// Unified resource loading from embedded assembly resources

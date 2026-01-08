@@ -1,5 +1,6 @@
 using UnityEngine;
 using MAPI.Utils;
+using System;
 
 namespace MAPI.Core
 {
@@ -192,8 +193,9 @@ namespace MAPI.Core
         /// </summary>
         /// <param name="name">Name for the clone</param>
         /// <param name="parent">Optional parent transform</param>
+        /// <param name="stripColliders">Whether to remove colliders (default: true)</param>
         /// <returns>Cloned GameObject or null if source not found</returns>
-        public GameObject? CloneVisuals(string? name = null, Transform? parent = null)
+        public GameObject? CloneVisuals(string? name = null, Transform? parent = null, bool stripColliders = true)
         {
             var source = FindSource();
             if (source == null)
@@ -202,15 +204,47 @@ namespace MAPI.Core
                 return null;
             }
 
-            // Use ObjectCloner to strip game components
-            var cloner = new ObjectCloner(source)
-                .StripColliders(); // Remove colliders by default for decoration
+            GameObject clone = UnityEngine.Object.Instantiate(source);
+            clone.name = name ?? $"{Name}_Clone";
 
-            var clone = cloner.Clone();
-            if (clone != null)
+            // Strip colliders if requested
+            if (stripColliders)
             {
-                clone.name = name ?? Name;
-                if (parent != null) clone.transform.SetParent(parent);
+                foreach (Collider c in clone.GetComponentsInChildren<Collider>(true))
+                {
+                    UnityEngine.Object.Destroy(c);
+                }
+            }
+
+            if (parent != null) clone.transform.SetParent(parent);
+
+            return clone;
+        }
+
+        #endregion
+
+        #region Static Helpers
+
+        /// <summary>
+        /// Quick static helper to clone an object with modifications.
+        /// </summary>
+        public static GameObject? Clone(GameObject original, Vector3 position, Quaternion rotation, Transform? parent = null, bool stripColliders = true)
+        {
+            if (original == null)
+            {
+                DebugLog.Error("Cannot clone null object");
+                return null;
+            }
+
+            GameObject clone = UnityEngine.Object.Instantiate(original, position, rotation, parent);
+            clone.name = $"{original.name}_Clone";
+
+            if (stripColliders)
+            {
+                foreach (Collider c in clone.GetComponentsInChildren<Collider>(true))
+                {
+                    UnityEngine.Object.Destroy(c);
+                }
             }
 
             return clone;
@@ -220,8 +254,15 @@ namespace MAPI.Core
 
         #region Operators
 
+        /// <summary>
+        /// Returns the mesh name as a string.
+        /// </summary>
         public override string ToString() => Name;
 
+        /// <summary>
+        /// Implicitly converts MeshRef to its underlying mesh name string.
+        /// </summary>
+        /// <param name="mesh">The mesh reference to convert.</param>
         public static implicit operator string(MeshRef mesh) => mesh.Name;
 
         #endregion

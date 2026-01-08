@@ -10,11 +10,17 @@ namespace MAPI.Building.Interior
     /// </summary>
     public enum FurnitureType
     {
+        /// <summary>A standard dining or work table.</summary>
         Table,
+        /// <summary>A seating furniture piece.</summary>
         Chair,
+        /// <summary>A work or desk furniture piece.</summary>
         Desk,
+        /// <summary>A storage furniture piece for books.</summary>
         Bookshelf,
+        /// <summary>A kitchen or counter surface.</summary>
         Counter,
+        /// <summary>A low coffee table.</summary>
         CoffeeTable
     }
 

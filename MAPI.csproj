@@ -5,6 +5,7 @@
    <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>MAPI</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <LangVersion>default</LangVersion>
     <NeutralLanguage>en-US</NeutralLanguage>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
@@ -26,7 +27,6 @@
    <PropertyGroup Condition="'$(Configuration)'=='Mono'">
      <TargetFramework>netstandard2.1</TargetFramework>
      <DefineConstants>MONO</DefineConstants>
-     <AssemblyName>MAPI_Mono</AssemblyName>
      <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
@@ -34,7 +34,6 @@
    <PropertyGroup Condition="'$(Configuration)'=='Il2cpp'">
      <TargetFramework>net6.0</TargetFramework>
      <DefineConstants>IL2CPP</DefineConstants>
-     <AssemblyName>MAPI_Il2cpp</AssemblyName>
      <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 

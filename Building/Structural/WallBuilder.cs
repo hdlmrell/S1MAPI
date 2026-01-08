@@ -10,9 +10,13 @@ namespace MAPI.Building.Structural
     /// </summary>
     public enum WallSide
     {
+        /// <summary>The north wall (positive Z direction).</summary>
         North,
+        /// <summary>The south wall (zero or negative Z direction).</summary>
         South,
+        /// <summary>The east wall (positive X direction).</summary>
         East,
+        /// <summary>The west wall (zero or negative X direction).</summary>
         West
     }
 
@@ -21,8 +25,11 @@ namespace MAPI.Building.Structural
     /// </summary>
     public enum WallOpeningType
     {
+        /// <summary>No opening (solid wall).</summary>
         None,
+        /// <summary>A door opening.</summary>
         Door,
+        /// <summary>A window opening.</summary>
         Window
     }
 
@@ -31,11 +38,21 @@ namespace MAPI.Building.Structural
     /// </summary>
     public sealed class WallOpening
     {
+        /// <summary>The type of opening (door, window, or none).</summary>
         public WallOpeningType Type { get; set; } = WallOpeningType.None;
+        /// <summary>The width of the opening in meters.</summary>
         public float Width { get; set; } = 2.0f;
+        /// <summary>The height of the opening in meters.</summary>
         public float Height { get; set; } = 2.2f;
-        public float BottomOffset { get; set; } = 0f; // For windows: sill height
+        /// <summary>The bottom offset (sill height) in meters. Used for windows.</summary>
+        public float BottomOffset { get; set; } = 0f;
 
+        /// <summary>
+        /// Creates a door opening configuration.
+        /// </summary>
+        /// <param name="width">The door width in meters (default 2.0).</param>
+        /// <param name="height">The door height in meters (default 2.2).</param>
+        /// <returns>A new WallOpening configured as a door.</returns>
         public static WallOpening Door(float width = 2.0f, float height = 2.2f) => new()
         {
             Type = WallOpeningType.Door,
@@ -44,6 +61,13 @@ namespace MAPI.Building.Structural
             BottomOffset = 0f
         };
 
+        /// <summary>
+        /// Creates a window opening configuration.
+        /// </summary>
+        /// <param name="width">The window width in meters (default 2.5).</param>
+        /// <param name="height">The window height in meters (default 2.0).</param>
+        /// <param name="sillHeight">The sill height from the floor in meters (default 0.8).</param>
+        /// <returns>A new WallOpening configured as a window.</returns>
         public static WallOpening Window(float width = 2.5f, float height = 2.0f, float sillHeight = 0.8f) => new()
         {
             Type = WallOpeningType.Window,

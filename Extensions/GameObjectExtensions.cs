@@ -92,7 +92,7 @@ namespace MAPI.Extensions
         {
             if (gameObject == null)
             {
-                DebugLog.Warning("[ComponentEnabler] Cannot enable components on null GameObject");
+                DebugLog.Warning("[MAPI] Cannot enable components on null GameObject");
                 return;
             }
 
@@ -116,13 +116,13 @@ namespace MAPI.Extensions
         {
             if (gameObject == null)
             {
-                DebugLog.Warning("[ComponentEnabler] Cannot enable components on null GameObject");
+                DebugLog.Warning("[MAPI] Cannot enable components on null GameObject");
                 return;
             }
 
             if (componentNames == null || componentNames.Length == 0)
             {
-                DebugLog.Warning("[ComponentEnabler] No component names provided");
+                DebugLog.Warning("[MAPI] No component names provided");
                 return;
             }
 
@@ -140,7 +140,7 @@ namespace MAPI.Extensions
                     if (componentTypeName == name)
                     {
                         component.Enable();
-                        DebugLog.Info($"[ComponentEnabler] Enabled component: {componentTypeName}");
+                        DebugLog.Info($"[MAPI] Enabled component: {componentTypeName}");
                         break;
                     }
                 }
@@ -186,7 +186,7 @@ namespace MAPI.Extensions
             var component = gameObject.GetComponentByName(componentName, recursive);
             if (component == null)
             {
-                DebugLog.Warning($"[ComponentEnabler] Component '{componentName}' not found on {gameObject.name}");
+                DebugLog.Warning($"[MAPI] Component '{componentName}' not found on {gameObject.name}");
                 return false;
             }
 
@@ -204,16 +204,16 @@ namespace MAPI.Extensions
                     try
                     {
                         method.Invoke(component, null);
-                        DebugLog.Info($"[ComponentEnabler] Invoked {setupMethodName} on {componentName}");
+                        DebugLog.Info($"[MAPI] Invoked {setupMethodName} on {componentName}");
                     }
                     catch (System.Exception e)
                     {
-                        DebugLog.Error($"[ComponentEnabler] Failed to invoke {setupMethodName}: {e.Message}");
+                        DebugLog.Error($"[MAPI] Failed to invoke {setupMethodName}: {e.Message}");
                     }
                 }
                 else
                 {
-                    DebugLog.Warning($"[ComponentEnabler] Method '{setupMethodName}' not found on {componentName}");
+                    DebugLog.Warning($"[MAPI] Method '{setupMethodName}' not found on {componentName}");
                 }
             }
 

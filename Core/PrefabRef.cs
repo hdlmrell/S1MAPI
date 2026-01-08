@@ -201,8 +201,15 @@ namespace MAPI.Core
 
         #region Operators
 
+        /// <summary>
+        /// Returns the prefab name as a string.
+        /// </summary>
         public override string ToString() => Name;
 
+        /// <summary>
+        /// Implicitly converts PrefabRef to its underlying prefab name string.
+        /// </summary>
+        /// <param name="prefab">The prefab reference to convert.</param>
         public static implicit operator string(PrefabRef prefab) => prefab.Name;
 
         #endregion

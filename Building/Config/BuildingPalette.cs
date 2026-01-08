@@ -43,8 +43,8 @@ namespace MAPI.Building.Config
 
         /// <summary>Accent color for furniture and highlights</summary>
         public Color AccentColor { get; set; } = new Color(0.29f, 0.48f, 0.29f);
-        
-        // <summary>Accent material for furniture and highlights</summary>
+
+        /// <summary>Accent material for furniture and highlights</summary>
         public Material? AccentMaterial { get; set; }
 
         /// <summary>Light color for ceiling lights</summary>
