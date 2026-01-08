@@ -2,9 +2,21 @@
   href: index.md
 - name: Guides
   items:
-    - name: Usage Examples
-      href: USAGE_EXAMPLES.md
-    - name: Coding Standards
-      href: CODING_STANDARDS.md
+    - name: Introduction
+      href: docs/introduction.md
+    - name: Getting Started
+      href: docs/getting-started.md
+    - name: API Overview
+      href: docs/api-overview.md
+    - name: Procedural Mesh
+      href: docs/procedural-mesh.md
+    - name: Building
+      href: docs/building.md
+    - name: GLTF Loading
+      href: docs/gltf-loading.md
+    - name: Examples
+      href: docs/examples.md
+- name: Coding Standards
+  href: CODING_STANDARDS.md
 - name: API Reference
   href: api/
