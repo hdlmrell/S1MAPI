@@ -13,6 +13,35 @@
     --navbar-height: 64px; /* DocFX navbar height */
 }
 
+/* Light Mode Variables */
+body.theme-light,
+body[data-color-mode="light"],
+[data-theme="light"] {
+    --mapi-bg: #ffffff;
+    --mapi-bg-dark: #f6f8fa;
+    --mapi-bg-card: #f6f8fa;
+    --mapi-text: #24292f;
+    --mapi-text-muted: #57606a;
+    --mapi-accent: #b45309; /* Darker amber for better contrast in light mode */
+    --mapi-accent-glow: rgba(180, 83, 9, 0.1);
+    --mapi-border: #d0d7de;
+    --mapi-grid-color: rgba(0, 0, 0, 0.03);
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --mapi-bg: #ffffff;
+        --mapi-bg-dark: #f6f8fa;
+        --mapi-bg-card: #f6f8fa;
+        --mapi-text: #24292f;
+        --mapi-text-muted: #57606a;
+        --mapi-accent: #b45309;
+        --mapi-accent-glow: rgba(180, 83, 9, 0.1);
+        --mapi-border: #d0d7de;
+        --mapi-grid-color: rgba(0, 0, 0, 0.03);
+    }
+}
+
 html, body {
     margin: 0;
     padding: 0;
@@ -459,4 +488,72 @@ body[data-layout="landing"] .actionbar {
         width: 100%;
         justify-content: center;
     }
+}
+
+/* Light Mode Specific Overrides */
+body.theme-light .mapi-hero-wrapper,
+body[data-color-mode="light"] .mapi-hero-wrapper,
+[data-theme="light"] .mapi-hero-wrapper {
+    background: radial-gradient(circle at top right, #e8eaed 0%, var(--mapi-bg) 60%);
+}
+
+@media (prefers-color-scheme: light) {
+    .mapi-hero-wrapper {
+        background: radial-gradient(circle at top right, #e8eaed 0%, var(--mapi-bg) 60%);
+    }
+}
+
+body.theme-light .mapi-btn-primary,
+body.theme-light .mapi-cta-group > a:first-child,
+body[data-color-mode="light"] .mapi-btn-primary,
+body[data-color-mode="light"] .mapi-cta-group > a:first-child,
+[data-theme="light"] .mapi-btn-primary,
+[data-theme="light"] .mapi-cta-group > a:first-child {
+    color: #ffffff !important;
+}
+
+body.theme-light .mapi-btn-primary:hover,
+body.theme-light .mapi-cta-group > a:first-child:hover,
+body[data-color-mode="light"] .mapi-btn-primary:hover,
+body[data-color-mode="light"] .mapi-cta-group > a:first-child:hover,
+[data-theme="light"] .mapi-btn-primary:hover,
+[data-theme="light"] .mapi-cta-group > a:first-child:hover {
+    color: #ffffff !important;
+}
+
+body.theme-light .mapi-code-card,
+body[data-color-mode="light"] .mapi-code-card,
+[data-theme="light"] .mapi-code-card {
+    background: #f6f8fa;
+    border-color: var(--mapi-border);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+body.theme-light .mapi-card-header,
+body[data-color-mode="light"] .mapi-card-header,
+[data-theme="light"] .mapi-card-header {
+    background: #e8eaed;
+    border-color: var(--mapi-border);
+}
+
+body.theme-light .mapi-badge,
+body[data-color-mode="light"] .mapi-badge,
+[data-theme="light"] .mapi-badge {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: var(--mapi-border);
+}
+
+body.theme-light .mapi-tech-card,
+body[data-color-mode="light"] .mapi-tech-card,
+[data-theme="light"] .mapi-tech-card {
+    background: linear-gradient(90deg, rgba(0,0,0,0.02) 0%, transparent 100%);
+}
+
+body.theme-light .mapi-btn-outline:hover,
+body.theme-light .mapi-cta-group > a:not(:first-child):hover,
+body[data-color-mode="light"] .mapi-btn-outline:hover,
+body[data-color-mode="light"] .mapi-cta-group > a:not(:first-child):hover,
+[data-theme="light"] .mapi-btn-outline:hover,
+[data-theme="light"] .mapi-cta-group > a:not(:first-child):hover {
+    background: rgba(0, 0, 0, 0.04);
 }
