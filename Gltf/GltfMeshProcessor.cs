@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering; // For IndexFormat
+// For IndexFormat
 using MAPI.Utils;
 
 #if IL2CPP

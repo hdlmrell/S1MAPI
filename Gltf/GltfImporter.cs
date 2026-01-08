@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using UnityEngine;
 using Newtonsoft.Json;
-using MAPI.Core;
 using MAPI.Utils;
 
 namespace MAPI.Gltf

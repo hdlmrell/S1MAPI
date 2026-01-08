@@ -1,7 +1,5 @@
-using System.Collections.Generic;
 using UnityEngine;
 using MAPI.Core;
-using MAPI.Utils;
 
 namespace MAPI.Gltf
 {

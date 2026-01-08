@@ -1,6 +1,4 @@
-using System;
 using UnityEngine;
-using MAPI.Utils;
 
 namespace MAPI.Gltf
 {

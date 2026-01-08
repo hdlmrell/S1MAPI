@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 #pragma warning disable CS0649
 
 namespace MAPI.Gltf
@@ -187,6 +184,7 @@ namespace MAPI.Gltf
         // Runtime only - not serialized from JSON
         /// <summary>Runtime: Loaded binary data bytes</summary>
         [NonSerialized]
+        // ReSharper disable once InconsistentNaming
         public byte[]? Data;
     }
 
