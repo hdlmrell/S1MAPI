@@ -130,8 +130,8 @@ jobs:
         run: |
           echo "=== Restoring IL2CPP and isolating from Mono ==="
           if [ -d "/tmp/Il2Cpp.backup" ]; then
-            mkdir -p Assemblies/Il2Cpp
-            cp -r /tmp/Il2Cpp.backup/* Assemblies/Il2Cpp/
+            mkdir -p Assemblies
+            mv /tmp/Il2Cpp.backup Assemblies/Il2Cpp
           fi
           if [ -d "Assemblies/Mono" ]; then
             rm -rf /tmp/Mono.backup 2>/dev/null || true

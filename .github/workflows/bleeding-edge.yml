@@ -113,8 +113,8 @@ jobs:
         run: |
           echo "=== Restoring IL2CPP assemblies from /tmp backup ==="
           if [ -d "/tmp/Il2Cpp.backup" ]; then
-            mkdir -p Assemblies/Il2Cpp
-            cp -r /tmp/Il2Cpp.backup/* Assemblies/Il2Cpp/
+            mkdir -p Assemblies
+            mv /tmp/Il2Cpp.backup Assemblies/Il2Cpp
             echo "Restored IL2CPP assemblies from /tmp"
           else
             echo "ERROR: IL2CPP backup not found in /tmp!"
@@ -204,8 +204,8 @@ jobs:
         run: |
           echo "=== Restoring Mono assemblies ==="
           if [ -d "/tmp/Mono.backup" ]; then
-            mkdir -p Assemblies/Mono
-            cp -r /tmp/Mono.backup/* Assemblies/Mono/
+            mkdir -p Assemblies
+            mv /tmp/Mono.backup Assemblies/Mono
             echo "Restored Mono assemblies from /tmp"
           fi
 
