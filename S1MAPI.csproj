@@ -186,6 +186,7 @@
      <EmbeddedResource Include="Resources\**\*" />
      <EmbeddedResource Remove="api\**" />
      <EmbeddedResource Remove="_site\**" />
+     <EmbeddedResource Remove="Public\**" />
    </ItemGroup>
    <ItemGroup>
      <None Remove="local.build.props.example" />
@@ -193,6 +194,9 @@
      <None Remove="CODING_STANDARDS.md" />
      <None Remove="api\**" />
      <None Remove="_site\**" />
+     <None Remove="Public\**" />
+     <None Remove="README_THUNDERSTORE.md" />
+     <None Remove="nexuspost.bbcode" />
    </ItemGroup>
    <ItemGroup>
      <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
