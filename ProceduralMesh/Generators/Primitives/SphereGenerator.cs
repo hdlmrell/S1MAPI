@@ -1,7 +1,7 @@
 using UnityEngine;
 using MAPI.Utils;
 
-namespace MAPI.ProceduralMesh.Generators
+namespace MAPI.ProceduralMesh.Generators.Primitives
 {
     /// <summary>
     /// Generates sphere mesh geometry using UV sphere algorithm.

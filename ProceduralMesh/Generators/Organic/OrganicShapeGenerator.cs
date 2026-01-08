@@ -2,7 +2,7 @@ using UnityEngine;
 using MAPI.Core;
 using MAPI.Utils;
 
-namespace MAPI.ProceduralMesh
+namespace MAPI.ProceduralMesh.Generators.Organic
 {
     /// <summary>
     /// Abstract base class for creating organic shape generators (animals, plants, etc.).

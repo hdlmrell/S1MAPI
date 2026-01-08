@@ -603,7 +603,7 @@ namespace MAPI.Gltf
     /// <summary>
     /// GLTF component type constants.
     /// </summary>
-    public static class GltfComponentType
+    internal static class GltfComponentType
     {
         public const int Byte = 5120;
         public const int UnsignedByte = 5121;
@@ -631,7 +631,7 @@ namespace MAPI.Gltf
     /// <summary>
     /// GLTF accessor type constants.
     /// </summary>
-    public static class GltfAccessorType
+    internal static class GltfAccessorType
     {
         public const string Scalar = "SCALAR";
         public const string Vec2 = "VEC2";
@@ -661,7 +661,7 @@ namespace MAPI.Gltf
     /// <summary>
     /// GLTF primitive mode constants.
     /// </summary>
-    public static class GltfPrimitiveMode
+    internal static class GltfPrimitiveMode
     {
         public const int Points = 0;
         public const int Lines = 1;
@@ -675,7 +675,7 @@ namespace MAPI.Gltf
     /// <summary>
     /// GLTF alpha mode constants.
     /// </summary>
-    public static class GltfAlphaMode
+    internal static class GltfAlphaMode
     {
         public const string Opaque = "OPAQUE";
         public const string Mask = "MASK";
@@ -685,7 +685,7 @@ namespace MAPI.Gltf
     /// <summary>
     /// GLTF texture filter constants.
     /// </summary>
-    public static class GltfTextureFilter
+    internal static class GltfTextureFilter
     {
         public const int Nearest = 9728;
         public const int Linear = 9729;
@@ -698,7 +698,7 @@ namespace MAPI.Gltf
     /// <summary>
     /// GLTF texture wrap mode constants.
     /// </summary>
-    public static class GltfTextureWrap
+    internal static class GltfTextureWrap
     {
         public const int ClampToEdge = 33071;
         public const int MirroredRepeat = 33648;
@@ -708,7 +708,7 @@ namespace MAPI.Gltf
     /// <summary>
     /// GLTF animation interpolation constants.
     /// </summary>
-    public static class GltfInterpolation
+    internal static class GltfInterpolation
     {
         public const string Linear = "LINEAR";
         public const string Step = "STEP";
@@ -718,7 +718,7 @@ namespace MAPI.Gltf
     /// <summary>
     /// GLTF animation path constants.
     /// </summary>
-    public static class GltfAnimationPath
+    internal static class GltfAnimationPath
     {
         public const string Translation = "translation";
         public const string Rotation = "rotation";

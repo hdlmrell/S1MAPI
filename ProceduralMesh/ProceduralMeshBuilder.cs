@@ -1,7 +1,7 @@
 using UnityEngine;
 using MAPI.Core;
 using MAPI.Utils;
-using MAPI.ProceduralMesh.Generators;
+using MAPI.ProceduralMesh.Generators.Primitives;
 
 namespace MAPI.ProceduralMesh
 {

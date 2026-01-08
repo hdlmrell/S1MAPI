@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MAPI.ProceduralMesh
+namespace MAPI.ProceduralMesh.Generators.Organic
 {
     /// <summary>
     /// Defines the shape profile for an articulated limb (leg, arm, tail, etc.).

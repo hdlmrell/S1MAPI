@@ -111,8 +111,8 @@ namespace MAPI.S1
         #region Props - Decorative
 
         /// <summary>
-        /// Vase/bong mesh (visual only, no pickup logic).
-        /// The actual Bong item prefab uses this mesh internally.
+        /// Vase/bong mesh.
+        /// The Bong trash item uses this mesh internally.
         /// </summary>
         public static readonly MeshRef Vase = new("SM_Prop_Vase_02");
 
