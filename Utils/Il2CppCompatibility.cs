@@ -15,7 +15,7 @@ namespace MAPI.Utils
     /// Provides extension methods for converting between C# and Il2Cpp lists.
     /// Ensures compatibility across both Mono and IL2CPP runtimes.
     /// </summary>
-    public static class Il2CppListExtensions
+    internal static class Il2CppListExtensions
     {
         /// <summary>
         /// Converts a C# List to an IEnumerable.
@@ -85,7 +85,7 @@ namespace MAPI.Utils
     /// <summary>
     /// Cross-platform type utilities for Mono and IL2CPP compatibility.
     /// </summary>
-    public static class CrossType
+    internal static class CrossType
     {
         /// <summary>
         /// Gets the proper type of a class for the current runtime.
@@ -169,7 +169,7 @@ namespace MAPI.Utils
     /// <summary>
     /// Cross-platform exception handling utilities for Mono and IL2CPP compatibility.
     /// </summary>
-    public static class CrossException
+    internal static class CrossException
     {
         /// <summary>
         /// Logs an exception to the Unity console in a cross-platform manner.
@@ -200,83 +200,6 @@ namespace MAPI.Utils
             Debug.LogError(message);
             Debug.LogException(ex);
 #endif
-        }
-    }
-
-    /// <summary>
-    /// Extension methods for GameObjects providing cross-platform utility functions.
-    /// </summary>
-    public static class GameObjectExtensions
-    {
-        /// <summary>
-        /// Gets a component or adds it if it doesn't exist.
-        /// </summary>
-        /// <typeparam name="T">The type of component</typeparam>
-        /// <param name="gameObject">The GameObject to get or add the component to</param>
-        /// <returns>The existing component or a newly added one</returns>
-        public static T GetOrAddComponent<T>(this GameObject gameObject) where T : Component
-        {
-            T component = gameObject.GetComponent<T>();
-            if (component != null)
-            {
-                return component;
-            }
-            
-            return gameObject.AddComponent<T>();
-        }
-
-        /// <summary>
-        /// Gets the full hierarchy path of a Transform.
-        /// </summary>
-        /// <param name="transform">The Transform to get the path for</param>
-        /// <returns>The full hierarchy path</returns>
-        public static string GetHierarchyPath(this Transform transform)
-        {
-            if (transform == null)
-            {
-                return "null";
-            }
-
-            string path = transform.name;
-            Transform current = transform.parent;
-
-            while (current != null)
-            {
-                path = current.name + "/" + path;
-                current = current.parent;
-            }
-
-            return path;
-        }
-
-        /// <summary>
-        /// Gets all components of type T in the given GameObject and its children recursively.
-        /// </summary>
-        /// <typeparam name="T">The type of component to search for</typeparam>
-        /// <param name="obj">The GameObject to search in</param>
-        /// <returns>A list of all components of type T found</returns>
-        public static List<T> GetAllComponentsInChildrenRecursive<T>(this GameObject obj) where T : Component
-        {
-            List<T> results = new List<T>();
-            
-            if (obj == null)
-            {
-                return results;
-            }
-
-            T[] components = obj.GetComponents<T>();
-            if (components.Length > 0)
-            {
-                results.AddRange(components);
-            }
-
-            for (int i = 0; i < obj.transform.childCount; i++)
-            {
-                Transform child = obj.transform.GetChild(i);
-                results.AddRange(GetAllComponentsInChildrenRecursive<T>(child.gameObject));
-            }
-
-            return results;
         }
     }
 }

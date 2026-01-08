@@ -6,7 +6,7 @@ namespace MAPI.Utils
     /// Debug logging utility for MAPI library
     /// Provides consistent logging interface with conditional compilation
     /// </summary>
-    public static class DebugLog
+    internal static class DebugLog
     {
         private static bool _debugEnabled = true;
 
