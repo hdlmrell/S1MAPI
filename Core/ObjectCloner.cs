@@ -1,5 +1,6 @@
 using UnityEngine;
 using MAPI.Utils;
+using MAPI.Extensions;
 
 #if IL2CPP
 using S1Type = Il2CppSystem.Type;
@@ -187,7 +188,7 @@ namespace MAPI.Core
             // 5. Set Layer
             if (_targetLayer.HasValue)
             {
-                GameObjectUtilities.SetLayerRecursively(clone, _targetLayer.Value);
+                clone.SetLayerRecursively(_targetLayer.Value);
             }
         }
         

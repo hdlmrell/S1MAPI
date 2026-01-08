@@ -109,26 +109,6 @@ namespace MAPI.Building
         
         #endregion
 
-        #region Public API - Layer Management
-        
-        /// <summary>
-        /// Set the layer for a GameObject and optionally all its children
-        /// </summary>
-        public static void SetLayer(GameObject gameObject, int layer, bool includeChildren = true)
-        {
-            GameObjectUtilities.SetLayerRecursively(gameObject, layer, includeChildren);
-        }
-
-        /// <summary>
-        /// Set the layer by name
-        /// </summary>
-        public static void SetLayer(GameObject gameObject, string layerName, bool includeChildren = true)
-        {
-            GameObjectUtilities.SetLayerRecursively(gameObject, layerName, includeChildren);
-        }
-        
-        #endregion
-
         #region Public API - Occlusion
         
         /// <summary>
