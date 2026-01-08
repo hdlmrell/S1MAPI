@@ -210,10 +210,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: MAPI-Mono-${{ steps.get_version.outputs.version }}-bleeding-edge
-          path: bin/Mono/netstandard2.1/MAPI_Mono.dll
+          path: bin/Mono/netstandard2.1/MAPI.dll
 
       - name: Upload IL2CPP Artifact
         uses: actions/upload-artifact@v4
         with:
           name: MAPI-Il2cpp-${{ steps.get_version.outputs.version }}-bleeding-edge
-          path: bin/Il2cpp/net6.0/MAPI_Il2cpp.dll
+          path: bin/Il2cpp/net6.0/MAPI.dll
