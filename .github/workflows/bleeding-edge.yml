@@ -183,8 +183,8 @@ jobs:
            echo "=== IL2CPP Assembly Directory Contents ==="
            ls -la Assemblies/Il2Cpp/ | head -20
 
-      - name: Restore IL2CPP Dependencies
-        run: dotnet restore MAPI.csproj /p:Configuration=Il2cpp
+       - name: Restore IL2CPP Dependencies
+         run: dotnet restore MAPI.csproj /p:Configuration=Il2cpp
 
        - name: Build IL2CPP
          run: dotnet build MAPI.csproj --no-restore -c Il2cpp -v normal
