@@ -107,7 +107,7 @@ jobs:
           fi
 
       - name: Build Mono
-        run: dotnet build MAPI.csproj --no-restore /p:Configuration=Mono /p:AssemblySearchPaths="{RawFileName};{TargetFrameworkDirectory}" -v normal
+        run: dotnet build MAPI.csproj --no-restore /p:Configuration=Mono -v normal
 
       # Checkout IL2CPP Assemblies
       - name: Checkout IL2CPP Assemblies
@@ -189,7 +189,7 @@ jobs:
         run: dotnet restore MAPI.csproj /p:Configuration=Il2cpp
 
       - name: Build IL2CPP
-        run: dotnet build MAPI.csproj --no-restore -c Il2cpp /p:AssemblySearchPaths="{RawFileName};{TargetFrameworkDirectory}" -v normal
+        run: dotnet build MAPI.csproj --no-restore -c Il2cpp -v normal
 
       - name: Restore Mono Assemblies
         run: |

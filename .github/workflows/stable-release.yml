@@ -124,7 +124,7 @@ jobs:
 
       - name: Build Mono (and Package)
         if: steps.check_release.outputs.exists != 'true'
-        run: dotnet build MAPI.csproj --no-restore -c Mono /p:AssemblySearchPaths="{RawFileName};{TargetFrameworkDirectory}" -v normal
+        run: dotnet build MAPI.csproj --no-restore -c Mono -v normal
 
       - name: Restore IL2CPP and Clear Mono
         if: steps.check_release.outputs.exists != 'true'
@@ -141,7 +141,7 @@ jobs:
 
       - name: Build IL2CPP
         if: steps.check_release.outputs.exists != 'true'
-        run: dotnet build MAPI.csproj --no-restore -c Il2cpp /p:AssemblySearchPaths="{RawFileName};{TargetFrameworkDirectory}" -v normal
+        run: dotnet build MAPI.csproj --no-restore -c Il2cpp -v normal
 
       - name: Create Release
         if: steps.check_release.outputs.exists != 'true'
