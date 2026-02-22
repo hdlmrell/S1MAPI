@@ -308,6 +308,19 @@ namespace S1MAPI.Building
         }
 
         /// <summary>
+        /// Add trim-style door frames around door openings.
+        /// Must be called after AddWalls.
+        /// </summary>
+        /// <param name="material">Optional material override</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddDoorFrames(Material? material = null)
+        {
+            GetDecorBuilder().AddDoorFrames(
+                _northOpening, _southOpening, _eastOpening, _westOpening, material);
+            return this;
+        }
+
+        /// <summary>
         /// Add base molding around the bottom of the building.
         /// </summary>
         /// <param name="height">Molding height in meters</param>

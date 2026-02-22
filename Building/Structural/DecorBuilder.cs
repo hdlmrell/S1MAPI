@@ -272,6 +272,67 @@ namespace S1MAPI.Building.Structural
         }
 
         /// <summary>
+        /// Add trim-style door frames (left jamb, right jamb, header) around door openings.
+        /// Frames use palette trim color/material and protrude slightly past the wall surface.
+        /// </summary>
+        /// <param name="northOpening">North wall opening</param>
+        /// <param name="southOpening">South wall opening</param>
+        /// <param name="eastOpening">East wall opening</param>
+        /// <param name="westOpening">West wall opening</param>
+        /// <param name="material">Optional material override</param>
+        /// <returns>The door frames container GameObject</returns>
+        public GameObject AddDoorFrames(
+            WallOpening? northOpening = null, WallOpening? southOpening = null,
+            WallOpening? eastOpening = null, WallOpening? westOpening = null,
+            Material? material = null)
+        {
+            GameObject container = BuildingUtilities.CreateFolder("DoorFrames", _parent);
+
+            float wallThickness = 0.2f;
+            float frameWidth = 0.12f;
+            float frameProtrusion = 0.1f;
+            float trimDepth = wallThickness + frameProtrusion;
+
+            Color color = _palette.TrimColor;
+            Material? mat = material ?? _palette.TrimMaterial;
+
+            // Inset wall segments and create frames for each door opening
+            if (northOpening?.Type == WallOpeningType.Door)
+            {
+                InsetDoorWallSegments("NorthWall", frameWidth, false);
+                CreateDoorFrame("DoorFrame_North",
+                    new Vector3(_roomSize.x / 2f, _roomSize.y / 2f, _roomSize.z),
+                    _roomSize.y, northOpening, false, frameWidth, trimDepth, color, mat, container);
+            }
+
+            if (southOpening?.Type == WallOpeningType.Door)
+            {
+                InsetDoorWallSegments("SouthWall", frameWidth, false);
+                CreateDoorFrame("DoorFrame_South",
+                    new Vector3(_roomSize.x / 2f, _roomSize.y / 2f, 0f),
+                    _roomSize.y, southOpening, false, frameWidth, trimDepth, color, mat, container);
+            }
+
+            if (eastOpening?.Type == WallOpeningType.Door)
+            {
+                InsetDoorWallSegments("EastWall", frameWidth, true);
+                CreateDoorFrame("DoorFrame_East",
+                    new Vector3(_roomSize.x, _roomSize.y / 2f, _roomSize.z / 2f),
+                    _roomSize.y, eastOpening, true, frameWidth, trimDepth, color, mat, container);
+            }
+
+            if (westOpening?.Type == WallOpeningType.Door)
+            {
+                InsetDoorWallSegments("WestWall", frameWidth, true);
+                CreateDoorFrame("DoorFrame_West",
+                    new Vector3(0f, _roomSize.y / 2f, _roomSize.z / 2f),
+                    _roomSize.y, westOpening, true, frameWidth, trimDepth, color, mat, container);
+            }
+
+            return container;
+        }
+
+        /// <summary>
         /// Add base molding around the bottom of the building.
         /// Automatically gaps around door openings so the molding does not clip through door frames.
         /// </summary>
@@ -727,6 +788,100 @@ namespace S1MAPI.Building.Structural
                     ApplyMaterial(left, material);
                     ApplyMaterial(right, material);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Shrinks wall segments around a door opening to make room for the door frame.
+        /// The side segments pull back laterally and the top segment pulls up,
+        /// leaving gaps that the door frame casings fill exactly.
+        /// </summary>
+        private void InsetDoorWallSegments(string wallName, float inset, bool isVertical)
+        {
+            Transform? wallContainer = _parent.Find($"Walls/{wallName}");
+            if (wallContainer == null) return;
+
+            Transform? left = wallContainer.Find($"{wallName}_Left");
+            Transform? right = wallContainer.Find($"{wallName}_Right");
+            Transform? top = wallContainer.Find($"{wallName}_Top");
+
+            // Shrink side segments away from the door opening
+            if (left != null)
+            {
+                Vector3 scale = left.localScale;
+                Vector3 pos = left.localPosition;
+                if (isVertical) { scale.z -= inset; pos.z -= inset / 2f; }
+                else { scale.x -= inset; pos.x -= inset / 2f; }
+                left.localScale = scale;
+                left.localPosition = pos;
+            }
+
+            if (right != null)
+            {
+                Vector3 scale = right.localScale;
+                Vector3 pos = right.localPosition;
+                if (isVertical) { scale.z -= inset; pos.z += inset / 2f; }
+                else { scale.x -= inset; pos.x += inset / 2f; }
+                right.localScale = scale;
+                right.localPosition = pos;
+            }
+
+            // Shrink top segment upward and widen to cover gaps left by side insets
+            if (top != null)
+            {
+                Vector3 scale = top.localScale;
+                Vector3 pos = top.localPosition;
+                scale.y -= inset;
+                pos.y += inset / 2f;
+                if (isVertical) scale.z += 2f * inset;
+                else scale.x += 2f * inset;
+                top.localScale = scale;
+                top.localPosition = pos;
+            }
+        }
+
+        private void CreateDoorFrame(
+            string name, Vector3 wallCenter, float wallHeight,
+            WallOpening opening, bool isVertical, float frameWidth,
+            float trimDepth, Color color, Material? material, GameObject container)
+        {
+            float doorWidth = opening.Width;
+            float doorHeight = opening.Height;
+
+            float jambYOffset = -(wallHeight - doorHeight) / 2f;
+            float sideOffset = doorWidth / 2f + frameWidth / 2f;
+
+            // Jamb sizes
+            Vector3 jambSize = isVertical
+                ? new Vector3(trimDepth, doorHeight, frameWidth)
+                : new Vector3(frameWidth, doorHeight, trimDepth);
+
+            // Left jamb
+            Vector3 leftJambPos = wallCenter + (isVertical
+                ? new Vector3(0f, jambYOffset, -sideOffset)
+                : new Vector3(-sideOffset, jambYOffset, 0f));
+            GameObject leftJamb = PrimitiveBuilder.CreateBox($"{name}_Left", leftJambPos, jambSize, color, container.transform);
+
+            // Right jamb
+            Vector3 rightJambPos = wallCenter + (isVertical
+                ? new Vector3(0f, jambYOffset, sideOffset)
+                : new Vector3(sideOffset, jambYOffset, 0f));
+            GameObject rightJamb = PrimitiveBuilder.CreateBox($"{name}_Right", rightJambPos, jambSize, color, container.transform);
+
+            // Header (spans across both jambs)
+            float headerWidth = doorWidth + 2f * frameWidth;
+            float headerYOffset = -(wallHeight / 2f) + doorHeight + frameWidth / 2f;
+            Vector3 headerSize = isVertical
+                ? new Vector3(trimDepth, frameWidth, headerWidth)
+                : new Vector3(headerWidth, frameWidth, trimDepth);
+            GameObject header = PrimitiveBuilder.CreateBox($"{name}_Top",
+                wallCenter + new Vector3(0f, headerYOffset, 0f), headerSize, color, container.transform);
+
+            if (material != null)
+            {
+                ApplyMaterial(leftJamb, material);
+                ApplyMaterial(rightJamb, material);
+                ApplyMaterial(header, material);
             }
         }
 
