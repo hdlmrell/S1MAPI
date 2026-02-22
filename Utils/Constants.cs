@@ -126,7 +126,7 @@ namespace S1MAPI.Utils
             /// </summary>
             public static readonly string[] DefaultVegetationKeywords =
             {
-                "Rock", "Boulder", "Shrub", "Bush"
+                "Rock", "Boulder", "Shrub", "Bush", "Tree rustle"
             };
 
             /// <summary>

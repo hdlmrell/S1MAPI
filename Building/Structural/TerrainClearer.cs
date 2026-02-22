@@ -64,7 +64,7 @@ namespace S1MAPI.Building.Structural
     /// </summary>
     public static class TerrainClearer
     {
-        #region API
+        #region Public API
 
         /// <summary>
         /// Clear terrain trees and scene objects within the specified world-space bounds.
@@ -218,11 +218,14 @@ namespace S1MAPI.Building.Structural
                 {
                     data.treeInstances = surviving.ToArray();
 
+                    // Force full rebuild of terrain collision data (including tree
+                    // colliders/triggers). Toggling enabled alone may leave stale
+                    // SpeedTree interaction data that produces rustle sounds.
                     TerrainCollider? collider = terrain.GetComponent<TerrainCollider>();
                     if (collider != null)
                     {
-                        collider.enabled = false;
-                        collider.enabled = true;
+                        collider.terrainData = null;
+                        collider.terrainData = data;
                     }
                     terrain.Flush();
 
@@ -288,6 +291,43 @@ namespace S1MAPI.Building.Structural
                 }
 
                 // Pass 2: only vegetation in the padded zone around the building.
+                if (inVegetationZone && options.ClearVegetation
+                    && options.VegetationKeywords != null
+                    && MatchesKeyword(target.name, options.VegetationKeywords))
+                {
+                    if (options.Filter != null && options.Filter(target)) continue;
+                    toDestroy.Add(target);
+                }
+            }
+
+            // Catch-all: scan every Transform for renderer-less objects the first pass
+            // missed (audio triggers, tree rustle sounds, invisible scripts, etc.).
+            Transform[] allTransforms = UnityEngine.Object.FindObjectsOfType<Transform>();
+            foreach (Transform t in allTransforms)
+            {
+                if (t == null) continue;
+                if (t.GetComponent<Terrain>() != null) continue;
+                if (t.GetComponent<Renderer>() != null) continue; // Already handled above.
+                if (preserved.Contains(t)) continue;
+
+                bool inFootprint = footprintBounds.Contains(t.position);
+                bool inVegetationZone = !inFootprint && vegetationBounds.Contains(t.position);
+
+                if (!inFootprint && !inVegetationZone) continue;
+
+                GameObject target = t.gameObject;
+
+                if (inFootprint && options.ClearSceneObjects)
+                {
+                    if (options.ProtectedKeywords != null
+                        && MatchesKeyword(target.name, options.ProtectedKeywords))
+                        continue;
+                    if (options.Filter != null && options.Filter(target)) continue;
+
+                    toDestroy.Add(target);
+                    continue;
+                }
+
                 if (inVegetationZone && options.ClearVegetation
                     && options.VegetationKeywords != null
                     && MatchesKeyword(target.name, options.VegetationKeywords))
