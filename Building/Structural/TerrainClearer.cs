@@ -262,7 +262,7 @@ namespace S1MAPI.Building.Structural
             footprintBounds.SetMinMax(fpMin, fpMax);
 
             Renderer[] allRenderers = UnityEngine.Object.FindObjectsOfType<Renderer>();
-            HashSet<Transform> preserved = BuildPreservedSet(options);
+            HashSet<int> preserved = BuildPreservedSet(options);
             HashSet<GameObject> toDestroy = new HashSet<GameObject>();
 
             foreach (Renderer r in allRenderers)
@@ -270,7 +270,7 @@ namespace S1MAPI.Building.Structural
                 if (r == null) continue;
                 Transform t = r.transform;
                 if (t.GetComponent<Terrain>() != null) continue;
-                if (preserved.Contains(t)) continue;
+                if (preserved.Contains(t.GetInstanceID())) continue;
 
                 bool inFootprint = footprintBounds.Contains(t.position);
                 bool inVegetationZone = !inFootprint && vegetationBounds.Contains(t.position);
@@ -308,7 +308,7 @@ namespace S1MAPI.Building.Structural
                 if (t == null) continue;
                 if (t.GetComponent<Terrain>() != null) continue;
                 if (t.GetComponent<Renderer>() != null) continue; // Already handled above.
-                if (preserved.Contains(t)) continue;
+                if (preserved.Contains(t.GetInstanceID())) continue;
 
                 bool inFootprint = footprintBounds.Contains(t.position);
                 bool inVegetationZone = !inFootprint && vegetationBounds.Contains(t.position);
@@ -323,7 +323,6 @@ namespace S1MAPI.Building.Structural
                         && MatchesKeyword(target.name, options.ProtectedKeywords))
                         continue;
                     if (options.Filter != null && options.Filter(target)) continue;
-
                     toDestroy.Add(target);
                     continue;
                 }
@@ -367,10 +366,14 @@ namespace S1MAPI.Building.Structural
             return false;
         }
 
-        /// <summary>Flatten all preserved transforms and their children into a set for fast lookup.</summary>
-        private static HashSet<Transform> BuildPreservedSet(ClearingOptions options)
+        /// <summary>
+        /// Flatten all preserved transforms and their children into a set for fast lookup.
+        /// Uses instance IDs because IL2CPP wrapper objects for the same native Transform
+        /// have different C# references, breaking HashSet reference equality.
+        /// </summary>
+        private static HashSet<int> BuildPreservedSet(ClearingOptions options)
         {
-            HashSet<Transform> preserved = new HashSet<Transform>();
+            HashSet<int> preserved = new HashSet<int>();
 
             if (options.Preserved == null) return preserved;
 
@@ -379,7 +382,7 @@ namespace S1MAPI.Building.Structural
                 if (root == null) continue;
                 foreach (Transform child in root.GetComponentsInChildren<Transform>())
                 {
-                    preserved.Add(child);
+                    preserved.Add(child.GetInstanceID());
                 }
             }
 

@@ -135,7 +135,7 @@ namespace S1MAPI.Utils
             /// </summary>
             public static readonly string[] DefaultProtectedKeywords =
             {
-                "Road", "Sidewalk"
+                "Road", "Sidewalk", "Wedge"
             };
         }
 
