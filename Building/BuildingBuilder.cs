@@ -341,10 +341,15 @@ namespace S1MAPI.Building
         /// <param name="prefab">Prefab reference from GamePrefabs</param>
         /// <param name="position">Local position</param>
         /// <param name="rotation">Local rotation</param>
+        /// <param name="onCreated">Optional callback invoked with the instantiated GameObject</param>
         /// <returns>This builder for chaining</returns>
-        public BuildingBuilder AddPrefab(PrefabRef prefab, Vector3 position, Quaternion rotation)
+        public BuildingBuilder AddPrefab(PrefabRef prefab, Vector3 position, Quaternion rotation, Action<GameObject>? onCreated = null)
         {
-            GetPrefabPlacer().Place(prefab, position, rotation);
+            GameObject? instance = GetPrefabPlacer().Place(prefab, position, rotation);
+            if (instance != null)
+            {
+                onCreated?.Invoke(instance);
+            }
             return this;
         }
 
@@ -354,10 +359,15 @@ namespace S1MAPI.Building
         /// <param name="position">Local position for doors</param>
         /// <param name="rotation">Local rotation</param>
         /// <param name="openingHours">Text for opening hours sign</param>
+        /// <param name="onCreated">Optional callback invoked with the instantiated door GameObject</param>
         /// <returns>This builder for chaining</returns>
-        public BuildingBuilder AddSlidingDoors(Vector3 position, Quaternion rotation, string openingHours = "6AM-6PM")
+        public BuildingBuilder AddSlidingDoors(Vector3 position, Quaternion rotation, string openingHours = "6AM-6PM", Action<GameObject>? onCreated = null)
         {
-            GetPrefabPlacer().PlaceSlidingDoors(position, rotation, openingHours, Materials.MetalDarkGrey);
+            GameObject? instance = GetPrefabPlacer().PlaceSlidingDoors(position, rotation, openingHours, Materials.MetalDarkGrey);
+            if (instance != null)
+            {
+                onCreated?.Invoke(instance);
+            }
             return this;
         }
 
