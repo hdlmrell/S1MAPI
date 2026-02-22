@@ -39,6 +39,12 @@ namespace S1MAPI.Building
         private DecorBuilder? _decorBuilder;
         private PrefabPlacer? _prefabPlacer;
 
+        // Stored wall openings for cross-builder communication (e.g., base molding gap)
+        private WallOpening? _northOpening;
+        private WallOpening? _southOpening;
+        private WallOpening? _eastOpening;
+        private WallOpening? _westOpening;
+
         #endregion
 
         #region Constructor
@@ -178,12 +184,17 @@ namespace S1MAPI.Building
                 if (material != null) palette.WallMaterial = material;
             }
 
+            _northOpening = northDoor ? WallOpening.Door() : null;
+            _southOpening = southDoor ? WallOpening.Door() : null;
+            _eastOpening = eastWindow ? WallOpening.Window() : null;
+            _westOpening = westWindow ? WallOpening.Window() : null;
+
             var builder = GetWallBuilder(palette);
             builder.BuildWalls(
-                northOpening: northDoor ? WallOpening.Door() : null,
-                southOpening: southDoor ? WallOpening.Door() : null,
-                eastOpening: eastWindow ? WallOpening.Window() : null,
-                westOpening: westWindow ? WallOpening.Window() : null);
+                northOpening: _northOpening,
+                southOpening: _southOpening,
+                eastOpening: _eastOpening,
+                westOpening: _westOpening);
 
             return this;
         }
@@ -202,6 +213,11 @@ namespace S1MAPI.Building
             WallOpening? east = null,
             WallOpening? west = null)
         {
+            _northOpening = north;
+            _southOpening = south;
+            _eastOpening = east;
+            _westOpening = west;
+
             GetWallBuilder().BuildWalls(north, south, east, west);
             return this;
         }
@@ -300,7 +316,8 @@ namespace S1MAPI.Building
         /// <returns>This builder for chaining</returns>
         public BuildingBuilder AddBaseMolding(float height = 0.3f, float depth = 0.1f, Material? material = null)
         {
-            GetDecorBuilder().AddBaseMolding(height, depth, material);
+            GetDecorBuilder().AddBaseMolding(height, depth, material,
+                _northOpening, _southOpening, _eastOpening, _westOpening);
             return this;
         }
 

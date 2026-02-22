@@ -273,64 +273,51 @@ namespace S1MAPI.Building.Structural
 
         /// <summary>
         /// Add base molding around the bottom of the building.
+        /// Automatically gaps around door openings so the molding does not clip through door frames.
         /// </summary>
         /// <param name="height">Molding height in meters</param>
         /// <param name="depth">Molding depth in meters</param>
         /// <param name="material">Optional material override</param>
+        /// <param name="northOpening">North wall opening (doors create a gap)</param>
+        /// <param name="southOpening">South wall opening (doors create a gap)</param>
+        /// <param name="eastOpening">East wall opening (doors create a gap)</param>
+        /// <param name="westOpening">West wall opening (doors create a gap)</param>
         /// <returns>The molding container GameObject</returns>
-        public GameObject AddBaseMolding(float height = 0.3f, float depth = 0.1f, Material? material = null)
+        public GameObject AddBaseMolding(
+            float height = 0.3f, float depth = 0.1f, Material? material = null,
+            WallOpening? northOpening = null, WallOpening? southOpening = null,
+            WallOpening? eastOpening = null, WallOpening? westOpening = null)
         {
             float halfWidth = _roomSize.x / 2f;
             float halfDepth = _roomSize.z / 2f;
             GameObject container = BuildingUtilities.CreateFolder("BaseMolding", _parent);
 
             Color color = _palette.TrimColor;
-            
-            // Back (North)
-            GameObject back = PrimitiveBuilder.CreateBox(
-                "BaseMolding_North",
+            Material? mat = material ?? _palette.TrimMaterial;
+
+            // North (extends along X)
+            CreateMoldingSegments("BaseMolding_North",
                 new Vector3(halfWidth, height / 2f, _roomSize.z + depth / 2f),
                 new Vector3(_roomSize.x + depth * 2f, height, depth),
-                color,
-                container.transform
-            );
+                _roomSize.x + depth * 2f, false, northOpening, height, color, mat, container);
 
-            // Left (West)
-            GameObject left = PrimitiveBuilder.CreateBox(
-                "BaseMolding_West",
-                new Vector3(-depth / 2f, height / 2f, halfDepth),
-                new Vector3(depth, height, _roomSize.z),
-                color,
-                container.transform
-            );
-
-            // Right (East)
-            GameObject right = PrimitiveBuilder.CreateBox(
-                "BaseMolding_East",
-                new Vector3(_roomSize.x + depth / 2f, height / 2f, halfDepth),
-                new Vector3(depth, height, _roomSize.z),
-                color,
-                container.transform
-            );
-
-            // Front (South)
-            GameObject front = PrimitiveBuilder.CreateBox(
-                "BaseMolding_South",
+            // South (extends along X)
+            CreateMoldingSegments("BaseMolding_South",
                 new Vector3(halfWidth, height / 2f, -depth / 2f),
                 new Vector3(_roomSize.x + depth * 2f, height, depth),
-                color,
-                container.transform
-            );
+                _roomSize.x + depth * 2f, false, southOpening, height, color, mat, container);
 
-            // Apply material
-            Material? mat = material ?? _palette.TrimMaterial;
-            if (mat != null)
-            {
-                ApplyMaterial(back, mat);
-                ApplyMaterial(left, mat);
-                ApplyMaterial(right, mat);
-                ApplyMaterial(front, mat);
-            }
+            // East (extends along Z)
+            CreateMoldingSegments("BaseMolding_East",
+                new Vector3(_roomSize.x + depth / 2f, height / 2f, halfDepth),
+                new Vector3(depth, height, _roomSize.z),
+                _roomSize.z, true, eastOpening, height, color, mat, container);
+
+            // West (extends along Z)
+            CreateMoldingSegments("BaseMolding_West",
+                new Vector3(-depth / 2f, height / 2f, halfDepth),
+                new Vector3(depth, height, _roomSize.z),
+                _roomSize.z, true, westOpening, height, color, mat, container);
 
             return container;
         }
@@ -682,6 +669,63 @@ namespace S1MAPI.Building.Structural
 
             DebugLog.Info($"[DecorBuilder] OpenStringer stairs: {visibleSteps} treads + 2 stringers, gap={gap:F2}, treadMat={strinTreadMaterial?.name ?? "fallback"}, beamMat={strinBeamMaterial?.name ?? "fallback"}");
             return container;
+        }
+
+        /// <summary>
+        /// Creates a molding strip, splitting it into two segments if a door opening is present.
+        /// </summary>
+        private void CreateMoldingSegments(
+            string name, Vector3 center, Vector3 size, float wallLength,
+            bool isZAxis, WallOpening? opening, float moldingHeight,
+            Color color, Material? material, GameObject container)
+        {
+            bool hasDoorGap = opening != null
+                && opening.Type == WallOpeningType.Door
+                && opening.BottomOffset < moldingHeight;
+
+            if (!hasDoorGap)
+            {
+                GameObject strip = PrimitiveBuilder.CreateBox(name, center, size, color, container.transform);
+                if (material != null) ApplyMaterial(strip, material);
+                return;
+            }
+
+            float segmentLength = (wallLength - opening!.Width) / 2f;
+            if (segmentLength <= 0f) return;
+
+            // Offset from strip center to each segment center
+            float offsetFromCenter = (opening.Width + segmentLength) / 2f;
+
+            if (isZAxis)
+            {
+                // Strip runs along Z (East/West walls)
+                Vector3 segSize = new Vector3(size.x, size.y, segmentLength);
+                Vector3 lowZ = center + Vector3.back * offsetFromCenter;
+                Vector3 highZ = center + Vector3.forward * offsetFromCenter;
+
+                GameObject left = PrimitiveBuilder.CreateBox($"{name}_L", lowZ, segSize, color, container.transform);
+                GameObject right = PrimitiveBuilder.CreateBox($"{name}_R", highZ, segSize, color, container.transform);
+                if (material != null)
+                {
+                    ApplyMaterial(left, material);
+                    ApplyMaterial(right, material);
+                }
+            }
+            else
+            {
+                // Strip runs along X (North/South walls)
+                Vector3 segSize = new Vector3(segmentLength, size.y, size.z);
+                Vector3 lowX = center + Vector3.left * offsetFromCenter;
+                Vector3 highX = center + Vector3.right * offsetFromCenter;
+
+                GameObject left = PrimitiveBuilder.CreateBox($"{name}_L", lowX, segSize, color, container.transform);
+                GameObject right = PrimitiveBuilder.CreateBox($"{name}_R", highX, segSize, color, container.transform);
+                if (material != null)
+                {
+                    ApplyMaterial(left, material);
+                    ApplyMaterial(right, material);
+                }
+            }
         }
 
         private static void ApplyMaterial(GameObject obj, Material material)
