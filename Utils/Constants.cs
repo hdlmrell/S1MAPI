@@ -86,6 +86,26 @@ namespace S1MAPI.Utils
             /// Alpha value for general glass materials
             /// </summary>
             public const float GlassAlpha = 0.3f;
+
+            /// <summary>
+            /// Scene material name for closed riser tread planks.
+            /// </summary>
+            public const string TreadWoodName = "wood brown";
+
+            /// <summary>
+            /// Scene material name for closed riser faces.
+            /// </summary>
+            public const string RiserWoodName = "wood_beige";
+
+            /// <summary>
+            /// Scene material name for open stringer tread planks.
+            /// </summary>
+            public const string StringerTreadWoodName = "mansion_brownwood_mat";
+
+            /// <summary>
+            /// Scene material name for open stringer diagonal beams.
+            /// </summary>
+            public const string StringerBeamWoodName = "wood brown";
         }
 
         /// <summary>
@@ -108,6 +128,17 @@ namespace S1MAPI.Utils
             /// Default grid cell size for snapping operations
             /// </summary>
             public const float DefaultGridSize = 0.5f;
+
+            /// <summary>
+            /// Default maximum step height for generated stairs.
+            /// Kept below typical CharacterController stepOffset (~0.3m) for reliable climbing.
+            /// </summary>
+            public const float DefaultMaxStepHeight = 0.20f;
+
+            /// <summary>
+            /// Default step depth (tread) for generated stairs in meters.
+            /// </summary>
+            public const float DefaultStepDepth = 0.3f;
         }
 
         /// <summary>

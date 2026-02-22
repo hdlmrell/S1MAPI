@@ -260,6 +260,38 @@ namespace S1MAPI.Building
         }
 
         /// <summary>
+        /// Add stairs from ground level up to the building floor on the specified wall.
+        /// Supports multiple visual styles: Solid (default concrete box steps), ClosedRiser (two-tone wood with risers),
+        /// or OpenStringer (plank treads on diagonal stringer beams).
+        /// </summary>
+        /// <param name="wall">Which wall the stairs attach to</param>
+        /// <param name="foundationHeight">Foundation height in meters (must match AddFoundation height)</param>
+        /// <param name="maxStepHeight">Maximum height per step. Lower values create more, shallower steps. (Solid only)</param>
+        /// <param name="width">Step width in meters (Solid only)</param>
+        /// <param name="stepDepth">Step depth (tread) in meters. Controls how far stairs extend outward. (Solid only)</param>
+        /// <param name="color">Optional color override — defaults to palette floor color (Solid only)</param>
+        /// <param name="material">Optional material override — defaults to palette floor material (Solid only)</param>
+        /// <param name="style">Visual style of stairs to generate</param>
+        /// <param name="flushWithFloor">If true, topmost step is flush with floor level. If false (default), topmost step is one step below floor. (Solid only)</param>
+        /// <param name="gap">Vertical gap between foundation edge and top step. ClosedRiser/OpenStringer default to 0 (flush).</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddStairs(
+            WallSide wall,
+            float foundationHeight = 2.0f,
+            float maxStepHeight = Constants.Spatial.DefaultMaxStepHeight,
+            float width = 2.5f,
+            float stepDepth = Constants.Spatial.DefaultStepDepth,
+            Color? color = null,
+            Material? material = null,
+            StairStyle style = StairStyle.Solid,
+            bool flushWithFloor = false,
+            float gap = 0f)
+        {
+            GetDecorBuilder().AddStairs(wall, foundationHeight, maxStepHeight, width, stepDepth, color, material, style, flushWithFloor, gap);
+            return this;
+        }
+
+        /// <summary>
         /// Add base molding around the bottom of the building.
         /// </summary>
         /// <param name="height">Molding height in meters</param>

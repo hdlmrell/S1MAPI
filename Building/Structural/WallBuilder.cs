@@ -21,6 +21,19 @@ namespace S1MAPI.Building.Structural
     }
 
     /// <summary>
+    /// Visual style for generated stairs.
+    /// </summary>
+    public enum StairStyle
+    {
+        /// <summary>Solid concrete box steps (default).</summary>
+        Solid,
+        /// <summary>Two-tone wood stairs with risers and tread planks (closed riser style).</summary>
+        ClosedRiser,
+        /// <summary>Open plank treads on diagonal stringer beams (open stringer style).</summary>
+        OpenStringer
+    }
+
+    /// <summary>
     /// Type of opening in a wall.
     /// </summary>
     public enum WallOpeningType
