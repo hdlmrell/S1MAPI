@@ -290,34 +290,36 @@ namespace S1MAPI.Building.Structural
         {
             float halfWidth = _roomSize.x / 2f;
             float halfDepth = _roomSize.z / 2f;
+            float wallThickness = 0.2f;
+            float trimDepth = wallThickness + depth;
             GameObject container = BuildingUtilities.CreateFolder("BaseMolding", _parent);
 
             Color color = _palette.TrimColor;
             Material? mat = material ?? _palette.TrimMaterial;
 
-            // North (extends along X)
+            // North (extends along X, centered on wall surface)
             CreateMoldingSegments("BaseMolding_North",
-                new Vector3(halfWidth, height / 2f, _roomSize.z + depth / 2f),
-                new Vector3(_roomSize.x + depth * 2f, height, depth),
-                _roomSize.x + depth * 2f, false, northOpening, height, color, mat, container);
+                new Vector3(halfWidth, height / 2f, _roomSize.z),
+                new Vector3(_roomSize.x + trimDepth, height, trimDepth),
+                _roomSize.x + trimDepth, false, northOpening, height, color, mat, container);
 
-            // South (extends along X)
+            // South (extends along X, centered on wall surface)
             CreateMoldingSegments("BaseMolding_South",
-                new Vector3(halfWidth, height / 2f, -depth / 2f),
-                new Vector3(_roomSize.x + depth * 2f, height, depth),
-                _roomSize.x + depth * 2f, false, southOpening, height, color, mat, container);
+                new Vector3(halfWidth, height / 2f, 0f),
+                new Vector3(_roomSize.x + trimDepth, height, trimDepth),
+                _roomSize.x + trimDepth, false, southOpening, height, color, mat, container);
 
-            // East (extends along Z)
+            // East (extends along Z, centered on wall surface)
             CreateMoldingSegments("BaseMolding_East",
-                new Vector3(_roomSize.x + depth / 2f, height / 2f, halfDepth),
-                new Vector3(depth, height, _roomSize.z),
-                _roomSize.z, true, eastOpening, height, color, mat, container);
+                new Vector3(_roomSize.x, height / 2f, halfDepth),
+                new Vector3(trimDepth, height, _roomSize.z - trimDepth),
+                _roomSize.z - trimDepth, true, eastOpening, height, color, mat, container);
 
-            // West (extends along Z)
+            // West (extends along Z, centered on wall surface)
             CreateMoldingSegments("BaseMolding_West",
-                new Vector3(-depth / 2f, height / 2f, halfDepth),
-                new Vector3(depth, height, _roomSize.z),
-                _roomSize.z, true, westOpening, height, color, mat, container);
+                new Vector3(0f, height / 2f, halfDepth),
+                new Vector3(trimDepth, height, _roomSize.z - trimDepth),
+                _roomSize.z - trimDepth, true, westOpening, height, color, mat, container);
 
             return container;
         }
