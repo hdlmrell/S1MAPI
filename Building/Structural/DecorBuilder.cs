@@ -331,6 +331,7 @@ namespace S1MAPI.Building.Structural
         /// <param name="style">Visual style of stairs to generate</param>
         /// <param name="flushWithFloor">If true, topmost step is flush with floor level. If false (default), topmost step is one step below floor. (Solid only)</param>
         /// <param name="gap">Vertical gap between foundation edge and top step. ClosedRiser/OpenStringer default to 0 (flush).</param>
+        /// <param name="lateralOffset">Lateral offset from wall center to align stairs with an offset door opening.</param>
         /// <returns>The stairs container GameObject</returns>
         public GameObject AddStairs(
             WallSide wall,
@@ -342,13 +343,14 @@ namespace S1MAPI.Building.Structural
             Material? material = null,
             StairStyle style = StairStyle.Solid,
             bool flushWithFloor = false,
-            float gap = 0f)
+            float gap = 0f,
+            float lateralOffset = 0f)
         {
             return style switch
             {
-                StairStyle.ClosedRiser => AddClosedRiserStairs(wall, foundationHeight, gap),
-                StairStyle.OpenStringer => AddOpenStringerStairs(wall, foundationHeight, gap),
-                _ => AddSolidStairs(wall, foundationHeight, maxStepHeight, width, stepDepth, color, material, flushWithFloor)
+                StairStyle.ClosedRiser => AddClosedRiserStairs(wall, foundationHeight, gap, lateralOffset),
+                StairStyle.OpenStringer => AddOpenStringerStairs(wall, foundationHeight, gap, lateralOffset),
+                _ => AddSolidStairs(wall, foundationHeight, maxStepHeight, width, stepDepth, color, material, flushWithFloor, lateralOffset)
             };
         }
 
@@ -522,7 +524,8 @@ namespace S1MAPI.Building.Structural
             float stepDepth,
             Color? color,
             Material? material,
-            bool flushWithFloor = false)
+            bool flushWithFloor = false,
+            float lateralOffset = 0f)
         {
             GameObject container = BuildingUtilities.CreateFolder("Stairs", _parent);
             Color stepColor = color ?? _palette.FloorColor;
@@ -553,19 +556,19 @@ namespace S1MAPI.Building.Structural
                 switch (wall)
                 {
                     case WallSide.North:
-                        position = new Vector3(_roomSize.x / 2f, yCenter, _roomSize.z + perpOffset);
+                        position = new Vector3(_roomSize.x / 2f + lateralOffset, yCenter, _roomSize.z + perpOffset);
                         size = new Vector3(width, height, stepDepth);
                         break;
                     case WallSide.South:
-                        position = new Vector3(_roomSize.x / 2f, yCenter, -perpOffset);
+                        position = new Vector3(_roomSize.x / 2f + lateralOffset, yCenter, -perpOffset);
                         size = new Vector3(width, height, stepDepth);
                         break;
                     case WallSide.East:
-                        position = new Vector3(_roomSize.x + perpOffset, yCenter, _roomSize.z / 2f);
+                        position = new Vector3(_roomSize.x + perpOffset, yCenter, _roomSize.z / 2f + lateralOffset);
                         size = new Vector3(stepDepth, height, width);
                         break;
                     case WallSide.West:
-                        position = new Vector3(-perpOffset, yCenter, _roomSize.z / 2f);
+                        position = new Vector3(-perpOffset, yCenter, _roomSize.z / 2f + lateralOffset);
                         size = new Vector3(stepDepth, height, width);
                         break;
                     default:
@@ -585,7 +588,7 @@ namespace S1MAPI.Building.Structural
             return container;
         }
 
-        private GameObject AddClosedRiserStairs(WallSide wall, float foundationHeight, float gap)
+        private GameObject AddClosedRiserStairs(WallSide wall, float foundationHeight, float gap, float lateralOffset = 0f)
         {
             GameObject container = BuildingUtilities.CreateFolder("Stairs_ClosedRiser", _parent);
 
@@ -627,27 +630,27 @@ namespace S1MAPI.Building.Structural
                 switch (wall)
                 {
                     case WallSide.North:
-                        riserPos = new Vector3(_roomSize.x / 2f, yCenter, _roomSize.z + perpOffset);
+                        riserPos = new Vector3(_roomSize.x / 2f + lateralOffset, yCenter, _roomSize.z + perpOffset);
                         riserSize = new Vector3(width, height, stepDepth);
-                        treadPos = new Vector3(_roomSize.x / 2f, treadY, _roomSize.z + perpOffset);
+                        treadPos = new Vector3(_roomSize.x / 2f + lateralOffset, treadY, _roomSize.z + perpOffset);
                         treadSize = new Vector3(width + treadOverhangWidth, treadThickness, stepDepth + treadOverhangDepth);
                         break;
                     case WallSide.South:
-                        riserPos = new Vector3(_roomSize.x / 2f, yCenter, -perpOffset);
+                        riserPos = new Vector3(_roomSize.x / 2f + lateralOffset, yCenter, -perpOffset);
                         riserSize = new Vector3(width, height, stepDepth);
-                        treadPos = new Vector3(_roomSize.x / 2f, treadY, -perpOffset);
+                        treadPos = new Vector3(_roomSize.x / 2f + lateralOffset, treadY, -perpOffset);
                         treadSize = new Vector3(width + treadOverhangWidth, treadThickness, stepDepth + treadOverhangDepth);
                         break;
                     case WallSide.East:
-                        riserPos = new Vector3(_roomSize.x + perpOffset, yCenter, _roomSize.z / 2f);
+                        riserPos = new Vector3(_roomSize.x + perpOffset, yCenter, _roomSize.z / 2f + lateralOffset);
                         riserSize = new Vector3(stepDepth, height, width);
-                        treadPos = new Vector3(_roomSize.x + perpOffset, treadY, _roomSize.z / 2f);
+                        treadPos = new Vector3(_roomSize.x + perpOffset, treadY, _roomSize.z / 2f + lateralOffset);
                         treadSize = new Vector3(stepDepth + treadOverhangDepth, treadThickness, width + treadOverhangWidth);
                         break;
                     case WallSide.West:
-                        riserPos = new Vector3(-perpOffset, yCenter, _roomSize.z / 2f);
+                        riserPos = new Vector3(-perpOffset, yCenter, _roomSize.z / 2f + lateralOffset);
                         riserSize = new Vector3(stepDepth, height, width);
-                        treadPos = new Vector3(-perpOffset, treadY, _roomSize.z / 2f);
+                        treadPos = new Vector3(-perpOffset, treadY, _roomSize.z / 2f + lateralOffset);
                         treadSize = new Vector3(stepDepth + treadOverhangDepth, treadThickness, width + treadOverhangWidth);
                         break;
                     default:
@@ -669,7 +672,7 @@ namespace S1MAPI.Building.Structural
             return container;
         }
 
-        private GameObject AddOpenStringerStairs(WallSide wall, float foundationHeight, float gap)
+        private GameObject AddOpenStringerStairs(WallSide wall, float foundationHeight, float gap, float lateralOffset = 0f)
         {
             GameObject container = BuildingUtilities.CreateFolder("Stairs_OpenStringer", _parent);
 
@@ -705,19 +708,19 @@ namespace S1MAPI.Building.Structural
                 switch (wall)
                 {
                     case WallSide.North:
-                        treadPos = new Vector3(_roomSize.x / 2f, treadY, _roomSize.z + perpOffset);
+                        treadPos = new Vector3(_roomSize.x / 2f + lateralOffset, treadY, _roomSize.z + perpOffset);
                         treadSize = new Vector3(width + treadOverhang, treadThickness, stepDepth + 0.04f);
                         break;
                     case WallSide.South:
-                        treadPos = new Vector3(_roomSize.x / 2f, treadY, -perpOffset);
+                        treadPos = new Vector3(_roomSize.x / 2f + lateralOffset, treadY, -perpOffset);
                         treadSize = new Vector3(width + treadOverhang, treadThickness, stepDepth + 0.04f);
                         break;
                     case WallSide.East:
-                        treadPos = new Vector3(_roomSize.x + perpOffset, treadY, _roomSize.z / 2f);
+                        treadPos = new Vector3(_roomSize.x + perpOffset, treadY, _roomSize.z / 2f + lateralOffset);
                         treadSize = new Vector3(stepDepth + 0.04f, treadThickness, width + treadOverhang);
                         break;
                     case WallSide.West:
-                        treadPos = new Vector3(-perpOffset, treadY, _roomSize.z / 2f);
+                        treadPos = new Vector3(-perpOffset, treadY, _roomSize.z / 2f + lateralOffset);
                         treadSize = new Vector3(stepDepth + 0.04f, treadThickness, width + treadOverhang);
                         break;
                     default:
@@ -785,20 +788,20 @@ namespace S1MAPI.Building.Structural
                 switch (wall)
                 {
                     case WallSide.North:
-                        beamPos = new Vector3(_roomSize.x / 2f + signedOffset, midY, _roomSize.z + midPerp);
+                        beamPos = new Vector3(_roomSize.x / 2f + lateralOffset + signedOffset, midY, _roomSize.z + midPerp);
                         beamRot = Quaternion.Euler(angleDeg + 90f, 0f, 0f);
                         break;
                     case WallSide.South:
-                        beamPos = new Vector3(_roomSize.x / 2f + signedOffset, midY, -midPerp);
+                        beamPos = new Vector3(_roomSize.x / 2f + lateralOffset + signedOffset, midY, -midPerp);
                         beamRot = Quaternion.Euler(-angleDeg - 90f, 0f, 0f);
                         break;
                     case WallSide.East:
-                        beamPos = new Vector3(_roomSize.x + midPerp, midY, _roomSize.z / 2f + signedOffset);
+                        beamPos = new Vector3(_roomSize.x + midPerp, midY, _roomSize.z / 2f + lateralOffset + signedOffset);
                         beamSize = new Vector3(beamHeight, stringerLength, beamWidth);
                         beamRot = Quaternion.Euler(0f, 0f, -angleDeg - 90f);
                         break;
                     case WallSide.West:
-                        beamPos = new Vector3(-midPerp, midY, _roomSize.z / 2f + signedOffset);
+                        beamPos = new Vector3(-midPerp, midY, _roomSize.z / 2f + lateralOffset + signedOffset);
                         beamSize = new Vector3(beamHeight, stringerLength, beamWidth);
                         beamRot = Quaternion.Euler(0f, 0f, angleDeg + 90f);
                         break;
@@ -836,40 +839,46 @@ namespace S1MAPI.Building.Structural
                 return;
             }
 
-            float segmentLength = (wallLength - opening!.Width) / 2f;
-            if (segmentLength <= 0f) return;
+            float doorOffset = opening!.Offset;
 
-            // Offset from strip center to each segment center
-            float offsetFromCenter = (opening.Width + segmentLength) / 2f;
+            // Asymmetric segment lengths around the offset door
+            float leftLength = (wallLength - opening.Width) / 2f + doorOffset;
+            float rightLength = (wallLength - opening.Width) / 2f - doorOffset;
 
             if (isZAxis)
             {
                 // Strip runs along Z (East/West walls)
-                Vector3 segSize = new Vector3(size.x, size.y, segmentLength);
-                Vector3 lowZ = center + Vector3.back * offsetFromCenter;
-                Vector3 highZ = center + Vector3.forward * offsetFromCenter;
-
-                GameObject left = PrimitiveBuilder.CreateBox($"{name}_L", lowZ, segSize, color, container.transform);
-                GameObject right = PrimitiveBuilder.CreateBox($"{name}_R", highZ, segSize, color, container.transform);
-                if (material != null)
+                if (leftLength > 0f)
                 {
-                    ApplyMaterial(left, material);
-                    ApplyMaterial(right, material);
+                    Vector3 segSize = new Vector3(size.x, size.y, leftLength);
+                    Vector3 lowZ = center + Vector3.back * (wallLength / 2f - leftLength / 2f);
+                    GameObject left = PrimitiveBuilder.CreateBox($"{name}_L", lowZ, segSize, color, container.transform);
+                    if (material != null) ApplyMaterial(left, material);
+                }
+                if (rightLength > 0f)
+                {
+                    Vector3 segSize = new Vector3(size.x, size.y, rightLength);
+                    Vector3 highZ = center + Vector3.forward * (wallLength / 2f - rightLength / 2f);
+                    GameObject right = PrimitiveBuilder.CreateBox($"{name}_R", highZ, segSize, color, container.transform);
+                    if (material != null) ApplyMaterial(right, material);
                 }
             }
             else
             {
                 // Strip runs along X (North/South walls)
-                Vector3 segSize = new Vector3(segmentLength, size.y, size.z);
-                Vector3 lowX = center + Vector3.left * offsetFromCenter;
-                Vector3 highX = center + Vector3.right * offsetFromCenter;
-
-                GameObject left = PrimitiveBuilder.CreateBox($"{name}_L", lowX, segSize, color, container.transform);
-                GameObject right = PrimitiveBuilder.CreateBox($"{name}_R", highX, segSize, color, container.transform);
-                if (material != null)
+                if (leftLength > 0f)
                 {
-                    ApplyMaterial(left, material);
-                    ApplyMaterial(right, material);
+                    Vector3 segSize = new Vector3(leftLength, size.y, size.z);
+                    Vector3 lowX = center + Vector3.left * (wallLength / 2f - leftLength / 2f);
+                    GameObject left = PrimitiveBuilder.CreateBox($"{name}_L", lowX, segSize, color, container.transform);
+                    if (material != null) ApplyMaterial(left, material);
+                }
+                if (rightLength > 0f)
+                {
+                    Vector3 segSize = new Vector3(rightLength, size.y, size.z);
+                    Vector3 highX = center + Vector3.right * (wallLength / 2f - rightLength / 2f);
+                    GameObject right = PrimitiveBuilder.CreateBox($"{name}_R", highX, segSize, color, container.transform);
+                    if (material != null) ApplyMaterial(right, material);
                 }
             }
         }
@@ -931,6 +940,12 @@ namespace S1MAPI.Building.Structural
             float doorWidth = opening.Width;
             float doorHeight = opening.Height;
 
+            // Shift frame to match door offset
+            Vector3 doorShift = isVertical
+                ? new Vector3(0f, 0f, opening.Offset)
+                : new Vector3(opening.Offset, 0f, 0f);
+            Vector3 doorCenter = wallCenter + doorShift;
+
             float jambYOffset = -(wallHeight - doorHeight) / 2f;
             float sideOffset = doorWidth / 2f + frameWidth / 2f;
 
@@ -940,13 +955,13 @@ namespace S1MAPI.Building.Structural
                 : new Vector3(frameWidth, doorHeight, trimDepth);
 
             // Left jamb
-            Vector3 leftJambPos = wallCenter + (isVertical
+            Vector3 leftJambPos = doorCenter + (isVertical
                 ? new Vector3(0f, jambYOffset, -sideOffset)
                 : new Vector3(-sideOffset, jambYOffset, 0f));
             GameObject leftJamb = PrimitiveBuilder.CreateBox($"{name}_Left", leftJambPos, jambSize, color, container.transform);
 
             // Right jamb
-            Vector3 rightJambPos = wallCenter + (isVertical
+            Vector3 rightJambPos = doorCenter + (isVertical
                 ? new Vector3(0f, jambYOffset, sideOffset)
                 : new Vector3(sideOffset, jambYOffset, 0f));
             GameObject rightJamb = PrimitiveBuilder.CreateBox($"{name}_Right", rightJambPos, jambSize, color, container.transform);
@@ -958,7 +973,7 @@ namespace S1MAPI.Building.Structural
                 ? new Vector3(trimDepth, frameWidth, headerWidth)
                 : new Vector3(headerWidth, frameWidth, trimDepth);
             GameObject header = PrimitiveBuilder.CreateBox($"{name}_Top",
-                wallCenter + new Vector3(0f, headerYOffset, 0f), headerSize, color, container.transform);
+                doorCenter + new Vector3(0f, headerYOffset, 0f), headerSize, color, container.transform);
 
             if (material != null)
             {

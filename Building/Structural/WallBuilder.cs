@@ -70,19 +70,26 @@ namespace S1MAPI.Building.Structural
         public float DividerWidth { get; set; } = Constants.Window.DefaultDividerWidth;
         /// <summary>Optional glass material override. When null, uses Materials.WindowGlass.</summary>
         public Material? GlassMaterial { get; set; }
+        /// <summary>
+        /// Lateral offset from center along the wall in meters.
+        /// Positive shifts toward the right/forward end, negative toward left/back.
+        /// </summary>
+        public float Offset { get; set; } = 0f;
 
         /// <summary>
         /// Creates a door opening configuration.
         /// </summary>
         /// <param name="width">The door width in meters (default 2.0).</param>
         /// <param name="height">The door height in meters (default 2.2).</param>
+        /// <param name="offset">Lateral offset from center along the wall in meters (default 0, centered).</param>
         /// <returns>A new WallOpening configured as a door.</returns>
-        public static WallOpening Door(float width = 2.0f, float height = 2.2f) => new()
+        public static WallOpening Door(float width = 2.0f, float height = 2.2f, float offset = 0f) => new()
         {
             Type = WallOpeningType.Door,
             Width = width,
             Height = height,
-            BottomOffset = 0f
+            BottomOffset = 0f,
+            Offset = offset
         };
 
         /// <summary>
@@ -94,11 +101,12 @@ namespace S1MAPI.Building.Structural
         /// <param name="count">Number of window panes to distribute across the opening width (default 1).</param>
         /// <param name="dividerWidth">Width of wall dividers between adjacent panes in meters (default 0.15).</param>
         /// <param name="glassMaterial">Optional glass material override. Defaults to Materials.WindowGlass when null.</param>
+        /// <param name="offset">Lateral offset from center along the wall in meters (default 0, centered).</param>
         /// <returns>A new WallOpening configured as a window.</returns>
         public static WallOpening Window(
             float width = 2.5f, float height = 2.0f, float sillHeight = 0.8f,
             int count = 1, float dividerWidth = Constants.Window.DefaultDividerWidth,
-            Material? glassMaterial = null) => new()
+            Material? glassMaterial = null, float offset = 0f) => new()
         {
             Type = WallOpeningType.Window,
             Width = width,
@@ -106,7 +114,8 @@ namespace S1MAPI.Building.Structural
             BottomOffset = sillHeight,
             Count = count,
             DividerWidth = dividerWidth,
-            GlassMaterial = glassMaterial
+            GlassMaterial = glassMaterial,
+            Offset = offset
         };
 
         /// <summary>
@@ -290,22 +299,39 @@ namespace S1MAPI.Building.Structural
             float wallHeight = wallSize.y;
             float doorWidth = opening.Width;
             float doorHeight = opening.Height;
-            float sideWallWidth = (wallWidth - doorWidth) / 2f;
+            float offset = opening.Offset;
 
-            Vector3 leftOffset = isVertical ? Vector3.back * (doorWidth / 2f + sideWallWidth / 2f) : Vector3.left * (doorWidth / 2f + sideWallWidth / 2f);
-            Vector3 rightOffset = isVertical ? Vector3.forward * (doorWidth / 2f + sideWallWidth / 2f) : Vector3.right * (doorWidth / 2f + sideWallWidth / 2f);
+            // Positive offset shifts door toward positive axis (right/forward)
+            // Left (negative direction) gets bigger, right gets smaller
+            float leftWidth = (wallWidth - doorWidth) / 2f + offset;
+            float rightWidth = (wallWidth - doorWidth) / 2f - offset;
+
+            // Door center shifted by offset along the wall axis
+            Vector3 doorShift = isVertical ? Vector3.forward * offset : Vector3.right * offset;
 
             // Left segment
-            Vector3 leftSize = isVertical
-                ? new Vector3(_wallThickness, wallHeight, sideWallWidth)
-                : new Vector3(sideWallWidth, wallHeight, _wallThickness);
-            GameObject left = PrimitiveBuilder.CreateBox($"{name}_Left", wallCenter + leftOffset, leftSize, _palette.WallColor, container.transform);
-            ApplyWallMaterial(left);
+            if (leftWidth > 0f)
+            {
+                float leftCenter = doorWidth / 2f + leftWidth / 2f;
+                Vector3 leftOffset = isVertical ? Vector3.back * leftCenter : Vector3.left * leftCenter;
+                Vector3 leftSize = isVertical
+                    ? new Vector3(_wallThickness, wallHeight, leftWidth)
+                    : new Vector3(leftWidth, wallHeight, _wallThickness);
+                GameObject left = PrimitiveBuilder.CreateBox($"{name}_Left", wallCenter + doorShift + leftOffset, leftSize, _palette.WallColor, container.transform);
+                ApplyWallMaterial(left);
+            }
 
             // Right segment
-            Vector3 rightSize = leftSize;
-            GameObject right = PrimitiveBuilder.CreateBox($"{name}_Right", wallCenter + rightOffset, rightSize, _palette.WallColor, container.transform);
-            ApplyWallMaterial(right);
+            if (rightWidth > 0f)
+            {
+                float rightCenter = doorWidth / 2f + rightWidth / 2f;
+                Vector3 rightOffset = isVertical ? Vector3.forward * rightCenter : Vector3.right * rightCenter;
+                Vector3 rightSize = isVertical
+                    ? new Vector3(_wallThickness, wallHeight, rightWidth)
+                    : new Vector3(rightWidth, wallHeight, _wallThickness);
+                GameObject right = PrimitiveBuilder.CreateBox($"{name}_Right", wallCenter + doorShift + rightOffset, rightSize, _palette.WallColor, container.transform);
+                ApplyWallMaterial(right);
+            }
 
             // Top segment (wall above door)
             float topHeight = wallHeight - doorHeight;
@@ -316,7 +342,7 @@ namespace S1MAPI.Building.Structural
                     : new Vector3(doorWidth, topHeight, _wallThickness);
                 float topCenterY = wallHeight / 2f - topHeight / 2f;
                 Vector3 topOffset = Vector3.up * topCenterY;
-                GameObject top = PrimitiveBuilder.CreateBox($"{name}_Top", wallCenter + topOffset, topSize, _palette.WallColor, container.transform);
+                GameObject top = PrimitiveBuilder.CreateBox($"{name}_Top", wallCenter + doorShift + topOffset, topSize, _palette.WallColor, container.transform);
                 ApplyWallMaterial(top);
             }
 
@@ -331,15 +357,27 @@ namespace S1MAPI.Building.Structural
             float wallHeight = wallSize.y;
             float doorWidth = opening.Width;
             float doorHeight = opening.Height;
-            float fullSideWidth = (wallWidth - doorWidth) / 2f;
+            float offset = opening.Offset;
+
+            float leftSideWidth = (wallWidth - doorWidth) / 2f + offset;
+            float rightSideWidth = (wallWidth - doorWidth) / 2f - offset;
+
+            Vector3 doorShift = isVertical ? Vector3.forward * offset : Vector3.right * offset;
+            Vector3 shiftedCenter = wallCenter + doorShift;
 
             // Left side (may contain a window)
-            BuildDoorSideSegment(name, "_Left", wallCenter, doorWidth, wallHeight,
-                fullSideWidth, opening.LeftWindow, isVertical, true, container.transform);
+            if (leftSideWidth > 0f)
+            {
+                BuildDoorSideSegment(name, "_Left", shiftedCenter, doorWidth, wallHeight,
+                    leftSideWidth, opening.LeftWindow, isVertical, true, container.transform);
+            }
 
             // Right side (may contain a window)
-            BuildDoorSideSegment(name, "_Right", wallCenter, doorWidth, wallHeight,
-                fullSideWidth, opening.RightWindow, isVertical, false, container.transform);
+            if (rightSideWidth > 0f)
+            {
+                BuildDoorSideSegment(name, "_Right", shiftedCenter, doorWidth, wallHeight,
+                    rightSideWidth, opening.RightWindow, isVertical, false, container.transform);
+            }
 
             // Top segment (wall above door) — same as CreateWallWithDoor
             float topHeight = wallHeight - doorHeight;
@@ -350,7 +388,7 @@ namespace S1MAPI.Building.Structural
                     : new Vector3(doorWidth, topHeight, _wallThickness);
                 float topCenterY = wallHeight / 2f - topHeight / 2f;
                 Vector3 topOffset = Vector3.up * topCenterY;
-                GameObject top = PrimitiveBuilder.CreateBox($"{name}_Top", wallCenter + topOffset, topSize, _palette.WallColor, container.transform);
+                GameObject top = PrimitiveBuilder.CreateBox($"{name}_Top", shiftedCenter + topOffset, topSize, _palette.WallColor, container.transform);
                 ApplyWallMaterial(top);
             }
 
@@ -410,7 +448,7 @@ namespace S1MAPI.Building.Structural
         {
             GameObject container = BuildingUtilities.CreateFolder(name, _wallsContainer!.transform);
             float wallWidth = isVertical ? wallSize.z : wallSize.x;
-            CreateWindowInSection(name, wallCenter, wallWidth, wallSize.y, opening, isVertical, container.transform);
+            CreateWindowInSection(name, wallCenter, wallWidth, wallSize.y, opening, isVertical, container.transform, opening.Offset);
             return container;
         }
 

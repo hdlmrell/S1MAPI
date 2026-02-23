@@ -377,6 +377,7 @@ namespace S1MAPI.Building
 
         /// <summary>
         /// Add stairs from ground level up to the building floor on the specified wall.
+        /// Automatically aligns with the door opening offset on the specified wall.
         /// Supports multiple visual styles: Solid (default concrete box steps), ClosedRiser (two-tone wood with risers),
         /// or OpenStringer (plank treads on diagonal stringer beams).
         /// </summary>
@@ -403,7 +404,8 @@ namespace S1MAPI.Building
             bool flushWithFloor = false,
             float gap = 0f)
         {
-            GetDecorBuilder().AddStairs(wall, foundationHeight, maxStepHeight, width, stepDepth, color, material, style, flushWithFloor, gap);
+            float lateralOffset = GetDoorOffset(wall);
+            GetDecorBuilder().AddStairs(wall, foundationHeight, maxStepHeight, width, stepDepth, color, material, style, flushWithFloor, gap, lateralOffset);
             return this;
         }
 
@@ -621,6 +623,19 @@ namespace S1MAPI.Building
         private PrefabPlacer GetPrefabPlacer()
         {
             return _prefabPlacer ??= new PrefabPlacer(_root.transform);
+        }
+
+        private float GetDoorOffset(WallSide wall)
+        {
+            WallOpening? opening = wall switch
+            {
+                WallSide.North => _northOpening,
+                WallSide.South => _southOpening,
+                WallSide.East => _eastOpening,
+                WallSide.West => _westOpening,
+                _ => null
+            };
+            return opening?.Offset ?? 0f;
         }
 
         #endregion
