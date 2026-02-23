@@ -142,6 +142,77 @@ namespace S1MAPI.Utils
         }
 
         /// <summary>
+        /// Window geometry and rendering constants.
+        /// </summary>
+        public static class Window
+        {
+            /// <summary>
+            /// Default divider width between adjacent window panes in meters.
+            /// </summary>
+            public const float DefaultDividerWidth = 0.15f;
+
+            /// <summary>
+            /// Maximum individual pane width for multi-pane windows in meters.
+            /// </summary>
+            public const float MaxPaneWidth = 2.0f;
+
+            /// <summary>
+            /// Minimum individual pane width in meters. Pane count is auto-reduced if panes would be narrower.
+            /// </summary>
+            public const float MinPaneWidth = 0.3f;
+
+            /// <summary>
+            /// Minimum gap between window panes and wall edges in meters.
+            /// </summary>
+            public const float MinGap = 0.15f;
+
+            /// <summary>
+            /// Minimum horizontal margin reserved for side walls in a window section.
+            /// </summary>
+            public const float SideMargin = 0.5f;
+
+            /// <summary>
+            /// Minimum vertical margin reserved for header and sill in a window section.
+            /// </summary>
+            public const float VerticalMargin = 1.2f;
+
+            /// <summary>
+            /// Minimum side width required to place a window in a door side segment.
+            /// </summary>
+            public const float MinDoorSideWidth = 1.0f;
+
+            /// <summary>
+            /// Window frame depth in meters.
+            /// </summary>
+            public const float FrameDepth = 0.05f;
+
+            /// <summary>
+            /// Window frame member width in meters.
+            /// </summary>
+            public const float FrameWidth = 0.1f;
+
+            /// <summary>
+            /// Geometry threshold below which wall segments are not created.
+            /// </summary>
+            public const float SegmentThreshold = 0.01f;
+
+            /// <summary>
+            /// Maximum width of the solid strip next to a door in door-with-windows walls.
+            /// </summary>
+            public const float MaxDoorStripWidth = 0.5f;
+
+            /// <summary>
+            /// Minimum width of the solid strip next to a door in door-with-windows walls.
+            /// </summary>
+            public const float MinDoorStripWidth = 0.3f;
+
+            /// <summary>
+            /// Margin subtracted from the available side width when sizing the door strip.
+            /// </summary>
+            public const float DoorStripMargin = 0.4f;
+        }
+
+        /// <summary>
         /// Terrain and area clearing constants.
         /// </summary>
         public static class Terrain

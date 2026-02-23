@@ -1,5 +1,6 @@
 using S1MAPI.Building.Config;
 using S1MAPI.ProceduralMesh;
+using S1MAPI.Utils;
 using UnityEngine;
 using S1MAPI.S1;
 
@@ -63,6 +64,12 @@ namespace S1MAPI.Building.Structural
         public WallOpening? LeftWindow { get; set; }
         /// <summary>Optional window for the right side segment of a door wall.</summary>
         public WallOpening? RightWindow { get; set; }
+        /// <summary>Number of window panes across the opening (default 1).</summary>
+        public int Count { get; set; } = 1;
+        /// <summary>Width of the wall divider between adjacent panes in meters.</summary>
+        public float DividerWidth { get; set; } = Constants.Window.DefaultDividerWidth;
+        /// <summary>Optional glass material override. When null, uses Materials.WindowGlass.</summary>
+        public Material? GlassMaterial { get; set; }
 
         /// <summary>
         /// Creates a door opening configuration.
@@ -84,13 +91,22 @@ namespace S1MAPI.Building.Structural
         /// <param name="width">The window width in meters (default 2.5).</param>
         /// <param name="height">The window height in meters (default 2.0).</param>
         /// <param name="sillHeight">The sill height from the floor in meters (default 0.8).</param>
+        /// <param name="count">Number of window panes to distribute across the opening width (default 1).</param>
+        /// <param name="dividerWidth">Width of wall dividers between adjacent panes in meters (default 0.15).</param>
+        /// <param name="glassMaterial">Optional glass material override. Defaults to Materials.WindowGlass when null.</param>
         /// <returns>A new WallOpening configured as a window.</returns>
-        public static WallOpening Window(float width = 2.5f, float height = 2.0f, float sillHeight = 0.8f) => new()
+        public static WallOpening Window(
+            float width = 2.5f, float height = 2.0f, float sillHeight = 0.8f,
+            int count = 1, float dividerWidth = Constants.Window.DefaultDividerWidth,
+            Material? glassMaterial = null) => new()
         {
             Type = WallOpeningType.Window,
             Width = width,
             Height = height,
-            BottomOffset = sillHeight
+            BottomOffset = sillHeight,
+            Count = count,
+            DividerWidth = dividerWidth,
+            GlassMaterial = glassMaterial
         };
 
         /// <summary>
@@ -132,6 +148,9 @@ namespace S1MAPI.Building.Structural
     public sealed class WallBuilder
     {
         #region Fields
+
+        private static readonly Color FrameColor = new Color(0.1f, 0.1f, 0.1f);
+        private static readonly Color GlassTint = new Color(0.7f, 0.9f, 1f);
 
         private readonly Transform _parent;
         private readonly Vector3 _roomSize;
@@ -342,7 +361,7 @@ namespace S1MAPI.Building.Structural
         {
             float dirSign = isLeftSide ? -1f : 1f;
 
-            if (sideWindow == null || fullSideWidth < 1.0f)
+            if (sideWindow == null || fullSideWidth < Constants.Window.MinDoorSideWidth)
             {
                 // No window — create single solid segment (same as CreateWallWithDoor)
                 Vector3 offset = isVertical
@@ -357,8 +376,8 @@ namespace S1MAPI.Building.Structural
             }
 
             // With window: small strip adjacent to the door (for InsetDoorWallSegments), window section gets the rest
-            float stripWidth = Mathf.Min(0.5f, fullSideWidth - sideWindow.Width - 0.4f);
-            stripWidth = Mathf.Max(0.3f, stripWidth);
+            float stripWidth = Mathf.Min(Constants.Window.MaxDoorStripWidth, fullSideWidth - sideWindow.Width - Constants.Window.DoorStripMargin);
+            stripWidth = Mathf.Max(Constants.Window.MinDoorStripWidth, stripWidth);
             float windowSectionWidth = fullSideWidth - stripWidth;
 
             // Solid strip next to the door (keeps {wallName}_Left / _Right name for InsetDoorWallSegments)
@@ -398,8 +417,42 @@ namespace S1MAPI.Building.Structural
             WallOpening window, bool isVertical, Transform parent,
             float windowOffset = 0f)
         {
-            float windowWidth = Mathf.Min(window.Width, sectionWidth - 0.5f);
-            float windowHeight = Mathf.Min(window.Height, sectionHeight - 1.2f);
+            int paneCount = Mathf.Max(1, window.Count);
+            float windowWidth;
+            if (paneCount > 1)
+            {
+                // Multi-pane: Width is per-pane width (capped), equal gaps for sides and dividers
+                float perPane = Mathf.Min(window.Width, Mathf.Min(sectionWidth - Constants.Window.SideMargin, Constants.Window.MaxPaneWidth));
+                float equalGap = (sectionWidth - paneCount * perPane) / (paneCount + 1);
+
+                // Enforce minimum gap; shrink panes if needed
+                if (equalGap < Constants.Window.MinGap)
+                {
+                    equalGap = Constants.Window.MinGap;
+                    perPane = (sectionWidth - (paneCount + 1) * equalGap) / paneCount;
+                }
+
+                // Auto-reduce count if panes would be too narrow
+                while (perPane < Constants.Window.MinPaneWidth && paneCount > 1)
+                {
+                    paneCount--;
+                    equalGap = (sectionWidth - paneCount * perPane) / (paneCount + 1);
+                    if (equalGap < Constants.Window.MinGap)
+                    {
+                        equalGap = Constants.Window.MinGap;
+                        perPane = (sectionWidth - (paneCount + 1) * equalGap) / paneCount;
+                    }
+                }
+
+                // Band spans all panes + inner gaps; outer gaps become sideWidth
+                windowWidth = paneCount * perPane + (paneCount - 1) * equalGap;
+            }
+            else
+            {
+                windowWidth = Mathf.Min(window.Width, sectionWidth - Constants.Window.SideMargin);
+            }
+
+            float windowHeight = Mathf.Min(window.Height, sectionHeight - Constants.Window.VerticalMargin);
             float windowBottom = window.BottomOffset;
 
             float topHeight = sectionHeight - (windowBottom + windowHeight);
@@ -414,7 +467,7 @@ namespace S1MAPI.Building.Structural
             Vector3 windowCenter = sectionCenter + winShift;
 
             // Bottom segment (sill) — full section width, no shift
-            if (windowBottom > 0.01f)
+            if (windowBottom > Constants.Window.SegmentThreshold)
             {
                 Vector3 bottomSize = isVertical
                     ? new Vector3(_wallThickness, windowBottom, sectionWidth)
@@ -425,7 +478,7 @@ namespace S1MAPI.Building.Structural
             }
 
             // Top segment (header) — full section width, no shift
-            if (topHeight > 0.01f)
+            if (topHeight > Constants.Window.SegmentThreshold)
             {
                 Vector3 topSize = isVertical
                     ? new Vector3(_wallThickness, topHeight, sectionWidth)
@@ -443,7 +496,7 @@ namespace S1MAPI.Building.Structural
             float leftSideWidth = isVertical ? posSideWidth : negSideWidth;
             float rightSideWidth = isVertical ? negSideWidth : posSideWidth;
 
-            if (leftSideWidth > 0.01f)
+            if (leftSideWidth > Constants.Window.SegmentThreshold)
             {
                 Vector3 leftSize = isVertical
                     ? new Vector3(_wallThickness, windowHeight, leftSideWidth)
@@ -455,7 +508,7 @@ namespace S1MAPI.Building.Structural
                 ApplyWallMaterial(leftSide);
             }
 
-            if (rightSideWidth > 0.01f)
+            if (rightSideWidth > Constants.Window.SegmentThreshold)
             {
                 Vector3 rightSize = isVertical
                     ? new Vector3(_wallThickness, windowHeight, rightSideWidth)
@@ -467,39 +520,79 @@ namespace S1MAPI.Building.Structural
                 ApplyWallMaterial(rightSide);
             }
 
-            // Window frame — at shifted center
-            CreateWindowFrame(parent, windowCenter, windowWidth, windowHeight, windowCenterY, isVertical);
+            // Multi-pane window rendering
+            // For count > 1: divider width == sideWidth (equal gaps by construction)
+            float dividerW = paneCount > 1 ? sideWidth : window.DividerWidth;
+            float paneWidth = paneCount > 1
+                ? (windowWidth - (paneCount - 1) * dividerW) / paneCount
+                : windowWidth;
 
-            // Glass pane — at shifted center
-            Vector3 glassSize = isVertical
-                ? new Vector3(_wallThickness * 0.2f, windowHeight - 0.1f, windowWidth - 0.1f)
-                : new Vector3(windowWidth - 0.1f, windowHeight - 0.1f, _wallThickness * 0.2f);
-            GameObject glass = PrimitiveBuilder.CreateBox($"{namePrefix}_WindowGlass",
-                windowCenter + new Vector3(0f, windowCenterY, 0f), glassSize,
-                new Color(0.7f, 0.9f, 1f), parent);
+            float bandStart = -windowWidth / 2f + paneWidth / 2f;
 
-            Material glassMat = Materials.LaundromatGlass;
-            if (glassMat != null)
+            for (int i = 0; i < paneCount; i++)
             {
-                Renderer r = glass.GetComponent<Renderer>();
-                if (r != null) r.material = glassMat;
+                float paneOffset = bandStart + i * (paneWidth + dividerW);
+
+                Vector3 paneShift = isVertical
+                    ? new Vector3(0f, 0f, paneOffset)
+                    : new Vector3(paneOffset, 0f, 0f);
+                Vector3 paneCenter = windowCenter + paneShift;
+
+                // Frame for this pane
+                string framePrefix = paneCount > 1 ? $"Frame{i}_" : "Frame";
+                CreateWindowFrame(parent, paneCenter, paneWidth, windowHeight, windowCenterY, isVertical, framePrefix);
+
+                // Glass pane
+                Vector3 glassSize = isVertical
+                    ? new Vector3(_wallThickness * 0.2f, windowHeight - 0.1f, paneWidth - 0.1f)
+                    : new Vector3(paneWidth - 0.1f, windowHeight - 0.1f, _wallThickness * 0.2f);
+
+                string paneSuffix = paneCount > 1 ? $"_{i}" : "";
+                GameObject glass = PrimitiveBuilder.CreateBox(
+                    $"{namePrefix}_WindowGlass{paneSuffix}",
+                    paneCenter + new Vector3(0f, windowCenterY, 0f),
+                    glassSize, GlassTint, parent);
+
+                Material glassMat = window.GlassMaterial ?? Materials.WindowGlass;
+                if (glassMat != null)
+                {
+                    Renderer r = glass.GetComponent<Renderer>();
+                    if (r != null) r.material = glassMat;
+                }
+
+                // Divider wall between this pane and the next
+                if (i < paneCount - 1)
+                {
+                    float dividerOffset = paneOffset + paneWidth / 2f + dividerW / 2f;
+                    Vector3 dividerShift = isVertical
+                        ? new Vector3(0f, 0f, dividerOffset)
+                        : new Vector3(dividerOffset, 0f, 0f);
+                    Vector3 dividerSize = isVertical
+                        ? new Vector3(_wallThickness, windowHeight, dividerW)
+                        : new Vector3(dividerW, windowHeight, _wallThickness);
+
+                    GameObject divider = PrimitiveBuilder.CreateBox(
+                        $"{namePrefix}_Divider_{i}",
+                        windowCenter + dividerShift + new Vector3(0f, windowCenterY, 0f),
+                        dividerSize, _palette.WallColor, parent);
+                    ApplyWallMaterial(divider);
+                }
             }
         }
 
-        private void CreateWindowFrame(Transform parent, Vector3 wallCenter, float windowWidth, float windowHeight, float windowCenterY, bool isVertical)
+        private void CreateWindowFrame(Transform parent, Vector3 wallCenter, float windowWidth, float windowHeight, float windowCenterY, bool isVertical, string namePrefix = "Frame")
         {
-            Color frameColor = new Color(0.1f, 0.1f, 0.1f);
-            float frameDepth = 0.05f;
-            float frameWidth = 0.1f;
+            float frameDepth = Constants.Window.FrameDepth;
+            float frameWidth = Constants.Window.FrameWidth;
 
             // Top frame
             Vector3 topFrameSize = isVertical
                 ? new Vector3(_wallThickness + frameDepth, frameWidth, windowWidth)
                 : new Vector3(windowWidth, frameWidth, _wallThickness + frameDepth);
-            PrimitiveBuilder.CreateBox("FrameTop", wallCenter + new Vector3(0f, windowCenterY + windowHeight / 2f - frameWidth / 2f, 0f), topFrameSize, frameColor, parent);
+            PrimitiveBuilder.CreateBox($"{namePrefix}Top", wallCenter + new Vector3(0f, windowCenterY + windowHeight / 2f - frameWidth / 2f, 0f), topFrameSize, FrameColor, parent);
 
             // Bottom frame
-            PrimitiveBuilder.CreateBox("FrameBottom", wallCenter + new Vector3(0f, windowCenterY - windowHeight / 2f + frameWidth / 2f, 0f), topFrameSize, frameColor, parent);
+            PrimitiveBuilder.CreateBox($"{namePrefix}Bottom", wallCenter + new Vector3(0f, windowCenterY - windowHeight / 2f + frameWidth / 2f, 0f), topFrameSize, FrameColor, parent);
 
             // Side frames
             Vector3 sideFrameSize = isVertical
@@ -510,8 +603,8 @@ namespace S1MAPI.Building.Structural
             Vector3 leftFrameOffset = isVertical ? new Vector3(0f, windowCenterY, sideOffset) : new Vector3(-sideOffset, windowCenterY, 0f);
             Vector3 rightFrameOffset = isVertical ? new Vector3(0f, windowCenterY, -sideOffset) : new Vector3(sideOffset, windowCenterY, 0f);
 
-            PrimitiveBuilder.CreateBox("FrameLeft", wallCenter + leftFrameOffset, sideFrameSize, frameColor, parent);
-            PrimitiveBuilder.CreateBox("FrameRight", wallCenter + rightFrameOffset, sideFrameSize, frameColor, parent);
+            PrimitiveBuilder.CreateBox($"{namePrefix}Left", wallCenter + leftFrameOffset, sideFrameSize, FrameColor, parent);
+            PrimitiveBuilder.CreateBox($"{namePrefix}Right", wallCenter + rightFrameOffset, sideFrameSize, FrameColor, parent);
         }
 
         private void ApplyWallMaterial(GameObject wall)
