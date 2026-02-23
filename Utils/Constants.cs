@@ -281,6 +281,22 @@ namespace S1MAPI.Utils
         }
 
         /// <summary>
+        /// Interior wall geometry constants.
+        /// </summary>
+        public static class InteriorWall
+        {
+            /// <summary>
+            /// Minimum wall length in meters.
+            /// </summary>
+            public const float MinWallLength = 0.5f;
+
+            /// <summary>
+            /// Geometry threshold below which wall segments are not created.
+            /// </summary>
+            public const float SegmentThreshold = 0.01f;
+        }
+
+        /// <summary>
         /// Terrain and area clearing constants.
         /// </summary>
         public static class Terrain

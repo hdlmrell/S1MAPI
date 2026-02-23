@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using S1MAPI.Building.Config;
 using S1MAPI.Building.Structural;
 using S1MAPI.Building.Interior;
@@ -39,6 +40,7 @@ namespace S1MAPI.Building
         private DecorBuilder? _decorBuilder;
         private RoofBuilder? _roofBuilder;
         private PrefabPlacer? _prefabPlacer;
+        private InteriorWallBuilder? _interiorWallBuilder;
 
         // Stored wall openings for cross-builder communication (e.g., base molding gap)
         private WallOpening? _northOpening;
@@ -240,6 +242,56 @@ namespace S1MAPI.Building
             GetWallBuilder().BuildWalls(north, south, east, west);
             return this;
         }
+
+        #endregion
+
+        #region Interior Walls
+
+        /// <summary>
+        /// Add an interior wall spanning a sub-region of the room.
+        /// </summary>
+        /// <param name="axis">Axis the wall runs along (X or Z)</param>
+        /// <param name="position">Position on the perpendicular axis (Z for X-axis walls, X for Z-axis walls)</param>
+        /// <param name="from">Start coordinate along the wall's axis</param>
+        /// <param name="to">End coordinate along the wall's axis</param>
+        /// <param name="opening">Optional opening (door or window) centered in the wall</param>
+        /// <param name="color">Optional wall color override (defaults to palette wall color)</param>
+        /// <param name="material">Optional wall material override (defaults to palette wall material)</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddInteriorWall(
+            InteriorWallAxis axis, float position, float from, float to,
+            WallOpening? opening = null,
+            Color? color = null, Material? material = null)
+        {
+            var def = new InteriorWallDefinition(axis, position, from, to, opening, color, material);
+            GetInteriorWallBuilder().BuildInteriorWall(def);
+            return this;
+        }
+
+        /// <summary>
+        /// Add an interior wall spanning the full room width along the specified axis.
+        /// </summary>
+        /// <param name="axis">Axis the wall runs along (X or Z)</param>
+        /// <param name="position">Position on the perpendicular axis (Z for X-axis walls, X for Z-axis walls)</param>
+        /// <param name="opening">Optional opening (door or window) centered in the wall</param>
+        /// <param name="color">Optional wall color override (defaults to palette wall color)</param>
+        /// <param name="material">Optional wall material override (defaults to palette wall material)</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddInteriorWall(
+            InteriorWallAxis axis, float position,
+            WallOpening? opening = null,
+            Color? color = null, Material? material = null)
+        {
+            float axisMax = axis == InteriorWallAxis.X ? _roomSize.x : _roomSize.z;
+            return AddInteriorWall(axis, position, 0f, axisMax, opening, color, material);
+        }
+
+        /// <summary>
+        /// Doorway positions recorded from all interior walls.
+        /// Each entry provides center, dimensions, and orientation for future NavMesh link generation.
+        /// </summary>
+        public IReadOnlyList<DoorwayInfo> InteriorDoorways =>
+            _interiorWallBuilder?.Doorways ?? (IReadOnlyList<DoorwayInfo>)System.Array.Empty<DoorwayInfo>();
 
         #endregion
 
@@ -587,6 +639,7 @@ namespace S1MAPI.Building
             _lightingBuilder = null;
             _decorBuilder = null;
             _roofBuilder = null;
+            _interiorWallBuilder = null;
             // PrefabPlacer doesn't depend on room size
         }
 
@@ -618,6 +671,12 @@ namespace S1MAPI.Building
         private RoofBuilder GetRoofBuilder()
         {
             return _roofBuilder ??= new RoofBuilder(_root.transform, _roomSize, _config.WallThickness, _config.Palette);
+        }
+
+        private InteriorWallBuilder GetInteriorWallBuilder()
+        {
+            return _interiorWallBuilder ??= new InteriorWallBuilder(
+                _root.transform, _roomSize, _config.WallThickness, _config.Palette);
         }
 
         private PrefabPlacer GetPrefabPlacer()
