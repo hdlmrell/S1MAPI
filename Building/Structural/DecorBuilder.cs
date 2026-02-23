@@ -408,13 +408,15 @@ namespace S1MAPI.Building.Structural
 
         /// <summary>
         /// Add ceiling to the room.
+        /// The ceiling's top surface is flush with the top of the walls (_roomSize.y),
+        /// so roof slabs placed at _roomSize.y sit directly on top with no overlap.
         /// </summary>
         /// <param name="thickness">Ceiling thickness in meters</param>
         /// <returns>The ceiling GameObject</returns>
         public GameObject AddCeiling(float thickness = 0.1f)
         {
             GameObject ceiling = PrimitiveBuilder.CreateBox("Ceiling",
-                new Vector3(_roomSize.x / 2f, _roomSize.y + thickness / 2f, _roomSize.z / 2f),
+                new Vector3(_roomSize.x / 2f, _roomSize.y - thickness / 2f, _roomSize.z / 2f),
                 new Vector3(_roomSize.x, thickness, _roomSize.z),
                 _palette.CeilingColor,
                 _parent);

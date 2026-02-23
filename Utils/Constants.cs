@@ -213,6 +213,74 @@ namespace S1MAPI.Utils
         }
 
         /// <summary>
+        /// Roof geometry and style constants.
+        /// </summary>
+        public static class Roof
+        {
+            /// <summary>
+            /// Parapet wall height for the Deep preset in meters.
+            /// </summary>
+            public const float DeepParapetHeight = 0.6f;
+
+            /// <summary>
+            /// Cap height for the Deep preset in meters.
+            /// </summary>
+            public const float DeepCapHeight = 0.25f;
+
+            /// <summary>
+            /// Cap overhang past the parapet wall for the Deep preset in meters.
+            /// </summary>
+            public const float DeepCapOverhang = 0.15f;
+
+            /// <summary>
+            /// Parapet wall height for the Shallow preset in meters.
+            /// </summary>
+            public const float ShallowParapetHeight = 0.3f;
+
+            /// <summary>
+            /// Cap height for the Shallow preset in meters.
+            /// </summary>
+            public const float ShallowCapHeight = 0.15f;
+
+            /// <summary>
+            /// Cap overhang past the parapet wall for the Shallow preset in meters.
+            /// </summary>
+            public const float ShallowCapOverhang = 0.05f;
+
+            /// <summary>
+            /// Extra depth added to wall thickness for parapet trim depth.
+            /// </summary>
+            public const float ParapetDepthPadding = 0.1f;
+
+            /// <summary>
+            /// Default ridge height above the ceiling for gable roofs in meters.
+            /// </summary>
+            public const float DefaultRidgeHeight = 2.0f;
+
+            /// <summary>
+            /// Default eave overhang past walls for gable roofs in meters.
+            /// </summary>
+            public const float DefaultOverhang = 0.3f;
+
+            /// <summary>
+            /// Height of the 3D base slab beneath gable and hip roofs in meters.
+            /// </summary>
+            public const float DefaultBaseSlabHeight = 0.15f;
+
+            /// <summary>
+            /// Scene material name for hip roof slopes.
+            /// </summary>
+            public const string RoofSlopeMaterialName = "mansion_roof_mat";
+
+            /// <summary>
+            /// Fallback roof color RGB values when material is not found.
+            /// </summary>
+            public const float DefaultRoofColorR = 0.45f;
+            public const float DefaultRoofColorG = 0.35f;
+            public const float DefaultRoofColorB = 0.3f;
+        }
+
+        /// <summary>
         /// Terrain and area clearing constants.
         /// </summary>
         public static class Terrain

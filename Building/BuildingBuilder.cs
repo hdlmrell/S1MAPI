@@ -37,6 +37,7 @@ namespace S1MAPI.Building
         private FurnitureBuilder? _furnitureBuilder;
         private LightingBuilder? _lightingBuilder;
         private DecorBuilder? _decorBuilder;
+        private RoofBuilder? _roofBuilder;
         private PrefabPlacer? _prefabPlacer;
 
         // Stored wall openings for cross-builder communication (e.g., base molding gap)
@@ -246,6 +247,8 @@ namespace S1MAPI.Building
 
         /// <summary>
         /// Add decorative trim around the roofline.
+        /// Not needed when using <see cref="AddParapetRoof"/> or <see cref="AddHipRoof"/>,
+        /// which include their own roof structure. Useful for custom roof designs with <see cref="AddCeiling"/>.
         /// </summary>
         /// <param name="height">Trim height in meters</param>
         /// <param name="material">Optional material override</param>
@@ -258,6 +261,8 @@ namespace S1MAPI.Building
 
         /// <summary>
         /// Add a secondary decorative trim above the roofline.
+        /// Not needed when using <see cref="AddParapetRoof"/> or <see cref="AddHipRoof"/>,
+        /// which include their own roof structure. Useful for custom roof designs with <see cref="AddCeiling"/>.
         /// </summary>
         /// <param name="height">Trim height in meters</param>
         /// <param name="material">Optional material override</param>
@@ -265,6 +270,68 @@ namespace S1MAPI.Building
         public BuildingBuilder AddSecondaryRoofTrim(float height = 0.15f, Material? material = null)
         {
             GetDecorBuilder().AddSecondaryRoofTrim(height, material);
+            return this;
+        }
+
+        /// <summary>
+        /// Add a parapet roof (raised wall and cap above the roofline).
+        /// The cap extends past the parapet wall by the overhang amount, creating a ledge.
+        /// Includes a thin roof slab at ceiling height. For interior ceilings, use
+        /// <see cref="AddCeiling"/> separately — the ceiling sits just below the roof slab with no overlap.
+        /// Use <see cref="ParapetPreset.Deep"/> for a prominent commercial look or
+        /// <see cref="ParapetPreset.Shallow"/> for a subtler profile.
+        /// </summary>
+        /// <param name="preset">Sizing preset (Deep or Shallow). Overridden by explicit dimensions.</param>
+        /// <param name="parapetHeight">Height of the parapet wall in meters. Null uses preset default.</param>
+        /// <param name="parapetDepth">Depth of the parapet wall. Null uses wall thickness + padding.</param>
+        /// <param name="capHeight">Height of the cap. Null uses preset default.</param>
+        /// <param name="capOverhang">How far the cap extends past the parapet wall on each side. Null uses preset default.</param>
+        /// <param name="parapetColor">Color override for the parapet wall.</param>
+        /// <param name="parapetMaterial">Material override for the parapet wall.</param>
+        /// <param name="capColor">Color override for the cap.</param>
+        /// <param name="capMaterial">Material override for the cap.</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddParapetRoof(
+            ParapetPreset preset = ParapetPreset.Deep,
+            float? parapetHeight = null,
+            float? parapetDepth = null,
+            float? capHeight = null,
+            float? capOverhang = null,
+            Color? parapetColor = null,
+            Material? parapetMaterial = null,
+            Color? capColor = null,
+            Material? capMaterial = null)
+        {
+            GetRoofBuilder().AddParapetRoof(preset, parapetHeight, parapetDepth,
+                capHeight, capOverhang, parapetColor, parapetMaterial, capColor, capMaterial);
+            return this;
+        }
+
+        /// <summary>
+        /// Add a hip (four-slope) roof using custom mesh geometry.
+        /// All four sides slope inward to a central ridge that is shorter than the building length.
+        /// For square buildings, the ridge collapses to a point (pyramid roof).
+        /// A base slab sits at ceiling height giving the roof visible thickness from below.
+        /// For interior ceilings, use <see cref="AddCeiling"/> separately — the ceiling sits
+        /// just below the roof slab with no overlap.
+        /// </summary>
+        /// <param name="ridgeHeight">Height of the ridge peak above the ceiling in meters.</param>
+        /// <param name="overhang">How far the roof eaves extend past the walls in meters.</param>
+        /// <param name="ridgeAlongX">If true, ridge runs along X axis. If false, along Z. Null auto-selects the longer axis.</param>
+        /// <param name="roofColor">Color for the sloped roof planes.</param>
+        /// <param name="roofMaterial">Material for the sloped roof planes. Null uses fallback color.</param>
+        /// <param name="baseSlabHeight">Height of the 3D base slab beneath the slopes. 0 disables the slab.</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddHipRoof(
+            float ridgeHeight = Constants.Roof.DefaultRidgeHeight,
+            float overhang = Constants.Roof.DefaultOverhang,
+            bool? ridgeAlongX = null,
+            Color? roofColor = null,
+            Material? roofMaterial = null,
+            float baseSlabHeight = Constants.Roof.DefaultBaseSlabHeight)
+        {
+            GetRoofBuilder().AddHipRoof(ridgeHeight, overhang, ridgeAlongX,
+                roofColor, roofMaterial, baseSlabHeight);
             return this;
         }
 
@@ -502,6 +569,7 @@ namespace S1MAPI.Building
             _furnitureBuilder = null;
             _lightingBuilder = null;
             _decorBuilder = null;
+            _roofBuilder = null;
             // PrefabPlacer doesn't depend on room size
         }
 
@@ -528,6 +596,11 @@ namespace S1MAPI.Building
         private DecorBuilder GetDecorBuilder(BuildingPalette? palette = null)
         {
             return _decorBuilder ??= new DecorBuilder(_root.transform, _roomSize, palette ?? _config.Palette);
+        }
+
+        private RoofBuilder GetRoofBuilder()
+        {
+            return _roofBuilder ??= new RoofBuilder(_root.transform, _roomSize, _config.WallThickness, _config.Palette);
         }
 
         private PrefabPlacer GetPrefabPlacer()
