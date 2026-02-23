@@ -165,6 +165,8 @@ namespace S1MAPI.Building
         /// <param name="southDoor">Add door on south wall</param>
         /// <param name="eastWindow">Add window on east wall</param>
         /// <param name="westWindow">Add window on west wall</param>
+        /// <param name="northDoorWindows">Add windows alongside north door (requires northDoor)</param>
+        /// <param name="southDoorWindows">Add windows alongside south door (requires southDoor)</param>
         /// <param name="color">Optional wall color override</param>
         /// <param name="material">Optional wall material override</param>
         /// <returns>This builder for chaining</returns>
@@ -173,6 +175,8 @@ namespace S1MAPI.Building
             bool southDoor = false,
             bool eastWindow = false,
             bool westWindow = false,
+            bool northDoorWindows = false,
+            bool southDoorWindows = false,
             Color? color = null,
             Material? material = null)
         {
@@ -184,8 +188,12 @@ namespace S1MAPI.Building
                 if (material != null) palette.WallMaterial = material;
             }
 
-            _northOpening = northDoor ? WallOpening.Door() : null;
-            _southOpening = southDoor ? WallOpening.Door() : null;
+            _northOpening = northDoor
+                ? (northDoorWindows ? WallOpening.DoorWithWindows() : WallOpening.Door())
+                : null;
+            _southOpening = southDoor
+                ? (southDoorWindows ? WallOpening.DoorWithWindows() : WallOpening.Door())
+                : null;
             _eastOpening = eastWindow ? WallOpening.Window() : null;
             _westOpening = westWindow ? WallOpening.Window() : null;
 
