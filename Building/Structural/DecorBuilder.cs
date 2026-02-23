@@ -198,6 +198,87 @@ namespace S1MAPI.Building.Structural
         }
 
         /// <summary>
+        /// Add thin vertical trim strips at the four corners of the building.
+        /// Each corner gets two perpendicular strips forming a right angle, matching
+        /// the depth and style of horizontal trims (<see cref="AddRoofTrim"/>, <see cref="AddBaseMolding"/>).
+        /// Runs the full wall height so it looks good with or without horizontal trim.
+        /// </summary>
+        /// <param name="width">Visible width of each trim strip on the wall face in meters</param>
+        /// <param name="depth">How far the trim protrudes past the wall surface in meters</param>
+        /// <param name="material">Optional material override</param>
+        /// <returns>The corner trim container GameObject</returns>
+        public GameObject AddCornerTrim(float width = 0.3f, float depth = 0.1f, Material? material = null)
+        {
+            float wallThickness = 0.2f;
+            float trimDepth = wallThickness + depth;
+            float height = _roomSize.y;
+            GameObject container = BuildingUtilities.CreateFolder("CornerTrim", _parent);
+
+            Color color = _palette.TrimColor;
+
+            // Each corner gets two perpendicular strips:
+            // - One on the N/S wall face at the corner end
+            // - One on the E/W wall face at the corner end
+            // Small overlap at the inner corner is invisible (same color, hidden faces).
+
+            // NE corner — both strips centered at corner so they wrap around the edge
+            GameObject neN = PrimitiveBuilder.CreateBox("CornerTrim_NE_N",
+                new Vector3(_roomSize.x, height / 2f, _roomSize.z),
+                new Vector3(width, height, trimDepth),
+                color, container.transform);
+            GameObject neE = PrimitiveBuilder.CreateBox("CornerTrim_NE_E",
+                new Vector3(_roomSize.x, height / 2f, _roomSize.z),
+                new Vector3(trimDepth, height, width),
+                color, container.transform);
+
+            // NW corner
+            GameObject nwN = PrimitiveBuilder.CreateBox("CornerTrim_NW_N",
+                new Vector3(0f, height / 2f, _roomSize.z),
+                new Vector3(width, height, trimDepth),
+                color, container.transform);
+            GameObject nwW = PrimitiveBuilder.CreateBox("CornerTrim_NW_W",
+                new Vector3(0f, height / 2f, _roomSize.z),
+                new Vector3(trimDepth, height, width),
+                color, container.transform);
+
+            // SE corner
+            GameObject seS = PrimitiveBuilder.CreateBox("CornerTrim_SE_S",
+                new Vector3(_roomSize.x, height / 2f, 0f),
+                new Vector3(width, height, trimDepth),
+                color, container.transform);
+            GameObject seE = PrimitiveBuilder.CreateBox("CornerTrim_SE_E",
+                new Vector3(_roomSize.x, height / 2f, 0f),
+                new Vector3(trimDepth, height, width),
+                color, container.transform);
+
+            // SW corner
+            GameObject swS = PrimitiveBuilder.CreateBox("CornerTrim_SW_S",
+                new Vector3(0f, height / 2f, 0f),
+                new Vector3(width, height, trimDepth),
+                color, container.transform);
+            GameObject swW = PrimitiveBuilder.CreateBox("CornerTrim_SW_W",
+                new Vector3(0f, height / 2f, 0f),
+                new Vector3(trimDepth, height, width),
+                color, container.transform);
+
+            // Apply material
+            Material? mat = material ?? _palette.TrimMaterial;
+            if (mat != null)
+            {
+                ApplyMaterial(neN, mat);
+                ApplyMaterial(neE, mat);
+                ApplyMaterial(nwN, mat);
+                ApplyMaterial(nwW, mat);
+                ApplyMaterial(seS, mat);
+                ApplyMaterial(seE, mat);
+                ApplyMaterial(swS, mat);
+                ApplyMaterial(swW, mat);
+            }
+
+            return container;
+        }
+
+        /// <summary>
         /// Add a solid foundation block beneath the building.
         /// </summary>
         /// <param name="height">Depth of the foundation in meters</param>

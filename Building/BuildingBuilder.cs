@@ -348,6 +348,21 @@ namespace S1MAPI.Building
         }
 
         /// <summary>
+        /// Add thin vertical trim strips at the four corners of the building.
+        /// Each corner gets two perpendicular strips forming a right angle that seamlessly
+        /// connects with horizontal trims (<see cref="AddRoofTrim"/>, <see cref="AddBaseMolding"/>).
+        /// </summary>
+        /// <param name="width">Visible width of each trim strip on the wall face in meters</param>
+        /// <param name="depth">How far the trim protrudes past the wall surface in meters</param>
+        /// <param name="material">Optional material override</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddCornerTrim(float width = 0.3f, float depth = 0.1f, Material? material = null)
+        {
+            GetDecorBuilder().AddCornerTrim(width, depth, material);
+            return this;
+        }
+
+        /// <summary>
         /// Add foundation beneath the building.
         /// </summary>
         /// <param name="height">Foundation depth in meters</param>
