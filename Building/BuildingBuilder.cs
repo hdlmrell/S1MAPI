@@ -18,7 +18,7 @@ namespace S1MAPI.Building
     ///     .WithConfig(BuildingConfig.Dispensary)
     ///     .AddFloor()
     ///     .AddCeiling()
-    ///     .AddWalls(southDoor: true, eastWindow: true, westWindow: true)
+    ///     .AddWalls(southDoor: true, eastDoor: true, westWindow: true)
     ///     .AddLights()
     ///     .AddFurniture(FurnitureType.Counter, "north")
     ///     .Build();
@@ -163,20 +163,26 @@ namespace S1MAPI.Building
         /// </summary>
         /// <param name="northDoor">Add door on north wall</param>
         /// <param name="southDoor">Add door on south wall</param>
+        /// <param name="eastDoor">Add door on east wall</param>
+        /// <param name="westDoor">Add door on west wall</param>
+        /// <param name="northWindow">Add window on north wall</param>
+        /// <param name="southWindow">Add window on south wall</param>
         /// <param name="eastWindow">Add window on east wall</param>
         /// <param name="westWindow">Add window on west wall</param>
         /// <param name="northDoorWindows">Add windows alongside north door (requires northDoor)</param>
         /// <param name="southDoorWindows">Add windows alongside south door (requires southDoor)</param>
+        /// <param name="eastDoorWindows">Add windows alongside east door (requires eastDoor)</param>
+        /// <param name="westDoorWindows">Add windows alongside west door (requires westDoor)</param>
         /// <param name="color">Optional wall color override</param>
         /// <param name="material">Optional wall material override</param>
         /// <returns>This builder for chaining</returns>
         public BuildingBuilder AddWalls(
-            bool northDoor = false,
-            bool southDoor = false,
-            bool eastWindow = false,
-            bool westWindow = false,
-            bool northDoorWindows = false,
-            bool southDoorWindows = false,
+            bool northDoor = false, bool southDoor = false,
+            bool eastDoor = false, bool westDoor = false,
+            bool northWindow = false, bool southWindow = false,
+            bool eastWindow = false, bool westWindow = false,
+            bool northDoorWindows = false, bool southDoorWindows = false,
+            bool eastDoorWindows = false, bool westDoorWindows = false,
             Color? color = null,
             Material? material = null)
         {
@@ -190,12 +196,16 @@ namespace S1MAPI.Building
 
             _northOpening = northDoor
                 ? (northDoorWindows ? WallOpening.DoorWithWindows() : WallOpening.Door())
-                : null;
+                : (northWindow ? WallOpening.Window() : null);
             _southOpening = southDoor
                 ? (southDoorWindows ? WallOpening.DoorWithWindows() : WallOpening.Door())
-                : null;
-            _eastOpening = eastWindow ? WallOpening.Window() : null;
-            _westOpening = westWindow ? WallOpening.Window() : null;
+                : (southWindow ? WallOpening.Window() : null);
+            _eastOpening = eastDoor
+                ? (eastDoorWindows ? WallOpening.DoorWithWindows() : WallOpening.Door())
+                : (eastWindow ? WallOpening.Window() : null);
+            _westOpening = westDoor
+                ? (westDoorWindows ? WallOpening.DoorWithWindows() : WallOpening.Door())
+                : (westWindow ? WallOpening.Window() : null);
 
             var builder = GetWallBuilder(palette);
             builder.BuildWalls(
