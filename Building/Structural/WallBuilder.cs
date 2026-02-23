@@ -246,16 +246,19 @@ namespace S1MAPI.Building.Structural
 
         private (Vector3 position, Vector3 size, bool isVertical) GetWallTransform(WallSide side)
         {
+            // N/S walls extend by wallThickness on each end to cover corner gaps with E/W walls
+            float extendedWidth = _roomSize.x + _wallThickness;
+
             return side switch
             {
                 WallSide.North => (
                     new Vector3(_roomSize.x / 2f, _roomSize.y / 2f, _roomSize.z),
-                    new Vector3(_roomSize.x, _roomSize.y, _wallThickness),
+                    new Vector3(extendedWidth, _roomSize.y, _wallThickness),
                     false
                 ),
                 WallSide.South => (
                     new Vector3(_roomSize.x / 2f, _roomSize.y / 2f, 0f),
-                    new Vector3(_roomSize.x, _roomSize.y, _wallThickness),
+                    new Vector3(extendedWidth, _roomSize.y, _wallThickness),
                     false
                 ),
                 WallSide.East => (
