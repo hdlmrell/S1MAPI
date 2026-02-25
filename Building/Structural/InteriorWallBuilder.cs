@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using S1MAPI.Building.Config;
+using S1MAPI.Extensions;
 using S1MAPI.ProceduralMesh;
 using S1MAPI.Utils;
 using UnityEngine;
@@ -119,6 +120,7 @@ namespace S1MAPI.Building.Structural
         private readonly Vector3 _roomSize;
         private readonly float _wallThickness;
         private readonly BuildingPalette _palette;
+        private readonly int _layer;
         private GameObject? _container;
         private readonly List<DoorwayInfo> _doorways = new List<DoorwayInfo>();
 
@@ -133,12 +135,14 @@ namespace S1MAPI.Building.Structural
         /// <param name="roomSize">Room dimensions (width, height, depth)</param>
         /// <param name="wallThickness">Wall thickness in meters</param>
         /// <param name="palette">Material and color palette</param>
-        public InteriorWallBuilder(Transform parent, Vector3 roomSize, float wallThickness, BuildingPalette palette)
+        /// <param name="layer">Physics layer for interior wall GameObjects. -1 (default) leaves them on the default layer.</param>
+        public InteriorWallBuilder(Transform parent, Vector3 roomSize, float wallThickness, BuildingPalette palette, int layer = -1)
         {
             _parent = parent;
             _roomSize = roomSize;
             _wallThickness = wallThickness;
             _palette = palette;
+            _layer = layer;
         }
 
         #endregion
@@ -171,18 +175,28 @@ namespace S1MAPI.Building.Structural
 
             string wallName = $"InteriorWall_{def.Axis}_{def.Position:F1}";
 
+            GameObject? wall;
+
             if (def.Opening == null || def.Opening.Type == WallOpeningType.None)
             {
-                return CreateSolidWall(wallName, center, size, wallColor, wallMaterial);
+                wall = CreateSolidWall(wallName, center, size, wallColor, wallMaterial);
             }
-
-            if (def.Opening.Type == WallOpeningType.Door)
+            else if (def.Opening.Type == WallOpeningType.Door)
             {
-                return CreateWallWithDoor(wallName, center, size, def.Opening, isVertical, wallColor, wallMaterial);
+                wall = CreateWallWithDoor(wallName, center, size, def.Opening, isVertical, wallColor, wallMaterial);
+            }
+            else
+            {
+                // Fallback: solid wall for unsupported opening types
+                wall = CreateSolidWall(wallName, center, size, wallColor, wallMaterial);
             }
 
-            // Fallback: solid wall for unsupported opening types
-            return CreateSolidWall(wallName, center, size, wallColor, wallMaterial);
+            if (wall != null && _layer >= 0)
+            {
+                wall.SetLayerRecursively(_layer);
+            }
+
+            return wall;
         }
 
         #endregion

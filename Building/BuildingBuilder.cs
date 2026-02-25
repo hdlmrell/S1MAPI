@@ -42,6 +42,9 @@ namespace S1MAPI.Building
         private PrefabPlacer? _prefabPlacer;
         private InteriorWallBuilder? _interiorWallBuilder;
 
+        // Interior wall physics layer (-1 = default layer, no change)
+        private int _interiorWallLayer = -1;
+
         // Stored wall openings for cross-builder communication (e.g., base molding gap)
         private WallOpening? _northOpening;
         private WallOpening? _southOpening;
@@ -246,6 +249,19 @@ namespace S1MAPI.Building
         #endregion
 
         #region Interior Walls
+
+        /// <summary>
+        /// Set the physics layer for interior wall GameObjects.
+        /// Use this to place interior walls on a layer outside the placement raycast mask
+        /// so the ghost model passes through them while players still physically collide.
+        /// </summary>
+        /// <param name="layer">Unity layer index (0–31). -1 leaves walls on the default layer.</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder WithInteriorWallLayer(int layer)
+        {
+            _interiorWallLayer = layer;
+            return this;
+        }
 
         /// <summary>
         /// Add an interior wall spanning a sub-region of the room.
@@ -676,7 +692,7 @@ namespace S1MAPI.Building
         private InteriorWallBuilder GetInteriorWallBuilder()
         {
             return _interiorWallBuilder ??= new InteriorWallBuilder(
-                _root.transform, _roomSize, _config.WallThickness, _config.Palette);
+                _root.transform, _roomSize, _config.WallThickness, _config.Palette, _interiorWallLayer);
         }
 
         private PrefabPlacer GetPrefabPlacer()
