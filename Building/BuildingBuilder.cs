@@ -436,10 +436,12 @@ namespace S1MAPI.Building
         /// <param name="height">Foundation depth in meters</param>
         /// <param name="expandX">Extra expansion on X axis</param>
         /// <param name="expandZ">Extra expansion on Z axis</param>
+        /// <param name="color">Optional color override (defaults to grey)</param>
+        /// <param name="material">Optional material override</param>
         /// <returns>This builder for chaining</returns>
-        public BuildingBuilder AddFoundation(float height = 2.0f, float expandX = 0f, float expandZ = 0f)
+        public BuildingBuilder AddFoundation(float height = 2.0f, float expandX = 0f, float expandZ = 0f, Color? color = null, Material? material = null)
         {
-            GetDecorBuilder().AddFoundation(height, expandX, expandZ);
+            GetDecorBuilder().AddFoundation(height, expandX, expandZ, color, material);
             return this;
         }
 

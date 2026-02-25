@@ -75,6 +75,10 @@ namespace S1MAPI.Building.Structural
         /// Positive shifts toward the right/forward end, negative toward left/back.
         /// </summary>
         public float Offset { get; set; } = 0f;
+        /// <summary>Optional frame color override for window openings. Defaults to dark gray when null.</summary>
+        public Color? FrameColor { get; set; }
+        /// <summary>Optional frame material override for window openings.</summary>
+        public Material? FrameMaterial { get; set; }
 
         /// <summary>
         /// Creates a door opening configuration.
@@ -102,11 +106,14 @@ namespace S1MAPI.Building.Structural
         /// <param name="dividerWidth">Width of wall dividers between adjacent panes in meters (default 0.15).</param>
         /// <param name="glassMaterial">Optional glass material override. Defaults to Materials.WindowGlass when null.</param>
         /// <param name="offset">Lateral offset from center along the wall in meters (default 0, centered).</param>
+        /// <param name="frameMaterial">Optional frame material override.</param>
+        /// <param name="frameColor">Optional frame color override. Defaults to dark gray when null.</param>
         /// <returns>A new WallOpening configured as a window.</returns>
         public static WallOpening Window(
             float width = 2.5f, float height = 2.0f, float sillHeight = 0.8f,
             int count = 1, float dividerWidth = Constants.Window.DefaultDividerWidth,
-            Material? glassMaterial = null, float offset = 0f) => new()
+            Material? glassMaterial = null, float offset = 0f,
+            Material? frameMaterial = null, Color? frameColor = null) => new()
         {
             Type = WallOpeningType.Window,
             Width = width,
@@ -115,7 +122,9 @@ namespace S1MAPI.Building.Structural
             Count = count,
             DividerWidth = dividerWidth,
             GlassMaterial = glassMaterial,
-            Offset = offset
+            Offset = offset,
+            FrameMaterial = frameMaterial,
+            FrameColor = frameColor
         };
 
         /// <summary>
@@ -569,6 +578,7 @@ namespace S1MAPI.Building.Structural
                 : windowWidth;
 
             float bandStart = -windowWidth / 2f + paneWidth / 2f;
+            Color frameColor = window.FrameColor ?? FrameColor;
 
             for (int i = 0; i < paneCount; i++)
             {
@@ -581,7 +591,7 @@ namespace S1MAPI.Building.Structural
 
                 // Frame for this pane
                 string framePrefix = paneCount > 1 ? $"Frame{i}_" : "Frame";
-                CreateWindowFrame(parent, paneCenter, paneWidth, windowHeight, windowCenterY, isVertical, framePrefix);
+                CreateWindowFrame(parent, paneCenter, paneWidth, windowHeight, windowCenterY, isVertical, frameColor, window.FrameMaterial, framePrefix);
 
                 // Glass pane
                 Vector3 glassSize = isVertical
@@ -621,7 +631,7 @@ namespace S1MAPI.Building.Structural
             }
         }
 
-        private void CreateWindowFrame(Transform parent, Vector3 wallCenter, float windowWidth, float windowHeight, float windowCenterY, bool isVertical, string namePrefix = "Frame")
+        private void CreateWindowFrame(Transform parent, Vector3 wallCenter, float windowWidth, float windowHeight, float windowCenterY, bool isVertical, Color color, Material? material = null, string namePrefix = "Frame")
         {
             float frameDepth = Constants.Window.FrameDepth;
             float frameWidth = Constants.Window.FrameWidth;
@@ -630,10 +640,10 @@ namespace S1MAPI.Building.Structural
             Vector3 topFrameSize = isVertical
                 ? new Vector3(_wallThickness + frameDepth, frameWidth, windowWidth)
                 : new Vector3(windowWidth, frameWidth, _wallThickness + frameDepth);
-            PrimitiveBuilder.CreateBox($"{namePrefix}Top", wallCenter + new Vector3(0f, windowCenterY + windowHeight / 2f - frameWidth / 2f, 0f), topFrameSize, FrameColor, parent);
+            GameObject top = PrimitiveBuilder.CreateBox($"{namePrefix}Top", wallCenter + new Vector3(0f, windowCenterY + windowHeight / 2f - frameWidth / 2f, 0f), topFrameSize, color, parent);
 
             // Bottom frame
-            PrimitiveBuilder.CreateBox($"{namePrefix}Bottom", wallCenter + new Vector3(0f, windowCenterY - windowHeight / 2f + frameWidth / 2f, 0f), topFrameSize, FrameColor, parent);
+            GameObject bottom = PrimitiveBuilder.CreateBox($"{namePrefix}Bottom", wallCenter + new Vector3(0f, windowCenterY - windowHeight / 2f + frameWidth / 2f, 0f), topFrameSize, color, parent);
 
             // Side frames
             Vector3 sideFrameSize = isVertical
@@ -644,8 +654,16 @@ namespace S1MAPI.Building.Structural
             Vector3 leftFrameOffset = isVertical ? new Vector3(0f, windowCenterY, sideOffset) : new Vector3(-sideOffset, windowCenterY, 0f);
             Vector3 rightFrameOffset = isVertical ? new Vector3(0f, windowCenterY, -sideOffset) : new Vector3(sideOffset, windowCenterY, 0f);
 
-            PrimitiveBuilder.CreateBox($"{namePrefix}Left", wallCenter + leftFrameOffset, sideFrameSize, FrameColor, parent);
-            PrimitiveBuilder.CreateBox($"{namePrefix}Right", wallCenter + rightFrameOffset, sideFrameSize, FrameColor, parent);
+            GameObject left = PrimitiveBuilder.CreateBox($"{namePrefix}Left", wallCenter + leftFrameOffset, sideFrameSize, color, parent);
+            GameObject right = PrimitiveBuilder.CreateBox($"{namePrefix}Right", wallCenter + rightFrameOffset, sideFrameSize, color, parent);
+
+            if (material != null)
+            {
+                ApplyFrameMaterial(top, material);
+                ApplyFrameMaterial(bottom, material);
+                ApplyFrameMaterial(left, material);
+                ApplyFrameMaterial(right, material);
+            }
         }
 
         private void ApplyWallMaterial(GameObject wall)
@@ -655,6 +673,12 @@ namespace S1MAPI.Building.Structural
                 Renderer r = wall.GetComponent<Renderer>();
                 if (r != null) r.material = _palette.WallMaterial;
             }
+        }
+
+        private void ApplyFrameMaterial(GameObject frame, Material material)
+        {
+            Renderer r = frame.GetComponent<Renderer>();
+            if (r != null) r.material = material;
         }
 
         #endregion
