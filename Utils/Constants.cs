@@ -139,6 +139,18 @@ namespace S1MAPI.Utils
             /// Default step depth (tread) for generated stairs in meters.
             /// </summary>
             public const float DefaultStepDepth = 0.3f;
+
+            /// <summary>
+            /// Clearance gap between the top stair step and the foundation edge in meters.
+            /// </summary>
+            public const float StairTopClearance = 0.2f;
+
+            /// <summary>
+            /// GameObject folder name for stair geometry under the building root.
+            /// Used by DecorBuilder to parent step colliders and by NavMeshRepairer
+            /// to exclude them from NavMesh source collection.
+            /// </summary>
+            public const string StairsFolderName = "Stairs";
         }
 
         /// <summary>
@@ -278,6 +290,72 @@ namespace S1MAPI.Utils
             public const float DefaultRoofColorR = 0.45f;
             public const float DefaultRoofColorG = 0.35f;
             public const float DefaultRoofColorB = 0.3f;
+        }
+
+        /// <summary>
+        /// NavMesh repair and link constants.
+        /// </summary>
+        public static class NavMesh
+        {
+            /// <summary>
+            /// Offset from doorway center to NavMeshLink endpoint, in meters.
+            /// Must be large enough to land on the walkable surface on each side of the wall.
+            /// </summary>
+            public const float LinkOffset = 0.3f;
+
+            /// <summary>
+            /// Minimum width for exterior NavMeshLinks in meters.
+            /// Wider links allow more NPCs to traverse simultaneously.
+            /// </summary>
+            public const float MinLinkWidth = 3.0f;
+
+            /// <summary>
+            /// Extra width added to stair ramps beyond the link width to compensate
+            /// for NavMesh agent-radius erosion on both edges.
+            /// </summary>
+            public const float RampErosionBuffer = 1.0f;
+
+            /// <summary>
+            /// Thickness of invisible ramp colliders in meters.
+            /// Thin enough to not interfere with gameplay, thick enough for NavMesh voxelization.
+            /// </summary>
+            public const float RampColliderThickness = 0.1f;
+
+            /// <summary>
+            /// Padding added to NavMesh build bounds to avoid clipping walkable surfaces at edges.
+            /// </summary>
+            public const float BoundsExpansion = 1.0f;
+
+            /// <summary>
+            /// Radius for NavMesh.SamplePosition verification queries in meters.
+            /// </summary>
+            public const float VerifySampleRadius = 0.5f;
+
+            /// <summary>
+            /// Maximum acceptable Y-distance between expected and actual NavMesh surface
+            /// during verification, in meters.
+            /// </summary>
+            public const float VerifyMaxYDiff = 0.5f;
+
+            /// <summary>
+            /// Y-offset above floor level for the NavMesh verification test point.
+            /// </summary>
+            public const float VerifyTestYOffset = 0.1f;
+
+            /// <summary>
+            /// Padding added to the ground obstacle beyond the room footprint in meters.
+            /// </summary>
+            public const float ObstacleExpand = 0.5f;
+
+            /// <summary>
+            /// Height of the ground-carving NavMeshObstacle in meters.
+            /// </summary>
+            public const float ObstacleHeight = 0.5f;
+
+            /// <summary>
+            /// Default cost modifier for NavMeshLinks. -1 uses the NavMesh area cost.
+            /// </summary>
+            public const float DefaultLinkCostModifier = -1f;
         }
 
         /// <summary>

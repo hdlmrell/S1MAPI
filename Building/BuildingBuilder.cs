@@ -45,6 +45,11 @@ namespace S1MAPI.Building
         // Interior wall physics layer (-1 = default layer, no change)
         private int _interiorWallLayer = -1;
 
+        // Foundation and stair tracking for NavMesh link computation
+        private float _foundationHeight;
+        private readonly List<(WallSide Wall, float FoundationHeight, float Width, float Offset)> _stairs =
+            new List<(WallSide, float, float, float)>();
+
         // Stored wall openings for cross-builder communication (e.g., base molding gap)
         private WallOpening? _northOpening;
         private WallOpening? _southOpening;
@@ -309,6 +314,27 @@ namespace S1MAPI.Building
         public IReadOnlyList<DoorwayInfo> InteriorDoorways =>
             _interiorWallBuilder?.Doorways ?? (IReadOnlyList<DoorwayInfo>)System.Array.Empty<DoorwayInfo>();
 
+        /// <summary>
+        /// Create a <see cref="NavMeshRepairer"/> configured for this building.
+        /// Collects interior and exterior doorway positions, stair geometry, and building dimensions.
+        /// Call <see cref="NavMeshRepairer.Build"/> on the returned instance after positioning the building.
+        /// </summary>
+        /// <param name="agentTypeID">NavMesh agent type to build for (0 = default agent)</param>
+        /// <returns>A configured repairer ready to build</returns>
+        public NavMeshRepairer CreateNavMeshRepairer(int agentTypeID = 0)
+        {
+            var exteriorDoors = new List<ExteriorDoorwayInfo>();
+
+            TryAddExteriorDoor(WallSide.North, _northOpening, exteriorDoors);
+            TryAddExteriorDoor(WallSide.South, _southOpening, exteriorDoors);
+            TryAddExteriorDoor(WallSide.East, _eastOpening, exteriorDoors);
+            TryAddExteriorDoor(WallSide.West, _westOpening, exteriorDoors);
+
+            return new NavMeshRepairer(
+                _root.transform, _roomSize,
+                InteriorDoorways, exteriorDoors, agentTypeID, _foundationHeight);
+        }
+
         #endregion
 
         #region Decoration
@@ -441,6 +467,7 @@ namespace S1MAPI.Building
         /// <returns>This builder for chaining</returns>
         public BuildingBuilder AddFoundation(float height = 2.0f, float expandX = 0f, float expandZ = 0f, Color? color = null, Material? material = null)
         {
+            _foundationHeight = height;
             GetDecorBuilder().AddFoundation(height, expandX, expandZ, color, material);
             return this;
         }
@@ -475,6 +502,7 @@ namespace S1MAPI.Building
             float gap = 0f)
         {
             float lateralOffset = GetDoorOffset(wall);
+            _stairs.Add((wall, foundationHeight, width, lateralOffset));
             GetDecorBuilder().AddStairs(wall, foundationHeight, maxStepHeight, width, stepDepth, color, material, style, flushWithFloor, gap, lateralOffset);
             return this;
         }
@@ -713,6 +741,73 @@ namespace S1MAPI.Building
                 _ => null
             };
             return opening?.Offset ?? 0f;
+        }
+
+        #endregion
+
+        #region Private Methods - NavMesh
+
+        /// <summary>
+        /// If <paramref name="opening"/> is a door, compute its center, inward normal,
+        /// and optional stair base position, then append an <see cref="ExteriorDoorwayInfo"/> to <paramref name="list"/>.
+        /// </summary>
+        private void TryAddExteriorDoor(
+            WallSide wall, WallOpening? opening, List<ExteriorDoorwayInfo> list)
+        {
+            if (opening == null || opening.Type != WallOpeningType.Door) return;
+
+            Vector3 center = wall switch
+            {
+                WallSide.North => new Vector3(_roomSize.x / 2f + opening.Offset, 0f, _roomSize.z),
+                WallSide.South => new Vector3(_roomSize.x / 2f + opening.Offset, 0f, 0f),
+                WallSide.East => new Vector3(_roomSize.x, 0f, _roomSize.z / 2f + opening.Offset),
+                WallSide.West => new Vector3(0f, 0f, _roomSize.z / 2f + opening.Offset),
+                _ => Vector3.zero
+            };
+
+            Vector3 inward = wall switch
+            {
+                WallSide.North => Vector3.back,
+                WallSide.South => Vector3.forward,
+                WallSide.East => Vector3.left,
+                WallSide.West => Vector3.right,
+                _ => Vector3.zero
+            };
+
+            Vector3? stairBase = ComputeStairBasePosition(wall, center, inward);
+
+            list.Add(new ExteriorDoorwayInfo(
+                center, opening.Width, opening.Height,
+                inward, _config.WallThickness, stairBase));
+        }
+
+        /// <summary>
+        /// Compute the ground-level position at the base of the stairs for a given wall.
+        /// Returns null when no stairs exist on the wall or no foundation is present.
+        /// </summary>
+        private Vector3? ComputeStairBasePosition(WallSide wall, Vector3 doorCenter, Vector3 inwardNormal)
+        {
+            if (_foundationHeight <= 0f) return null;
+
+            // Find stair entry for this wall
+            foreach ((WallSide stairWall, float foundationHeight, float width, float offset) in _stairs)
+            {
+                if (stairWall != wall) continue;
+
+                // Compute stair run from foundation height using default step parameters
+                int stepCount = Mathf.Max(2, Mathf.CeilToInt(foundationHeight / Constants.Spatial.DefaultMaxStepHeight));
+                int visibleSteps = stepCount - 1;
+                float clearance = Constants.Spatial.StairTopClearance;
+                float stairRun = visibleSteps * Constants.Spatial.DefaultStepDepth
+                                 + Constants.Spatial.DefaultStepDepth / 2f + clearance;
+
+                Vector3 outward = -inwardNormal;
+                Vector3 stairBaseXZ = doorCenter + outward * stairRun;
+
+                return new Vector3(stairBaseXZ.x, -foundationHeight, stairBaseXZ.z);
+            }
+
+            return null;
         }
 
         #endregion

@@ -527,7 +527,7 @@ namespace S1MAPI.Building.Structural
             bool flushWithFloor = false,
             float lateralOffset = 0f)
         {
-            GameObject container = BuildingUtilities.CreateFolder("Stairs", _parent);
+            GameObject container = BuildingUtilities.CreateFolder(Constants.Spatial.StairsFolderName, _parent);
             Color stepColor = color ?? _palette.FloorColor;
             int count = Mathf.Max(2, Mathf.CeilToInt(foundationHeight / maxStepHeight));
             float stepRise = foundationHeight / count;
