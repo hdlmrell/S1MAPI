@@ -151,6 +151,15 @@ namespace S1MAPI.Utils
             /// to exclude them from NavMesh source collection.
             /// </summary>
             public const string StairsFolderName = "Stairs";
+
+            /// <summary>
+            /// GameObject folder name for foundation geometry under the building root.
+            /// Excluded from NavMesh source collection because the foundation box's bottom
+            /// face creates a phantom walkable surface at ground level inside the building.
+            /// The floor collider provides the correct walkable surface instead.
+            /// </summary>
+            public const string FoundationFolderName = "Foundation";
+
         }
 
         /// <summary>
@@ -293,24 +302,18 @@ namespace S1MAPI.Utils
         }
 
         /// <summary>
-        /// NavMesh repair and link constants.
+        /// NavMesh repair constants.
         /// </summary>
         public static class NavMesh
         {
             /// <summary>
-            /// Offset from doorway center to NavMeshLink endpoint, in meters.
-            /// Must be large enough to land on the walkable surface on each side of the wall.
+            /// Minimum width for stair ramps in meters.
+            /// Wider ramps allow more NPCs to traverse simultaneously.
             /// </summary>
-            public const float LinkOffset = 0.3f;
+            public const float MinRampWidth = 3.0f;
 
             /// <summary>
-            /// Minimum width for exterior NavMeshLinks in meters.
-            /// Wider links allow more NPCs to traverse simultaneously.
-            /// </summary>
-            public const float MinLinkWidth = 3.0f;
-
-            /// <summary>
-            /// Extra width added to stair ramps beyond the link width to compensate
+            /// Extra width added to stair ramps beyond the door width to compensate
             /// for NavMesh agent-radius erosion on both edges.
             /// </summary>
             public const float RampErosionBuffer = 1.0f;
@@ -343,19 +346,22 @@ namespace S1MAPI.Utils
             public const float VerifyTestYOffset = 0.1f;
 
             /// <summary>
-            /// Padding added to the ground obstacle beyond the room footprint in meters.
-            /// </summary>
-            public const float ObstacleExpand = 0.5f;
-
-            /// <summary>
             /// Height of the ground-carving NavMeshObstacle in meters.
             /// </summary>
             public const float ObstacleHeight = 0.5f;
 
             /// <summary>
-            /// Default cost modifier for NavMeshLinks. -1 uses the NavMesh area cost.
+            /// Distance past the stair base that the ground plane extends, in meters.
+            /// Provides walkable surface at ground level between the ramp bottom and the
+            /// baked NavMesh, bridging the gap created by obstacle carving.
             /// </summary>
-            public const float DefaultLinkCostModifier = -1f;
+            public const float GroundPatchExtension = 3.0f;
+
+            /// <summary>
+            /// Extra padding beyond half wall thickness when filtering door opening sources.
+            /// Accounts for colliders slightly offset from the wall center plane.
+            /// </summary>
+            public const float DoorFilterNormalPadding = 0.15f;
         }
 
         /// <summary>

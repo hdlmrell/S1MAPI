@@ -88,7 +88,6 @@ namespace S1MAPI.Building.Structural
 
         /// <summary>
         /// True if the wall's normal faces along Z (i.e., the wall runs along X).
-        /// Used to determine NavMeshLink start/end offset direction.
         /// </summary>
         public bool FacesAlongZ { get; }
 

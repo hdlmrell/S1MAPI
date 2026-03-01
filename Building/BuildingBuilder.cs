@@ -316,23 +316,33 @@ namespace S1MAPI.Building
 
         /// <summary>
         /// Create a <see cref="NavMeshRepairer"/> configured for this building.
-        /// Collects interior and exterior doorway positions, stair geometry, and building dimensions.
+        /// Collects exterior and interior doorway positions, stair geometry, and building dimensions.
         /// Call <see cref="NavMeshRepairer.Build"/> on the returned instance after positioning the building.
         /// </summary>
         /// <param name="agentTypeID">NavMesh agent type to build for (0 = default agent)</param>
         /// <returns>A configured repairer ready to build</returns>
         public NavMeshRepairer CreateNavMeshRepairer(int agentTypeID = 0)
         {
-            var exteriorDoors = new List<ExteriorDoorwayInfo>();
+            var doorways = new List<NavMeshDoorwayInfo>();
 
-            TryAddExteriorDoor(WallSide.North, _northOpening, exteriorDoors);
-            TryAddExteriorDoor(WallSide.South, _southOpening, exteriorDoors);
-            TryAddExteriorDoor(WallSide.East, _eastOpening, exteriorDoors);
-            TryAddExteriorDoor(WallSide.West, _westOpening, exteriorDoors);
+            // Exterior doorways (with optional stair base positions)
+            TryAddExteriorDoor(WallSide.North, _northOpening, doorways);
+            TryAddExteriorDoor(WallSide.South, _southOpening, doorways);
+            TryAddExteriorDoor(WallSide.East, _eastOpening, doorways);
+            TryAddExteriorDoor(WallSide.West, _westOpening, doorways);
+
+            // Interior doorways (for door panel collider filtering only)
+            foreach (DoorwayInfo interior in InteriorDoorways)
+            {
+                Vector3 normal = interior.FacesAlongZ ? Vector3.forward : Vector3.right;
+                doorways.Add(new NavMeshDoorwayInfo(
+                    interior.Center, interior.Width, interior.Height,
+                    normal, interior.WallThickness));
+            }
 
             return new NavMeshRepairer(
                 _root.transform, _roomSize,
-                InteriorDoorways, exteriorDoors, agentTypeID, _foundationHeight);
+                doorways, agentTypeID, _foundationHeight);
         }
 
         #endregion
@@ -749,10 +759,10 @@ namespace S1MAPI.Building
 
         /// <summary>
         /// If <paramref name="opening"/> is a door, compute its center, inward normal,
-        /// and optional stair base position, then append an <see cref="ExteriorDoorwayInfo"/> to <paramref name="list"/>.
+        /// and optional stair base position, then append a <see cref="NavMeshDoorwayInfo"/> to <paramref name="list"/>.
         /// </summary>
         private void TryAddExteriorDoor(
-            WallSide wall, WallOpening? opening, List<ExteriorDoorwayInfo> list)
+            WallSide wall, WallOpening? opening, List<NavMeshDoorwayInfo> list)
         {
             if (opening == null || opening.Type != WallOpeningType.Door) return;
 
@@ -776,7 +786,7 @@ namespace S1MAPI.Building
 
             Vector3? stairBase = ComputeStairBasePosition(wall, center, inward);
 
-            list.Add(new ExteriorDoorwayInfo(
+            list.Add(new NavMeshDoorwayInfo(
                 center, opening.Width, opening.Height,
                 inward, _config.WallThickness, stairBase));
         }

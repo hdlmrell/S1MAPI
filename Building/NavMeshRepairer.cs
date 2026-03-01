@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using S1MAPI.Building.Structural;
 using S1MAPI.Utils;
 using UnityEngine;
 using UnityEngine.AI;
@@ -7,9 +6,10 @@ using UnityEngine.AI;
 namespace S1MAPI.Building
 {
     /// <summary>
-    /// Records the position and direction of an exterior doorway for NavMeshLink generation.
+    /// Records the position and dimensions of a doorway for NavMesh source filtering
+    /// and ramp/ground plane generation. Used for both exterior and interior doorways.
     /// </summary>
-    public sealed class ExteriorDoorwayInfo
+    public sealed class NavMeshDoorwayInfo
     {
         /// <summary>Center of the doorway in local building coordinates (Y=0, floor level).</summary>
         public Vector3 Center { get; }
@@ -20,7 +20,7 @@ namespace S1MAPI.Building
         /// <summary>Height of the doorway opening in meters.</summary>
         public float Height { get; }
 
-        /// <summary>Unit vector pointing from exterior toward interior (into the building).</summary>
+        /// <summary>Unit vector perpendicular to the wall face in the XZ plane.</summary>
         public Vector3 InwardNormal { get; }
 
         /// <summary>Thickness of the wall containing this doorway.</summary>
@@ -28,20 +28,20 @@ namespace S1MAPI.Building
 
         /// <summary>
         /// Position at the base of the stairs in local building coordinates (ground level).
-        /// Null when no foundation/stairs — link is placed at the door instead.
+        /// Null for interior doorways or exterior doorways without stairs.
         /// </summary>
         public Vector3? StairBasePosition { get; }
 
         /// <summary>
-        /// Create an exterior doorway info record.
+        /// Create a NavMesh doorway info record.
         /// </summary>
         /// <param name="center">Door center in local building coordinates (Y=0)</param>
         /// <param name="width">Doorway width in meters</param>
         /// <param name="height">Doorway height in meters</param>
-        /// <param name="inwardNormal">Unit vector pointing into the building</param>
+        /// <param name="inwardNormal">Unit vector perpendicular to the wall face</param>
         /// <param name="wallThickness">Wall thickness in meters</param>
         /// <param name="stairBasePosition">Position at stair base (ground level), or null if no stairs</param>
-        public ExteriorDoorwayInfo(
+        public NavMeshDoorwayInfo(
             Vector3 center, float width, float height,
             Vector3 inwardNormal, float wallThickness,
             Vector3? stairBasePosition = null)
@@ -57,9 +57,11 @@ namespace S1MAPI.Building
 
     /// <summary>
     /// Builds and manages runtime NavMesh for building interiors.
-    /// Collects building geometry (floor, walls, stairs) via physics colliders,
-    /// builds a walkable NavMesh surface, and creates NavMeshLinks at doorways
-    /// to connect interior rooms and bridge to the exterior NavMesh.
+    /// Collects building geometry (floor, walls, ramps) from the building hierarchy,
+    /// adds manual ground planes at stair bases, and builds a single connected NavMesh
+    /// from the ground patch through the ramp into the interior.
+    /// A carving obstacle removes the game's baked mesh in the covered area so NPCs
+    /// pathfind exclusively on the runtime surface within the building zone.
     /// </summary>
     /// <remarks>
     /// Call <see cref="Build"/> after the building is positioned in the scene.
@@ -72,13 +74,11 @@ namespace S1MAPI.Building
 
         private readonly Transform _buildingRoot;
         private readonly Vector3 _roomSize;
-        private readonly IReadOnlyList<DoorwayInfo> _interiorDoorways;
-        private readonly IReadOnlyList<ExteriorDoorwayInfo> _exteriorDoorways;
+        private readonly IReadOnlyList<NavMeshDoorwayInfo> _doorways;
         private readonly int _agentTypeID;
         private readonly float _foundationHeight;
 
         private NavMeshDataInstance _navInstance;
-        private readonly List<NavMeshLinkInstance> _links = new List<NavMeshLinkInstance>();
         private readonly List<GameObject> _rampObjects = new List<GameObject>();
         private GameObject? _obstacleGO;
         private bool _isBuilt;
@@ -92,22 +92,19 @@ namespace S1MAPI.Building
         /// </summary>
         /// <param name="buildingRoot">Root transform of the building (must be positioned before calling Build)</param>
         /// <param name="roomSize">Interior room dimensions (width, height, depth)</param>
-        /// <param name="interiorDoorways">Doorway positions from interior walls</param>
-        /// <param name="exteriorDoorways">Doorway positions from exterior walls</param>
+        /// <param name="doorways">Doorway positions for source filtering and ramp generation</param>
         /// <param name="agentTypeID">NavMesh agent type to build for (0 = default agent)</param>
         /// <param name="foundationHeight">Foundation height in meters (0 = no foundation). Used to carve ground NavMesh.</param>
         public NavMeshRepairer(
             Transform buildingRoot,
             Vector3 roomSize,
-            IReadOnlyList<DoorwayInfo> interiorDoorways,
-            IReadOnlyList<ExteriorDoorwayInfo> exteriorDoorways,
+            IReadOnlyList<NavMeshDoorwayInfo> doorways,
             int agentTypeID = 0,
             float foundationHeight = 0f)
         {
             _buildingRoot = buildingRoot;
             _roomSize = roomSize;
-            _interiorDoorways = interiorDoorways;
-            _exteriorDoorways = exteriorDoorways;
+            _doorways = doorways;
             _agentTypeID = agentTypeID;
             _foundationHeight = foundationHeight;
         }
@@ -127,8 +124,9 @@ namespace S1MAPI.Building
         #region Public API
 
         /// <summary>
-        /// Build interior NavMesh and create doorway links.
-        /// Must be called after the building is positioned in the scene.
+        /// Build a NavMesh covering the building interior, stair ramps, and ground patches
+        /// at each stair base. A carving obstacle removes the game's baked mesh in the
+        /// covered area. Must be called after the building is positioned in the scene.
         /// </summary>
         public void Build()
         {
@@ -138,23 +136,31 @@ namespace S1MAPI.Building
                 return;
             }
 
-            // 1. Create invisible ramp colliders so the NavMesh has continuous walkable
+            // 1. Create carving obstacle covering ONLY the building footprint.
+            //    Does NOT extend to stair approach area — the baked mesh must persist
+            //    there so it overlaps with our runtime ground planes, giving NPCs a
+            //    cross-instance transition point.
+            //    Created early to give Unity maximum time for async carving.
+            if (_foundationHeight > 0f)
+            {
+                CreateGroundObstacle();
+            }
+
+            Bounds contentBounds = ComputeLocalBounds();
+
+            // 2. Create invisible ramp colliders so the NavMesh has continuous walkable
             //    surface from floor level to ground level at each staircase.
-            //    Individual stair steps are too narrow for the agent radius, so without
-            //    a ramp the only path is a single-point NavMeshLink (bottleneck).
             CreateStairRamps();
 
-            // 2. Collect physics colliders from the building hierarchy as NavMesh sources.
+            // 3. Collect physics colliders from the building hierarchy as NavMesh sources.
+            //    Sources are in local building coordinates.
 #if MONO
-            //    On Mono we can use Unity's built-in CollectSources which handles
-            //    all coordinate math, collider types, and source construction correctly.
-            //    Exclude stair step colliders — their individual treads are too narrow
-            //    for the agent radius and block walkable surface on the ramp beneath them.
             var sources = new List<NavMeshBuildSource>();
             var markups = new List<NavMeshBuildMarkup>();
             foreach (Transform child in _buildingRoot)
             {
-                if (child.name == Constants.Spatial.StairsFolderName)
+                if (child.name == Constants.Spatial.StairsFolderName ||
+                    child.name == Constants.Spatial.FoundationFolderName)
                 {
                     markups.Add(new NavMeshBuildMarkup { root = child, ignoreFromBuild = true });
                 }
@@ -163,10 +169,38 @@ namespace S1MAPI.Building
                 _buildingRoot, ~0, NavMeshCollectGeometry.PhysicsColliders,
                 0, markups, sources);
 #elif IL2CPP
-            //    On IL2CPP, CollectSources(Transform) has type compatibility issues
-            //    with Il2CppSystem.Collections.Generic.List, so we collect manually.
             List<NavMeshBuildSource> sources = CollectBuildingSources();
 #endif
+
+            // 4. Remove colliders that sit inside door openings (e.g. door panels/prefabs).
+            //    Must run before adding manual sources so those aren't filtered out.
+            FilterDoorwaySources(sources);
+
+            // 5. Add flat ground plane sources at each stair base so the runtime mesh
+            //    has walkable surface at ground level connecting the ramp to the baked mesh.
+            AddGroundPlanes(sources);
+
+            // 6. Add threshold sources at each doorway to bridge the wall-thickness gap
+            //    between the ramp top (outer wall face) and the floor (inner wall face).
+            AddDoorwayThresholds(sources);
+
+            // 7. Add a "Not Walkable" blocker at ground level covering the building interior.
+            //    Area 1 (Not Walkable) takes absolute precedence during voxelization —
+            //    prevents the runtime mesh from creating a walkable phantom surface at
+            //    ground level inside the building. The floor at Y=0 is unaffected.
+            if (_foundationHeight > 0f)
+            {
+                sources.Add(new NavMeshBuildSource
+                {
+                    shape = NavMeshBuildSourceShape.Box,
+                    size = new Vector3(_roomSize.x, 0.5f, _roomSize.z),
+                    transform = Matrix4x4.TRS(
+                        new Vector3(_roomSize.x / 2f, -_foundationHeight, _roomSize.z / 2f),
+                        Quaternion.identity,
+                        Vector3.one),
+                    area = 1 // Not Walkable
+                });
+            }
 
             if (sources.Count == 0)
             {
@@ -174,28 +208,43 @@ namespace S1MAPI.Building
                 return;
             }
 
-            // 3. Compute bounds from collected sources
-            Bounds localBounds = ComputeBoundsFromSources(sources);
+            // 6. Compute bake bounds = content + expansion.
+            //    The expansion zone extends past the obstacle, creating an overlap
+            //    where both runtime and baked meshes coexist for smooth NPC transition.
+            Bounds bakeBounds = contentBounds;
+            bakeBounds.Expand(Constants.NavMesh.BoundsExpansion);
 
-            // 4. Build NavMesh data
+            // 7. Build NavMesh data — local sources positioned by building transform
             NavMeshBuildSettings settings = NavMesh.GetSettingsByID(_agentTypeID);
 
-            // Pad bounds to avoid clipping walkable surfaces at edges
-            localBounds.Expand(Constants.NavMesh.BoundsExpansion);
+            // Override voxel size to satisfy the 4-voxel rule for vertical separation.
+            // foundationHeight / voxelSize must be >= 4 to prevent surface merging.
+            // Use 6 voxels for safety margin; only override if needed.
+            if (_foundationHeight > 0f)
+            {
+                float maxVoxel = _foundationHeight / 6f;
+                if (settings.voxelSize > maxVoxel)
+                {
+                    settings.overrideVoxelSize = true;
+                    settings.voxelSize = maxVoxel;
+                    DebugLog.Info($"[NavMeshRepairer] Overrode voxelSize to {maxVoxel:F3} " +
+                                 $"(foundation={_foundationHeight:F2}, voxels={_foundationHeight / maxVoxel:F1})");
+                }
+            }
 
 #if IL2CPP
             Il2CppSystem.Collections.Generic.List<NavMeshBuildSource> il2CppSources = sources.ToIl2CppList();
             NavMeshData navData = NavMeshBuilder.BuildNavMeshData(
                 settings,
                 il2CppSources,
-                localBounds,
+                bakeBounds,
                 _buildingRoot.position,
                 _buildingRoot.rotation);
 #elif MONO
             NavMeshData navData = NavMeshBuilder.BuildNavMeshData(
                 settings,
                 sources,
-                localBounds,
+                bakeBounds,
                 _buildingRoot.position,
                 _buildingRoot.rotation);
 #endif
@@ -206,7 +255,7 @@ namespace S1MAPI.Building
                 return;
             }
 
-            // 5. Register with NavMesh system and verify triangles were added
+            // 8. Register with NavMesh system and verify triangles were added
 #if MONO
             int trisBefore = NavMesh.CalculateTriangulation().indices.Length / 3;
 #endif
@@ -222,11 +271,12 @@ namespace S1MAPI.Building
                                  $"(before={trisBefore}, after={trisAfter})");
 #endif
 
-            // 6. Verify the runtime NavMesh is queryable at room center
+            // 9. Verify the runtime NavMesh is queryable at room center
             Vector3 testWorld = _buildingRoot.TransformPoint(
                 new Vector3(_roomSize.x / 2f, Constants.NavMesh.VerifyTestYOffset, _roomSize.z / 2f));
             NavMeshHit hit;
             bool found = NavMesh.SamplePosition(testWorld, out hit, Constants.NavMesh.VerifySampleRadius, NavMesh.AllAreas);
+
             if (!found)
             {
                 DebugLog.Warning("[NavMeshRepairer] No NavMesh surface found at room center. " +
@@ -238,21 +288,10 @@ namespace S1MAPI.Building
                                  $"ground mesh, not our interior surface (expected Y≈{testWorld.y:F2}).");
             }
 
-            // 7. Carve the game's ground-level NavMesh under the building so NPCs
-            //    cannot path through the foundation and must use stair links instead.
-            if (_foundationHeight > 0f)
-            {
-                CreateGroundObstacle();
-            }
-
-            // 8. Create doorway links
-            CreateInteriorDoorwayLinks();
-            CreateExteriorDoorwayLinks();
-
             _isBuilt = true;
 
             DebugLog.Info($"[NavMeshRepairer] Built NavMesh: {sources.Count} sources, " +
-                          $"{_interiorDoorways.Count} interior links, {_exteriorDoorways.Count} exterior links");
+                          $"bake bounds size={bakeBounds.size}");
         }
 
         /// <summary>
@@ -266,7 +305,7 @@ namespace S1MAPI.Building
         }
 
         /// <summary>
-        /// Remove all NavMesh data and links.
+        /// Remove all NavMesh data and cleanup.
         /// Call when the building is destroyed.
         /// </summary>
         public void Remove()
@@ -274,12 +313,6 @@ namespace S1MAPI.Building
             if (!_isBuilt) return;
 
             _navInstance.Remove();
-
-            foreach (NavMeshLinkInstance link in _links)
-            {
-                link.Remove();
-            }
-            _links.Clear();
 
             foreach (GameObject ramp in _rampObjects)
             {
@@ -295,7 +328,45 @@ namespace S1MAPI.Building
 
             _isBuilt = false;
 
-            DebugLog.Info("[NavMeshRepairer] Removed NavMesh data and links.");
+            DebugLog.Info("[NavMeshRepairer] Removed NavMesh data.");
+        }
+
+        #endregion
+
+        #region Private Methods — Bounds
+
+        /// <summary>
+        /// Compute local-space bounds covering the building footprint, foundation depth,
+        /// and ground patches at each stair base.
+        /// </summary>
+        private Bounds ComputeLocalBounds()
+        {
+            // Start with building footprint
+            var bounds = new Bounds(
+                new Vector3(_roomSize.x / 2f, _roomSize.y / 2f, _roomSize.z / 2f),
+                _roomSize);
+
+            // Extend down to ground level
+            if (_foundationHeight > 0f)
+            {
+                bounds.Encapsulate(new Vector3(_roomSize.x / 2f, -_foundationHeight, _roomSize.z / 2f));
+            }
+
+            // Extend to cover ground patches past each stair base
+            float extension = Constants.NavMesh.GroundPatchExtension;
+            foreach (NavMeshDoorwayInfo doorway in _doorways)
+            {
+                if (!doorway.StairBasePosition.HasValue) continue;
+
+                Vector3 stairBase = doorway.StairBasePosition.Value;
+                Vector3 outward = -doorway.InwardNormal;
+                Vector3 patchEnd = stairBase + outward * extension;
+
+                bounds.Encapsulate(stairBase);
+                bounds.Encapsulate(patchEnd);
+            }
+
+            return bounds;
         }
 
         #endregion
@@ -303,11 +374,11 @@ namespace S1MAPI.Building
         #region Private Methods — Ground Carving
 
         /// <summary>
-        /// Create a NavMeshObstacle that carves the game's baked ground-level NavMesh
-        /// under the building footprint. Without this, NPCs path on the ground mesh
-        /// straight through the foundation instead of using the stair links.
-        /// The obstacle is positioned at ground level and sized to the room footprint.
-        /// Stairs extend outward beyond the footprint and are not affected.
+        /// Create a NavMeshObstacle that carves the game's baked NavMesh under the building
+        /// footprint ONLY. Does not extend to the stair approach area — the baked mesh must
+        /// persist there to overlap with the runtime ground planes, providing the cross-instance
+        /// transition point where NPCs step from the baked terrain onto the runtime surface.
+        /// Created early in <see cref="Build"/> to give Unity maximum time for async carving.
         /// </summary>
         private void CreateGroundObstacle()
         {
@@ -316,14 +387,18 @@ namespace S1MAPI.Building
             _obstacleGO.transform.localPosition = new Vector3(
                 _roomSize.x / 2f, -_foundationHeight, _roomSize.z / 2f);
 
+            Vector3 obstacleSize = new Vector3(
+                _roomSize.x,
+                Constants.NavMesh.ObstacleHeight,
+                _roomSize.z);
+
             var obstacle = _obstacleGO.AddComponent<NavMeshObstacle>();
             obstacle.shape = NavMeshObstacleShape.Box;
             obstacle.center = Vector3.zero;
-            obstacle.size = new Vector3(
-                _roomSize.x + Constants.NavMesh.ObstacleExpand,
-                Constants.NavMesh.ObstacleHeight,
-                _roomSize.z + Constants.NavMesh.ObstacleExpand);
+            obstacle.size = obstacleSize;
             obstacle.carving = true;
+            obstacle.carvingTimeToStationary = 0f;
+
         }
 
         #endregion
@@ -333,12 +408,11 @@ namespace S1MAPI.Building
         /// <summary>
         /// Create invisible ramp colliders at each exterior doorway with stairs.
         /// The ramp provides continuous walkable NavMesh from floor level down to
-        /// ground level, so multiple NPCs can walk the slope simultaneously instead
-        /// of queuing at a single NavMeshLink portal.
+        /// ground level, so multiple NPCs can walk the slope simultaneously.
         /// </summary>
         private void CreateStairRamps()
         {
-            foreach (ExteriorDoorwayInfo doorway in _exteriorDoorways)
+            foreach (NavMeshDoorwayInfo doorway in _doorways)
             {
                 if (!doorway.StairBasePosition.HasValue) continue;
 
@@ -365,10 +439,10 @@ namespace S1MAPI.Building
                 Quaternion facing = Quaternion.LookRotation(outward, Vector3.up);
                 rampGO.transform.localRotation = facing * Quaternion.AngleAxis(slopeAngle, Vector3.right);
 
-                // Width must exceed the NavMeshLink width (3m) plus agent-radius
+                // Width must exceed the minimum ramp width plus agent-radius
                 // erosion on both edges, otherwise the walkable strip is so narrow
                 // that NPCs path to the corner instead of walking up the center.
-                float rampWidth = Mathf.Max(doorway.Width, Constants.NavMesh.MinLinkWidth) + Constants.NavMesh.RampErosionBuffer;
+                float rampWidth = Mathf.Max(doorway.Width, Constants.NavMesh.MinRampWidth) + Constants.NavMesh.RampErosionBuffer;
 
                 BoxCollider col = rampGO.AddComponent<BoxCollider>();
                 col.center = Vector3.zero;
@@ -380,20 +454,159 @@ namespace S1MAPI.Building
 
         #endregion
 
+        #region Private Methods — Ground Planes
+
+        /// <summary>
+        /// Add flat NavMeshBuildSource boxes at ground level past each stair base.
+        /// These provide walkable surface at ground level that connects the ramp bottom
+        /// to the edge of the baked NavMesh, bridging the gap created by obstacle carving.
+        /// Sources are in local building coordinates.
+        /// </summary>
+        private void AddGroundPlanes(List<NavMeshBuildSource> sources)
+        {
+            float extension = Constants.NavMesh.GroundPatchExtension;
+
+            foreach (NavMeshDoorwayInfo doorway in _doorways)
+            {
+                if (!doorway.StairBasePosition.HasValue) continue;
+
+                Vector3 stairBase = doorway.StairBasePosition.Value;
+                Vector3 outward = -doorway.InwardNormal;
+
+                // Ground plane centered between stair base and the far edge
+                Vector3 patchCenter = stairBase + outward * (extension / 2f);
+
+                float rampWidth = Mathf.Max(doorway.Width, Constants.NavMesh.MinRampWidth)
+                                  + Constants.NavMesh.RampErosionBuffer;
+
+                // Align the plane with the outward direction
+                Quaternion patchRot = Quaternion.LookRotation(outward, Vector3.up);
+
+                sources.Add(new NavMeshBuildSource
+                {
+                    shape = NavMeshBuildSourceShape.Box,
+                    size = new Vector3(rampWidth, Constants.NavMesh.RampColliderThickness, extension),
+                    transform = Matrix4x4.TRS(patchCenter, patchRot, Vector3.one),
+                    area = 0
+                });
+            }
+        }
+
+        #endregion
+
+        #region Private Methods — Doorway Source Filtering
+
+        /// <summary>
+        /// Remove any collected source whose center falls inside a door opening volume.
+        /// Door prefabs (e.g. wooden doors, sliding doors) have colliders that
+        /// source collection picks up. These create low-overhead obstructions that
+        /// block NavMesh in the doorway.
+        /// Must be called after collecting sources but before adding manual sources
+        /// (ground planes, thresholds, blocker).
+        /// </summary>
+        private void FilterDoorwaySources(List<NavMeshBuildSource> sources)
+        {
+            for (int i = sources.Count - 1; i >= 0; i--)
+            {
+                NavMeshBuildSource s = sources[i];
+                // Source positions from CollectSources are in WORLD space,
+                // but doorway coordinates are in LOCAL building space.
+                // Transform doorway geometry to world space for comparison.
+                Vector3 pos = new Vector3(s.transform.m03, s.transform.m13, s.transform.m23);
+
+                foreach (NavMeshDoorwayInfo doorway in _doorways)
+                {
+                    Vector3 worldCenter = _buildingRoot.TransformPoint(doorway.Center);
+                    Vector3 worldNormal = _buildingRoot.TransformDirection(doorway.InwardNormal);
+                    Vector3 worldTangent = new Vector3(-worldNormal.z, 0f, worldNormal.x);
+
+                    Vector3 delta = pos - worldCenter;
+                    float normalDist = Mathf.Abs(Vector3.Dot(delta, worldNormal));
+                    float tangentDist = Mathf.Abs(Vector3.Dot(delta, worldTangent));
+                    float normalThreshold = doorway.WallThickness / 2f + Constants.NavMesh.DoorFilterNormalPadding;
+
+                    // Y check in world space: source must be between floor level and door top
+                    float floorY = worldCenter.y;
+                    if (normalDist <= normalThreshold &&
+                        tangentDist <= doorway.Width / 2f &&
+                        pos.y > floorY && pos.y < floorY + doorway.Height)
+                    {
+                        sources.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+        }
+
+        #endregion
+
+        #region Private Methods — Doorway Thresholds
+
+        /// <summary>
+        /// Add flat walkable sources at each doorway to bridge the wall-thickness gap
+        /// between the ramp top (outer wall face) and the floor (inner wall face).
+        /// Without these, the NavMesh has a disconnected gap at every doorway.
+        /// Sources are in local building coordinates.
+        /// </summary>
+        private void AddDoorwayThresholds(List<NavMeshBuildSource> sources)
+        {
+            foreach (NavMeshDoorwayInfo doorway in _doorways)
+            {
+                if (!doorway.StairBasePosition.HasValue) continue;
+
+                // Threshold centered in the wall at floor height (Y=0).
+                // Extends 0.2m past each wall face for robust overlap with ramp and floor.
+                Vector3 thresholdCenter = doorway.Center
+                    + doorway.InwardNormal * (doorway.WallThickness / 2f);
+
+                float thresholdDepth = doorway.WallThickness + 0.4f;
+                float rampWidth = Mathf.Max(doorway.Width, Constants.NavMesh.MinRampWidth)
+                                  + Constants.NavMesh.RampErosionBuffer;
+
+                Quaternion rot = Quaternion.LookRotation(doorway.InwardNormal, Vector3.up);
+
+                sources.Add(new NavMeshBuildSource
+                {
+                    shape = NavMeshBuildSourceShape.Box,
+                    size = new Vector3(rampWidth, Constants.NavMesh.RampColliderThickness, thresholdDepth),
+                    transform = Matrix4x4.TRS(thresholdCenter, rot, Vector3.one),
+                    area = 0
+                });
+            }
+        }
+
+        #endregion
+
         #region Private Methods — Source Collection
 
         /// <summary>
         /// Scan the building hierarchy for BoxColliders and create NavMeshBuildSources.
+        /// Excludes colliders under the "Stairs" folder (steps block the ramp surface)
+        /// and the "Foundation" folder (bottom face creates a phantom walkable surface).
         /// Sources are in local building coordinates so BuildNavMeshData can transform
         /// them using the building's world position and rotation.
         /// </summary>
         private List<NavMeshBuildSource> CollectBuildingSources()
         {
+            // Find stair transforms to exclude (same logic as the Mono markup path)
+            var excludedRoots = new HashSet<Transform>();
+            foreach (Transform child in _buildingRoot)
+            {
+                if (child.name == Constants.Spatial.StairsFolderName ||
+                    child.name == Constants.Spatial.FoundationFolderName)
+                {
+                    excludedRoots.Add(child);
+                }
+            }
+
             var sources = new List<NavMeshBuildSource>();
             BoxCollider[] colliders = _buildingRoot.GetComponentsInChildren<BoxCollider>();
 
             foreach (BoxCollider collider in colliders)
             {
+                // Skip colliders under excluded stair roots
+                if (IsChildOfAny(collider.transform, excludedRoots)) continue;
+
                 // Compute world-space center, then convert to local building space
                 Vector3 worldCenter = collider.transform.TransformPoint(collider.center);
                 Vector3 localCenter = _buildingRoot.InverseTransformPoint(worldCenter);
@@ -417,114 +630,17 @@ namespace S1MAPI.Building
         }
 
         /// <summary>
-        /// Compute an encapsulating bounds from collected NavMesh build sources.
+        /// Check whether <paramref name="t"/> is a descendant of any transform in <paramref name="roots"/>.
         /// </summary>
-        private Bounds ComputeBoundsFromSources(List<NavMeshBuildSource> sources)
+        private static bool IsChildOfAny(Transform t, HashSet<Transform> roots)
         {
-            // Start with a reasonable default based on room size
-            var bounds = new Bounds(
-                new Vector3(_roomSize.x / 2f, _roomSize.y / 2f, _roomSize.z / 2f),
-                _roomSize);
-
-            foreach (NavMeshBuildSource source in sources)
+            Transform current = t.parent;
+            while (current != null)
             {
-                // Extract position from the source transform matrix
-                Vector3 sourcePos = new Vector3(
-                    source.transform.m03,
-                    source.transform.m13,
-                    source.transform.m23);
-
-                // Expand bounds to include source position + half size
-                var sourceBounds = new Bounds(sourcePos, source.size);
-                bounds.Encapsulate(sourceBounds);
+                if (roots.Contains(current)) return true;
+                current = current.parent;
             }
-
-            return bounds;
-        }
-
-        #endregion
-
-        #region Private Methods — Interior Links
-
-        /// <summary>
-        /// Create NavMeshLinks at each interior doorway to connect rooms through walls.
-        /// </summary>
-        private void CreateInteriorDoorwayLinks()
-        {
-            foreach (DoorwayInfo doorway in _interiorDoorways)
-            {
-                Vector3 facingDir = doorway.FacesAlongZ ? Vector3.forward : Vector3.right;
-                float halfWall = doorway.WallThickness / 2f + Constants.NavMesh.LinkOffset;
-
-                var linkData = new NavMeshLinkData();
-                linkData.startPosition = doorway.Center - facingDir * halfWall;
-                linkData.endPosition = doorway.Center + facingDir * halfWall;
-                linkData.width = doorway.Width;
-                linkData.bidirectional = true;
-                linkData.area = 0;
-                linkData.agentTypeID = _agentTypeID;
-                linkData.costModifier = Constants.NavMesh.DefaultLinkCostModifier;
-
-                NavMeshLinkInstance link = NavMesh.AddLink(
-                    linkData,
-                    _buildingRoot.position,
-                    _buildingRoot.rotation);
-
-                _links.Add(link);
-            }
-        }
-
-        #endregion
-
-        #region Private Methods — Exterior Links
-
-        /// <summary>
-        /// Create NavMeshLinks at each exterior doorway to connect interior to exterior NavMesh.
-        /// When stairs exist, the link is placed at the stair base (ground level).
-        /// Without stairs, the link bridges directly through the wall.
-        /// </summary>
-        private void CreateExteriorDoorwayLinks()
-        {
-            foreach (ExteriorDoorwayInfo doorway in _exteriorDoorways)
-            {
-                float halfWall = doorway.WallThickness / 2f + Constants.NavMesh.LinkOffset;
-
-                Vector3 interiorEnd;
-                Vector3 exteriorEnd;
-
-                if (doorway.StairBasePosition.HasValue)
-                {
-                    // Interior endpoint at floor level (inside the door) — on our runtime NavMesh.
-                    // Exterior endpoint at ground level (outside the stair base) — on the game's NavMesh.
-                    // The invisible ramp provides walkable surface between floor and ground for
-                    // NPCs already on our NavMesh; the link handles the cross-mesh bridge.
-                    interiorEnd = doorway.Center + doorway.InwardNormal * halfWall;
-                    exteriorEnd = doorway.StairBasePosition.Value
-                                  - doorway.InwardNormal * Constants.NavMesh.LinkOffset;
-                }
-                else
-                {
-                    // No foundation: link directly through the wall at floor level
-                    interiorEnd = doorway.Center + doorway.InwardNormal * halfWall;
-                    exteriorEnd = doorway.Center - doorway.InwardNormal * halfWall;
-                }
-
-                var linkData = new NavMeshLinkData();
-                linkData.startPosition = interiorEnd;
-                linkData.endPosition = exteriorEnd;
-                linkData.width = Mathf.Max(doorway.Width, Constants.NavMesh.MinLinkWidth);
-                linkData.bidirectional = true;
-                linkData.area = 0;
-                linkData.agentTypeID = _agentTypeID;
-                linkData.costModifier = Constants.NavMesh.DefaultLinkCostModifier;
-
-                NavMeshLinkInstance link = NavMesh.AddLink(
-                    linkData,
-                    _buildingRoot.position,
-                    _buildingRoot.rotation);
-
-                _links.Add(link);
-            }
+            return false;
         }
 
         #endregion
