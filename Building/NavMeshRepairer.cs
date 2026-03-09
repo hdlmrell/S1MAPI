@@ -590,8 +590,9 @@ namespace S1MAPI.Building
         {
             // Find stair transforms to exclude (same logic as the Mono markup path)
             var excludedRoots = new HashSet<Transform>();
-            foreach (Transform child in _buildingRoot)
+            for (int i = 0; i < _buildingRoot.childCount; i++)
             {
+                Transform child = _buildingRoot.GetChild(i);
                 if (child.name == Constants.Spatial.StairsFolderName ||
                     child.name == Constants.Spatial.FoundationFolderName)
                 {
