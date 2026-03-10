@@ -251,6 +251,32 @@ namespace S1MAPI.Building
             return this;
         }
 
+        /// <summary>
+        /// Add walls with fine-grained control over openings and per-wall appearance.
+        /// Walls without an appearance override use the palette defaults.
+        /// </summary>
+        /// <param name="north">North wall opening configuration</param>
+        /// <param name="south">South wall opening configuration</param>
+        /// <param name="east">East wall opening configuration</param>
+        /// <param name="west">West wall opening configuration</param>
+        /// <param name="wallAppearances">Per-wall material/color overrides keyed by wall side</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddWalls(
+            WallOpening? north,
+            WallOpening? south,
+            WallOpening? east,
+            WallOpening? west,
+            IReadOnlyDictionary<WallSide, WallAppearance> wallAppearances)
+        {
+            _northOpening = north;
+            _southOpening = south;
+            _eastOpening = east;
+            _westOpening = west;
+
+            GetWallBuilder().BuildWalls(north, south, east, west, wallAppearances);
+            return this;
+        }
+
         #endregion
 
         #region Interior Walls

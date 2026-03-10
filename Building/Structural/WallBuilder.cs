@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using S1MAPI.Building.Config;
 using S1MAPI.ProceduralMesh;
 using S1MAPI.Utils;
@@ -174,6 +175,7 @@ namespace S1MAPI.Building.Structural
         private readonly Vector3 _roomSize;
         private readonly float _wallThickness;
         private readonly BuildingPalette _palette;
+        private IReadOnlyDictionary<WallSide, WallAppearance>? _wallOverrides;
         private GameObject? _wallsContainer;
 
         #endregion
@@ -231,6 +233,33 @@ namespace S1MAPI.Building.Structural
         }
 
         /// <summary>
+        /// Build all four walls with specified openings and per-wall appearance overrides.
+        /// </summary>
+        /// <param name="northOpening">Opening for north wall (or null for solid)</param>
+        /// <param name="southOpening">Opening for south wall (or null for solid)</param>
+        /// <param name="eastOpening">Opening for east wall (or null for solid)</param>
+        /// <param name="westOpening">Opening for west wall (or null for solid)</param>
+        /// <param name="wallOverrides">Per-wall material/color overrides (null entries use palette defaults)</param>
+        /// <returns>The walls container GameObject</returns>
+        public GameObject BuildWalls(
+            WallOpening? northOpening,
+            WallOpening? southOpening,
+            WallOpening? eastOpening,
+            WallOpening? westOpening,
+            IReadOnlyDictionary<WallSide, WallAppearance> wallOverrides)
+        {
+            _wallOverrides = wallOverrides;
+            try
+            {
+                return BuildWalls(northOpening, southOpening, eastOpening, westOpening);
+            }
+            finally
+            {
+                _wallOverrides = null;
+            }
+        }
+
+        /// <summary>
         /// Build a single wall with optional opening.
         /// </summary>
         /// <param name="side">Which side of the room</param>
@@ -240,21 +269,24 @@ namespace S1MAPI.Building.Structural
         {
             _wallsContainer ??= BuildingUtilities.CreateFolder("Walls", _parent);
 
+            Color wallColor = GetWallColor(side);
+            Material? wallMaterial = GetWallMaterial(side);
+
             var (position, size, isVertical) = GetWallTransform(side);
             string wallName = $"{side}Wall";
 
             if (opening == null || opening.Type == WallOpeningType.None)
             {
-                return CreateSolidWall(wallName, position, size);
+                return CreateSolidWall(wallName, position, size, wallColor, wallMaterial);
             }
 
             return opening.Type switch
             {
                 WallOpeningType.Door when opening.LeftWindow != null || opening.RightWindow != null
-                    => CreateWallWithDoorAndWindows(wallName, position, size, opening, isVertical),
-                WallOpeningType.Door => CreateWallWithDoor(wallName, position, size, opening, isVertical),
-                WallOpeningType.Window => CreateWallWithWindow(wallName, position, size, opening, isVertical),
-                _ => CreateSolidWall(wallName, position, size)
+                    => CreateWallWithDoorAndWindows(wallName, position, size, opening, isVertical, wallColor, wallMaterial),
+                WallOpeningType.Door => CreateWallWithDoor(wallName, position, size, opening, isVertical, wallColor, wallMaterial),
+                WallOpeningType.Window => CreateWallWithWindow(wallName, position, size, opening, isVertical, wallColor, wallMaterial),
+                _ => CreateSolidWall(wallName, position, size, wallColor, wallMaterial)
             };
         }
 
@@ -293,14 +325,14 @@ namespace S1MAPI.Building.Structural
             };
         }
 
-        private GameObject CreateSolidWall(string name, Vector3 position, Vector3 size)
+        private GameObject CreateSolidWall(string name, Vector3 position, Vector3 size, Color wallColor, Material? wallMaterial)
         {
-            GameObject wall = PrimitiveBuilder.CreateBox(name, position, size, _palette.WallColor, _wallsContainer!.transform);
-            ApplyWallMaterial(wall);
+            GameObject wall = PrimitiveBuilder.CreateBox(name, position, size, wallColor, _wallsContainer!.transform);
+            ApplyWallMaterial(wall, wallMaterial);
             return wall;
         }
 
-        private GameObject CreateWallWithDoor(string name, Vector3 wallCenter, Vector3 wallSize, WallOpening opening, bool isVertical)
+        private GameObject CreateWallWithDoor(string name, Vector3 wallCenter, Vector3 wallSize, WallOpening opening, bool isVertical, Color wallColor, Material? wallMaterial)
         {
             GameObject container = BuildingUtilities.CreateFolder(name, _wallsContainer!.transform);
 
@@ -326,8 +358,8 @@ namespace S1MAPI.Building.Structural
                 Vector3 leftSize = isVertical
                     ? new Vector3(_wallThickness, wallHeight, leftWidth)
                     : new Vector3(leftWidth, wallHeight, _wallThickness);
-                GameObject left = PrimitiveBuilder.CreateBox($"{name}_Left", wallCenter + doorShift + leftOffset, leftSize, _palette.WallColor, container.transform);
-                ApplyWallMaterial(left);
+                GameObject left = PrimitiveBuilder.CreateBox($"{name}_Left", wallCenter + doorShift + leftOffset, leftSize, wallColor, container.transform);
+                ApplyWallMaterial(left, wallMaterial);
             }
 
             // Right segment
@@ -338,8 +370,8 @@ namespace S1MAPI.Building.Structural
                 Vector3 rightSize = isVertical
                     ? new Vector3(_wallThickness, wallHeight, rightWidth)
                     : new Vector3(rightWidth, wallHeight, _wallThickness);
-                GameObject right = PrimitiveBuilder.CreateBox($"{name}_Right", wallCenter + doorShift + rightOffset, rightSize, _palette.WallColor, container.transform);
-                ApplyWallMaterial(right);
+                GameObject right = PrimitiveBuilder.CreateBox($"{name}_Right", wallCenter + doorShift + rightOffset, rightSize, wallColor, container.transform);
+                ApplyWallMaterial(right, wallMaterial);
             }
 
             // Top segment (wall above door)
@@ -351,14 +383,14 @@ namespace S1MAPI.Building.Structural
                     : new Vector3(doorWidth, topHeight, _wallThickness);
                 float topCenterY = wallHeight / 2f - topHeight / 2f;
                 Vector3 topOffset = Vector3.up * topCenterY;
-                GameObject top = PrimitiveBuilder.CreateBox($"{name}_Top", wallCenter + doorShift + topOffset, topSize, _palette.WallColor, container.transform);
-                ApplyWallMaterial(top);
+                GameObject top = PrimitiveBuilder.CreateBox($"{name}_Top", wallCenter + doorShift + topOffset, topSize, wallColor, container.transform);
+                ApplyWallMaterial(top, wallMaterial);
             }
 
             return container;
         }
 
-        private GameObject CreateWallWithDoorAndWindows(string name, Vector3 wallCenter, Vector3 wallSize, WallOpening opening, bool isVertical)
+        private GameObject CreateWallWithDoorAndWindows(string name, Vector3 wallCenter, Vector3 wallSize, WallOpening opening, bool isVertical, Color wallColor, Material? wallMaterial)
         {
             GameObject container = BuildingUtilities.CreateFolder(name, _wallsContainer!.transform);
 
@@ -378,14 +410,14 @@ namespace S1MAPI.Building.Structural
             if (leftSideWidth > 0f)
             {
                 BuildDoorSideSegment(name, "_Left", shiftedCenter, doorWidth, wallHeight,
-                    leftSideWidth, opening.LeftWindow, isVertical, true, container.transform);
+                    leftSideWidth, opening.LeftWindow, isVertical, true, container.transform, wallColor, wallMaterial);
             }
 
             // Right side (may contain a window)
             if (rightSideWidth > 0f)
             {
                 BuildDoorSideSegment(name, "_Right", shiftedCenter, doorWidth, wallHeight,
-                    rightSideWidth, opening.RightWindow, isVertical, false, container.transform);
+                    rightSideWidth, opening.RightWindow, isVertical, false, container.transform, wallColor, wallMaterial);
             }
 
             // Top segment (wall above door) — same as CreateWallWithDoor
@@ -397,8 +429,8 @@ namespace S1MAPI.Building.Structural
                     : new Vector3(doorWidth, topHeight, _wallThickness);
                 float topCenterY = wallHeight / 2f - topHeight / 2f;
                 Vector3 topOffset = Vector3.up * topCenterY;
-                GameObject top = PrimitiveBuilder.CreateBox($"{name}_Top", shiftedCenter + topOffset, topSize, _palette.WallColor, container.transform);
-                ApplyWallMaterial(top);
+                GameObject top = PrimitiveBuilder.CreateBox($"{name}_Top", shiftedCenter + topOffset, topSize, wallColor, container.transform);
+                ApplyWallMaterial(top, wallMaterial);
             }
 
             return container;
@@ -407,7 +439,8 @@ namespace S1MAPI.Building.Structural
         private void BuildDoorSideSegment(
             string wallName, string suffix, Vector3 wallCenter,
             float doorWidth, float wallHeight, float fullSideWidth,
-            WallOpening? sideWindow, bool isVertical, bool isLeftSide, Transform parent)
+            WallOpening? sideWindow, bool isVertical, bool isLeftSide, Transform parent,
+            Color wallColor, Material? wallMaterial)
         {
             float dirSign = isLeftSide ? -1f : 1f;
 
@@ -420,8 +453,8 @@ namespace S1MAPI.Building.Structural
                 Vector3 size = isVertical
                     ? new Vector3(_wallThickness, wallHeight, fullSideWidth)
                     : new Vector3(fullSideWidth, wallHeight, _wallThickness);
-                GameObject solid = PrimitiveBuilder.CreateBox($"{wallName}{suffix}", wallCenter + offset, size, _palette.WallColor, parent);
-                ApplyWallMaterial(solid);
+                GameObject solid = PrimitiveBuilder.CreateBox($"{wallName}{suffix}", wallCenter + offset, size, wallColor, parent);
+                ApplyWallMaterial(solid, wallMaterial);
                 return;
             }
 
@@ -438,8 +471,8 @@ namespace S1MAPI.Building.Structural
             Vector3 stripSize = isVertical
                 ? new Vector3(_wallThickness, wallHeight, stripWidth)
                 : new Vector3(stripWidth, wallHeight, _wallThickness);
-            GameObject strip = PrimitiveBuilder.CreateBox($"{wallName}{suffix}", wallCenter + stripOffset, stripSize, _palette.WallColor, parent);
-            ApplyWallMaterial(strip);
+            GameObject strip = PrimitiveBuilder.CreateBox($"{wallName}{suffix}", wallCenter + stripOffset, stripSize, wallColor, parent);
+            ApplyWallMaterial(strip, wallMaterial);
 
             // Window section in the remaining area (no overlap with strip so InsetDoorWallSegments works)
             float winSectionCenterOffset = doorWidth / 2f + stripWidth + windowSectionWidth / 2f;
@@ -450,14 +483,14 @@ namespace S1MAPI.Building.Structural
             // Shift window toward door by stripWidth/2 so it centers in the full side width
             float windowOffset = -dirSign * stripWidth / 2f;
             CreateWindowInSection($"{wallName}{suffix}Win", winSectionCenter, windowSectionWidth, wallHeight,
-                sideWindow, isVertical, parent, windowOffset);
+                sideWindow, isVertical, parent, windowOffset, wallColor, wallMaterial);
         }
 
-        private GameObject CreateWallWithWindow(string name, Vector3 wallCenter, Vector3 wallSize, WallOpening opening, bool isVertical)
+        private GameObject CreateWallWithWindow(string name, Vector3 wallCenter, Vector3 wallSize, WallOpening opening, bool isVertical, Color wallColor, Material? wallMaterial)
         {
             GameObject container = BuildingUtilities.CreateFolder(name, _wallsContainer!.transform);
             float wallWidth = isVertical ? wallSize.z : wallSize.x;
-            CreateWindowInSection(name, wallCenter, wallWidth, wallSize.y, opening, isVertical, container.transform, opening.Offset);
+            CreateWindowInSection(name, wallCenter, wallWidth, wallSize.y, opening, isVertical, container.transform, opening.Offset, wallColor, wallMaterial);
             return container;
         }
 
@@ -465,7 +498,7 @@ namespace S1MAPI.Building.Structural
             string namePrefix, Vector3 sectionCenter,
             float sectionWidth, float sectionHeight,
             WallOpening window, bool isVertical, Transform parent,
-            float windowOffset = 0f)
+            float windowOffset, Color wallColor, Material? wallMaterial)
         {
             int paneCount = Mathf.Max(1, window.Count);
             float windowWidth;
@@ -523,8 +556,8 @@ namespace S1MAPI.Building.Structural
                     ? new Vector3(_wallThickness, windowBottom, sectionWidth)
                     : new Vector3(sectionWidth, windowBottom, _wallThickness);
                 Vector3 bottomOffset = Vector3.down * (halfHeight - windowBottom / 2f);
-                GameObject bottom = PrimitiveBuilder.CreateBox($"{namePrefix}_Bottom", sectionCenter + bottomOffset, bottomSize, _palette.WallColor, parent);
-                ApplyWallMaterial(bottom);
+                GameObject bottom = PrimitiveBuilder.CreateBox($"{namePrefix}_Bottom", sectionCenter + bottomOffset, bottomSize, wallColor, parent);
+                ApplyWallMaterial(bottom, wallMaterial);
             }
 
             // Top segment (header) — full section width, no shift
@@ -534,8 +567,8 @@ namespace S1MAPI.Building.Structural
                     ? new Vector3(_wallThickness, topHeight, sectionWidth)
                     : new Vector3(sectionWidth, topHeight, _wallThickness);
                 Vector3 topOffset = Vector3.up * (halfHeight - topHeight / 2f);
-                GameObject top = PrimitiveBuilder.CreateBox($"{namePrefix}_Top", sectionCenter + topOffset, topSize, _palette.WallColor, parent);
-                ApplyWallMaterial(top);
+                GameObject top = PrimitiveBuilder.CreateBox($"{namePrefix}_Top", sectionCenter + topOffset, topSize, wallColor, parent);
+                ApplyWallMaterial(top, wallMaterial);
             }
 
             // Side segments — asymmetric widths when window is offset
@@ -554,8 +587,8 @@ namespace S1MAPI.Building.Structural
                 Vector3 leftOffset = isVertical
                     ? new Vector3(0f, windowCenterY, windowWidth / 2f + leftSideWidth / 2f)
                     : new Vector3(-(windowWidth / 2f + leftSideWidth / 2f), windowCenterY, 0f);
-                GameObject leftSide = PrimitiveBuilder.CreateBox($"{namePrefix}_Left", windowCenter + leftOffset, leftSize, _palette.WallColor, parent);
-                ApplyWallMaterial(leftSide);
+                GameObject leftSide = PrimitiveBuilder.CreateBox($"{namePrefix}_Left", windowCenter + leftOffset, leftSize, wallColor, parent);
+                ApplyWallMaterial(leftSide, wallMaterial);
             }
 
             if (rightSideWidth > Constants.Window.SegmentThreshold)
@@ -566,8 +599,8 @@ namespace S1MAPI.Building.Structural
                 Vector3 rightOffset = isVertical
                     ? new Vector3(0f, windowCenterY, -(windowWidth / 2f + rightSideWidth / 2f))
                     : new Vector3(windowWidth / 2f + rightSideWidth / 2f, windowCenterY, 0f);
-                GameObject rightSide = PrimitiveBuilder.CreateBox($"{namePrefix}_Right", windowCenter + rightOffset, rightSize, _palette.WallColor, parent);
-                ApplyWallMaterial(rightSide);
+                GameObject rightSide = PrimitiveBuilder.CreateBox($"{namePrefix}_Right", windowCenter + rightOffset, rightSize, wallColor, parent);
+                ApplyWallMaterial(rightSide, wallMaterial);
             }
 
             // Multi-pane window rendering
@@ -625,8 +658,8 @@ namespace S1MAPI.Building.Structural
                     GameObject divider = PrimitiveBuilder.CreateBox(
                         $"{namePrefix}_Divider_{i}",
                         windowCenter + dividerShift + new Vector3(0f, windowCenterY, 0f),
-                        dividerSize, _palette.WallColor, parent);
-                    ApplyWallMaterial(divider);
+                        dividerSize, wallColor, parent);
+                    ApplyWallMaterial(divider, wallMaterial);
                 }
             }
         }
@@ -666,12 +699,34 @@ namespace S1MAPI.Building.Structural
             }
         }
 
-        private void ApplyWallMaterial(GameObject wall)
+        private Color GetWallColor(WallSide side)
         {
-            if (_palette.WallMaterial != null)
+            if (_wallOverrides != null &&
+                _wallOverrides.TryGetValue(side, out WallAppearance? appearance) &&
+                appearance.Color.HasValue)
+            {
+                return appearance.Color.Value;
+            }
+            return _palette.WallColor;
+        }
+
+        private Material? GetWallMaterial(WallSide side)
+        {
+            if (_wallOverrides != null &&
+                _wallOverrides.TryGetValue(side, out WallAppearance? appearance) &&
+                appearance.Material != null)
+            {
+                return appearance.Material;
+            }
+            return _palette.WallMaterial;
+        }
+
+        private void ApplyWallMaterial(GameObject wall, Material? material)
+        {
+            if (material != null)
             {
                 Renderer r = wall.GetComponent<Renderer>();
-                if (r != null) r.material = _palette.WallMaterial;
+                if (r != null) r.material = material;
             }
         }
 
