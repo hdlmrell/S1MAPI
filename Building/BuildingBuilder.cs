@@ -562,11 +562,13 @@ namespace S1MAPI.Building
         /// <param name="height">Molding height in meters</param>
         /// <param name="depth">Molding depth in meters</param>
         /// <param name="material">Optional material override</param>
+        /// <param name="skipWalls">Wall sides to omit molding from (null = include all walls)</param>
         /// <returns>This builder for chaining</returns>
-        public BuildingBuilder AddBaseMolding(float height = 0.3f, float depth = 0.1f, Material? material = null)
+        public BuildingBuilder AddBaseMolding(float height = 0.3f, float depth = 0.1f, Material? material = null,
+            IEnumerable<WallSide>? skipWalls = null)
         {
             GetDecorBuilder().AddBaseMolding(height, depth, material,
-                _northOpening, _southOpening, _eastOpening, _westOpening);
+                _northOpening, _southOpening, _eastOpening, _westOpening, skipWalls);
             return this;
         }
 

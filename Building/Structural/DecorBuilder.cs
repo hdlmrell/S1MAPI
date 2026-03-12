@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using S1MAPI.Building.Config;
 using S1MAPI.ProceduralMesh;
 using S1MAPI.Utils;
@@ -426,11 +427,13 @@ namespace S1MAPI.Building.Structural
         /// <param name="southOpening">South wall opening (doors create a gap)</param>
         /// <param name="eastOpening">East wall opening (doors create a gap)</param>
         /// <param name="westOpening">West wall opening (doors create a gap)</param>
+        /// <param name="skipWalls">Wall sides to omit molding from (null = include all walls)</param>
         /// <returns>The molding container GameObject</returns>
         public GameObject AddBaseMolding(
             float height = 0.3f, float depth = 0.1f, Material? material = null,
             WallOpening? northOpening = null, WallOpening? southOpening = null,
-            WallOpening? eastOpening = null, WallOpening? westOpening = null)
+            WallOpening? eastOpening = null, WallOpening? westOpening = null,
+            IEnumerable<WallSide>? skipWalls = null)
         {
             float halfWidth = _roomSize.x / 2f;
             float halfDepth = _roomSize.z / 2f;
@@ -441,29 +444,43 @@ namespace S1MAPI.Building.Structural
             Color color = _palette.TrimColor;
             Material? mat = material ?? _palette.TrimMaterial;
 
+            HashSet<WallSide>? skip = skipWalls != null ? new HashSet<WallSide>(skipWalls) : null;
+
             // North (extends along X, centered on wall surface)
-            CreateMoldingSegments("BaseMolding_North",
-                new Vector3(halfWidth, height / 2f, _roomSize.z),
-                new Vector3(_roomSize.x + trimDepth, height, trimDepth),
-                _roomSize.x + trimDepth, false, northOpening, height, color, mat, container);
+            if (skip == null || !skip.Contains(WallSide.North))
+            {
+                CreateMoldingSegments("BaseMolding_North",
+                    new Vector3(halfWidth, height / 2f, _roomSize.z),
+                    new Vector3(_roomSize.x + trimDepth, height, trimDepth),
+                    _roomSize.x + trimDepth, false, northOpening, height, color, mat, container);
+            }
 
             // South (extends along X, centered on wall surface)
-            CreateMoldingSegments("BaseMolding_South",
-                new Vector3(halfWidth, height / 2f, 0f),
-                new Vector3(_roomSize.x + trimDepth, height, trimDepth),
-                _roomSize.x + trimDepth, false, southOpening, height, color, mat, container);
+            if (skip == null || !skip.Contains(WallSide.South))
+            {
+                CreateMoldingSegments("BaseMolding_South",
+                    new Vector3(halfWidth, height / 2f, 0f),
+                    new Vector3(_roomSize.x + trimDepth, height, trimDepth),
+                    _roomSize.x + trimDepth, false, southOpening, height, color, mat, container);
+            }
 
             // East (extends along Z, centered on wall surface)
-            CreateMoldingSegments("BaseMolding_East",
-                new Vector3(_roomSize.x, height / 2f, halfDepth),
-                new Vector3(trimDepth, height, _roomSize.z - trimDepth),
-                _roomSize.z - trimDepth, true, eastOpening, height, color, mat, container);
+            if (skip == null || !skip.Contains(WallSide.East))
+            {
+                CreateMoldingSegments("BaseMolding_East",
+                    new Vector3(_roomSize.x, height / 2f, halfDepth),
+                    new Vector3(trimDepth, height, _roomSize.z - trimDepth),
+                    _roomSize.z - trimDepth, true, eastOpening, height, color, mat, container);
+            }
 
             // West (extends along Z, centered on wall surface)
-            CreateMoldingSegments("BaseMolding_West",
-                new Vector3(0f, height / 2f, halfDepth),
-                new Vector3(trimDepth, height, _roomSize.z - trimDepth),
-                _roomSize.z - trimDepth, true, westOpening, height, color, mat, container);
+            if (skip == null || !skip.Contains(WallSide.West))
+            {
+                CreateMoldingSegments("BaseMolding_West",
+                    new Vector3(0f, height / 2f, halfDepth),
+                    new Vector3(trimDepth, height, _roomSize.z - trimDepth),
+                    _roomSize.z - trimDepth, true, westOpening, height, color, mat, container);
+            }
 
             return container;
         }
