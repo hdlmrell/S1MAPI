@@ -407,6 +407,11 @@ namespace S1MAPI.Utils
             {
                 "Road", "Sidewalk", "Wedge"
             };
+
+            /// <summary>
+            /// Default padding around terrain flattening bounds in meters.
+            /// </summary>
+            public const float DefaultFlattenPadding = 0.5f;
         }
 
         /// <summary>
