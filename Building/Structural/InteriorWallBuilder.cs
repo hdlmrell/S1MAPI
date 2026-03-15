@@ -94,6 +94,9 @@ namespace S1MAPI.Building.Structural
         /// <summary>Thickness of the wall containing this doorway.</summary>
         public float WallThickness { get; }
 
+        /// <summary>Wall container with Left/Right/Top segment children (used for frame insetting).</summary>
+        internal GameObject? WallContainer { get; set; }
+
         /// <summary>
         /// Create a doorway info record.
         /// </summary>
@@ -329,7 +332,9 @@ namespace S1MAPI.Building.Structural
             // Record doorway for future NavMesh (use shifted position)
             bool facesAlongZ = !isVertical; // Axis.X wall faces Z
             Vector3 doorCenter = new Vector3(shiftedCenter.x, doorHeight / 2f, shiftedCenter.z);
-            _doorways.Add(new DoorwayInfo(doorCenter, doorWidth, doorHeight, facesAlongZ, _wallThickness));
+            var doorwayInfo = new DoorwayInfo(doorCenter, doorWidth, doorHeight, facesAlongZ, _wallThickness);
+            doorwayInfo.WallContainer = container;
+            _doorways.Add(doorwayInfo);
 
             return container;
         }

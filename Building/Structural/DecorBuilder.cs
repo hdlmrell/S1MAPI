@@ -417,6 +417,49 @@ namespace S1MAPI.Building.Structural
         }
 
         /// <summary>
+        /// Add trim-style door frames around interior doorway openings.
+        /// Uses <see cref="DoorwayInfo"/> recorded by <see cref="InteriorWallBuilder"/>.
+        /// </summary>
+        /// <param name="doorways">Interior doorway positions and dimensions</param>
+        /// <param name="frameWidth">Width of the frame casing in meters</param>
+        /// <param name="frameProtrusion">How far the frame extends past the wall surface</param>
+        /// <param name="material">Optional material override (defaults to palette trim material)</param>
+        /// <returns>The interior door frames container GameObject</returns>
+        public GameObject AddInteriorDoorFrames(
+            IReadOnlyList<DoorwayInfo> doorways,
+            float frameWidth = 0.12f, float frameProtrusion = 0.04f,
+            Material? material = null)
+        {
+            GameObject container = BuildingUtilities.CreateFolder("InteriorDoorFrames", _parent);
+
+            Color color = _palette.TrimColor;
+            Material? mat = material ?? _palette.TrimMaterial;
+
+            for (int i = 0; i < doorways.Count; i++)
+            {
+                DoorwayInfo doorway = doorways[i];
+                float trimDepth = doorway.WallThickness + frameProtrusion;
+                bool isVertical = !doorway.FacesAlongZ;
+
+                // Inset wall segments to make room for the frame (same as exterior)
+                if (doorway.WallContainer != null)
+                {
+                    InsetDoorWallSegments(doorway.WallContainer.transform,
+                        doorway.WallContainer.name, frameWidth, isVertical);
+                }
+
+                // DoorwayInfo.Center is at door mid-height; CreateDoorFrame expects wall center (mid-wall-height)
+                Vector3 wallCenter = new Vector3(doorway.Center.x, _roomSize.y / 2f, doorway.Center.z);
+
+                CreateDoorFrame($"InteriorDoorFrame_{i}", wallCenter, _roomSize.y,
+                    doorway.Width, doorway.Height, 0f,
+                    isVertical, frameWidth, trimDepth, color, mat, container);
+            }
+
+            return container;
+        }
+
+        /// <summary>
         /// Add base molding around the bottom of the building.
         /// Automatically gaps around door openings so the molding does not clip through door frames.
         /// </summary>
@@ -910,9 +953,14 @@ namespace S1MAPI.Building.Structural
             Transform? wallContainer = _parent.Find($"Walls/{wallName}");
             if (wallContainer == null) return;
 
-            Transform? left = wallContainer.Find($"{wallName}_Left");
-            Transform? right = wallContainer.Find($"{wallName}_Right");
-            Transform? top = wallContainer.Find($"{wallName}_Top");
+            InsetDoorWallSegments(wallContainer, wallName, inset, isVertical);
+        }
+
+        private static void InsetDoorWallSegments(Transform wallContainer, string childPrefix, float inset, bool isVertical)
+        {
+            Transform? left = wallContainer.Find($"{childPrefix}_Left");
+            Transform? right = wallContainer.Find($"{childPrefix}_Right");
+            Transform? top = wallContainer.Find($"{childPrefix}_Top");
 
             // Shrink side segments away from the door opening
             if (left != null)
@@ -954,13 +1002,21 @@ namespace S1MAPI.Building.Structural
             WallOpening opening, bool isVertical, float frameWidth,
             float trimDepth, Color color, Material? material, GameObject container)
         {
-            float doorWidth = opening.Width;
-            float doorHeight = opening.Height;
+            CreateDoorFrame(name, wallCenter, wallHeight,
+                opening.Width, opening.Height, opening.Offset,
+                isVertical, frameWidth, trimDepth, color, material, container);
+        }
 
+        private void CreateDoorFrame(
+            string name, Vector3 wallCenter, float wallHeight,
+            float doorWidth, float doorHeight, float doorOffset,
+            bool isVertical, float frameWidth, float trimDepth,
+            Color color, Material? material, GameObject container)
+        {
             // Shift frame to match door offset
             Vector3 doorShift = isVertical
-                ? new Vector3(0f, 0f, opening.Offset)
-                : new Vector3(opening.Offset, 0f, 0f);
+                ? new Vector3(0f, 0f, doorOffset)
+                : new Vector3(doorOffset, 0f, 0f);
             Vector3 doorCenter = wallCenter + doorShift;
 
             float jambYOffset = -(wallHeight - doorHeight) / 2f;

@@ -557,6 +557,19 @@ namespace S1MAPI.Building
         }
 
         /// <summary>
+        /// Add trim-style door frames around interior doorway openings.
+        /// Must be called after AddInteriorWall.
+        /// </summary>
+        /// <param name="material">Optional material override</param>
+        /// <returns>This builder for chaining</returns>
+        public BuildingBuilder AddInteriorDoorFrames(Material? material = null)
+        {
+            if (_interiorWallBuilder != null && _interiorWallBuilder.Doorways.Count > 0)
+                GetDecorBuilder().AddInteriorDoorFrames(_interiorWallBuilder.Doorways, material: material);
+            return this;
+        }
+
+        /// <summary>
         /// Add base molding around the bottom of the building.
         /// </summary>
         /// <param name="height">Molding height in meters</param>
