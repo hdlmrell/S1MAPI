@@ -184,14 +184,7 @@ namespace S1MAPI.Building.Structural
                 ClearDetails(tData, terrainPos, terrainSize, innerBounds);
             }
 
-            // Force terrain to update visuals and collision
-            TerrainCollider? collider = terrain.GetComponent<TerrainCollider>();
-            if (collider != null)
-            {
-                collider.terrainData = null;
-                collider.terrainData = tData;
-            }
-            terrain.Flush();
+            FlushTerrain(terrain);
 
             DebugLog.Info($"[TerrainFlattener] Flattened {sampleWidth}x{sampleHeight} samples " +
                           $"to Y={targetWorldY:F2} on terrain '{terrain.name}'.");
@@ -373,7 +366,6 @@ namespace S1MAPI.Building.Structural
                 {
                     float blend = ComputeBlendFactor(x, z, sampleWidth, sampleHeight,
                         blendSamplesX, blendSamplesZ);
-                    // Lerp between target (blend=0) and original height (blend=1)
                     float blendedTarget = normalizedTarget + blend * (heights[z, x] - normalizedTarget);
 
                     if (heights[z, x] > blendedTarget)
@@ -385,9 +377,7 @@ namespace S1MAPI.Building.Structural
             }
 
             if (modified)
-            {
                 tData.SetHeights(xStart, zStart, heights);
-            }
         }
 
         private static bool ClearDetailLayerMono(
@@ -468,10 +458,7 @@ namespace S1MAPI.Building.Structural
             }
 
             if (modified)
-            {
-                // Internal_SetHeights(this, xBase, yBase, width, height, heights)
                 _setHeightsICall!(tDataPtr, xStart, zStart, sampleWidth, sampleHeight, heightsPtr);
-            }
         }
 
         private static bool ClearDetailLayerIl2Cpp(
@@ -513,6 +500,24 @@ namespace S1MAPI.Building.Structural
             return modified;
         }
 #endif
+
+        #endregion
+
+        #region Private Methods — Flush
+
+        /// <summary>
+        /// Force terrain to update visuals and collision data.
+        /// </summary>
+        private static void FlushTerrain(Terrain terrain)
+        {
+            TerrainCollider? collider = terrain.GetComponent<TerrainCollider>();
+            if (collider != null)
+            {
+                collider.terrainData = null;
+                collider.terrainData = terrain.terrainData;
+            }
+            terrain.Flush();
+        }
 
         #endregion
     }
