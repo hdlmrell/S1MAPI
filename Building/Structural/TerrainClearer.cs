@@ -265,6 +265,9 @@ namespace S1MAPI.Building.Structural
             HashSet<int> preserved = BuildPreservedSet(options);
             HashSet<GameObject> toDestroy = new HashSet<GameObject>();
 
+            var livingRoots = new HashSet<int>();
+            var staticRoots = new HashSet<int>();
+
             foreach (Renderer r in allRenderers)
             {
                 if (r == null) continue;
@@ -278,6 +281,9 @@ namespace S1MAPI.Building.Structural
                 if (!inFootprint && !inVegetationZone) continue;
 
                 GameObject target = ResolveLodRoot(t.gameObject);
+
+                // Skip living entities (players, NPCs)
+                if (BuildingUtilities.IsLivingEntity(t, livingRoots, staticRoots)) continue;
 
                 // Pass 1: everything inside the building footprint, except protected objects.
                 if (inFootprint && options.ClearSceneObjects)
@@ -300,39 +306,47 @@ namespace S1MAPI.Building.Structural
                 }
             }
 
-            // Catch-all: scan every Transform for renderer-less objects the first pass
-            // missed (audio triggers, tree rustle sounds, invisible scripts, etc.).
-            Transform[] allTransforms = UnityEngine.Object.FindObjectsOfType<Transform>();
-            foreach (Transform t in allTransforms)
+            // Catch-all: scan for renderer-less objects matching vegetation keywords
+            // (e.g. invisible tree rustle audio, vegetation scripts without meshes).
+            // SAFETY: only destroy childless objects whose name matches a vegetation
+            // keyword. AudioSource alone is NOT sufficient — the game attaches audio
+            // components to infrastructure objects that must not be destroyed.
+            if (options.VegetationKeywords != null && options.VegetationKeywords.Length > 0)
             {
-                if (t == null) continue;
-                if (t.GetComponent<Terrain>() != null) continue;
-                if (t.GetComponent<Renderer>() != null) continue; // Already handled above.
-                if (preserved.Contains(t.GetInstanceID())) continue;
-
-                bool inFootprint = footprintBounds.Contains(t.position);
-                bool inVegetationZone = !inFootprint && vegetationBounds.Contains(t.position);
-
-                if (!inFootprint && !inVegetationZone) continue;
-
-                GameObject target = t.gameObject;
-
-                if (inFootprint && options.ClearSceneObjects)
+                Transform[] allTransforms = UnityEngine.Object.FindObjectsOfType<Transform>();
+                foreach (Transform t in allTransforms)
                 {
-                    if (options.ProtectedKeywords != null
-                        && MatchesKeyword(target.name, options.ProtectedKeywords))
+                    if (t == null) continue;
+                    if (t.GetComponent<Terrain>() != null) continue;
+                    if (t.GetComponent<Renderer>() != null) continue; // Already handled above.
+                    if (preserved.Contains(t.GetInstanceID())) continue;
+                    if (t.childCount > 0) continue;
+
+                    bool inFootprint = footprintBounds.Contains(t.position);
+                    bool inVegetationZone = !inFootprint && vegetationBounds.Contains(t.position);
+
+                    if (!inFootprint && !inVegetationZone) continue;
+
+                    GameObject target = t.gameObject;
+
+                    if (!MatchesKeyword(target.name, options.VegetationKeywords))
                         continue;
-                    if (options.Filter != null && options.Filter(target)) continue;
-                    toDestroy.Add(target);
-                    continue;
-                }
 
-                if (inVegetationZone && options.ClearVegetation
-                    && options.VegetationKeywords != null
-                    && MatchesKeyword(target.name, options.VegetationKeywords))
-                {
-                    if (options.Filter != null && options.Filter(target)) continue;
-                    toDestroy.Add(target);
+                    if (inFootprint && options.ClearSceneObjects)
+                    {
+                        if (options.ProtectedKeywords != null
+                            && MatchesKeyword(target.name, options.ProtectedKeywords))
+                            continue;
+                        if (options.Filter != null && options.Filter(target)) continue;
+                        toDestroy.Add(target);
+                        continue;
+                    }
+
+                    if (inVegetationZone && options.ClearVegetation)
+                    {
+                        if (options.Filter != null && options.Filter(target)) continue;
+                        toDestroy.Add(target);
+                    }
                 }
             }
 
