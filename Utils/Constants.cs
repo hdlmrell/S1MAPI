@@ -147,7 +147,7 @@ namespace S1MAPI.Utils
 
             /// <summary>
             /// GameObject folder name for stair geometry under the building root.
-            /// Used by DecorBuilder to parent step colliders and by NavMeshRepairer
+            /// Used by DecorBuilder to parent step colliders and by NavigationBuilder
             /// to exclude them from NavMesh source collection.
             /// </summary>
             public const string StairsFolderName = "Stairs";
@@ -302,7 +302,7 @@ namespace S1MAPI.Utils
         }
 
         /// <summary>
-        /// NavMesh repair constants.
+        /// NavigationBuilder constants.
         /// </summary>
         public static class NavMesh
         {
@@ -323,45 +323,38 @@ namespace S1MAPI.Utils
             /// Thin enough to not interfere with gameplay, thick enough for NavMesh voxelization.
             /// </summary>
             public const float RampColliderThickness = 0.1f;
+        }
 
-            /// <summary>
-            /// Padding added to NavMesh build bounds to avoid clipping walkable surfaces at edges.
-            /// </summary>
-            public const float BoundsExpansion = 1.0f;
+        /// <summary>
+        /// Interior A* pathfinding constants.
+        /// </summary>
+        public static class InteriorNav
+        {
+            /// <summary>Maximum target cell size for the interior pathfinding grid.
+            /// Actual cell size is computed by <see cref="Building.BuildingUtilities.ComputeGridCellSize"/>
+            /// to evenly divide the room dimensions.</summary>
+            public const float MaxGridCellSize = Spatial.DefaultGridSize;
 
-            /// <summary>
-            /// Radius for NavMesh.SamplePosition verification queries in meters.
-            /// </summary>
-            public const float VerifySampleRadius = 0.5f;
+            /// <summary>Wall margin — cells within this distance of walls are unwalkable.
+            /// Must be less than CellSize/2 (0.25m) so NPCs can walk on 1-cell-wide paths.</summary>
+            public const float WallMargin = 0.15f;
 
-            /// <summary>
-            /// Maximum acceptable Y-distance between expected and actual NavMesh surface
-            /// during verification, in meters.
-            /// </summary>
-            public const float VerifyMaxYDiff = 0.5f;
+            /// <summary>Re-pathfind interval for chase mode in seconds.</summary>
+            public const float ChaseRepathInterval = 0.2f;
 
-            /// <summary>
-            /// Y-offset above floor level for the NavMesh verification test point.
-            /// </summary>
-            public const float VerifyTestYOffset = 0.1f;
+            /// <summary>Distance threshold for considering NPC arrived at an intermediate waypoint.</summary>
+            public const float WaypointArrivalThreshold = 0.3f;
 
-            /// <summary>
-            /// Height of the ground-carving NavMeshObstacle in meters.
-            /// </summary>
-            public const float ObstacleHeight = 0.5f;
+            /// <summary>Distance threshold for considering NPC arrived at final destination.</summary>
+            public const float DestinationArrivalThreshold = 0.5f;
 
-            /// <summary>
-            /// Distance past the stair base that the ground plane extends, in meters.
-            /// Provides walkable surface at ground level between the ramp bottom and the
-            /// baked NavMesh, bridging the gap created by obstacle carving.
-            /// </summary>
-            public const float GroundPatchExtension = 3.0f;
+            /// <summary>Distance for detecting NPC arrival at doorway exterior point.
+            /// Generous threshold ensures the NPC triggers entry even if the NavMesh agent
+            /// stops short of the exact exterior point due to carving boundary erosion.</summary>
+            public const float DoorwayApproachThreshold = 4.0f;
 
-            /// <summary>
-            /// Extra padding beyond half wall thickness when filtering door opening sources.
-            /// Accounts for colliders slightly offset from the wall center plane.
-            /// </summary>
-            public const float DoorFilterNormalPadding = 0.15f;
+            /// <summary>Rotation speed in degrees per second for NPC facing direction.</summary>
+            public const float RotationSpeed = 360f;
         }
 
         /// <summary>
@@ -412,6 +405,13 @@ namespace S1MAPI.Utils
             /// Default padding around terrain flattening bounds in meters.
             /// </summary>
             public const float DefaultFlattenPadding = 0.5f;
+
+            /// <summary>
+            /// Default blend distance for terrain edge smoothing in meters.
+            /// Terrain smoothly transitions from the flattened height back to
+            /// natural terrain over this distance.
+            /// </summary>
+            public const float DefaultBlendDistance = 3f;
         }
 
         /// <summary>

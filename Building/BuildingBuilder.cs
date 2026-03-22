@@ -341,15 +341,14 @@ namespace S1MAPI.Building
             _interiorWallBuilder?.Doorways ?? (IReadOnlyList<DoorwayInfo>)System.Array.Empty<DoorwayInfo>();
 
         /// <summary>
-        /// Create a <see cref="NavMeshRepairer"/> configured for this building.
+        /// Create a <see cref="NavigationBuilder"/> configured for this building.
         /// Collects exterior and interior doorway positions, stair geometry, and building dimensions.
-        /// Call <see cref="NavMeshRepairer.Build"/> on the returned instance after positioning the building.
+        /// Call <see cref="NavigationBuilder.Build"/> on the returned instance after positioning the building.
         /// </summary>
-        /// <param name="agentTypeID">NavMesh agent type to build for (0 = default agent)</param>
-        /// <returns>A configured repairer ready to build</returns>
-        public NavMeshRepairer CreateNavMeshRepairer(int agentTypeID = 0)
+        /// <returns>A configured builder ready to build</returns>
+        public NavigationBuilder CreateNavigationBuilder()
         {
-            var doorways = new List<NavMeshDoorwayInfo>();
+            var doorways = new List<NavDoorwayInfo>();
 
             // Exterior doorways (with optional stair base positions)
             TryAddExteriorDoor(WallSide.North, _northOpening, doorways);
@@ -357,18 +356,37 @@ namespace S1MAPI.Building
             TryAddExteriorDoor(WallSide.East, _eastOpening, doorways);
             TryAddExteriorDoor(WallSide.West, _westOpening, doorways);
 
-            // Interior doorways (for door panel collider filtering only)
+            // Interior doorways (threshold generation + door panel collider filtering)
             foreach (DoorwayInfo interior in InteriorDoorways)
             {
                 Vector3 normal = interior.FacesAlongZ ? Vector3.forward : Vector3.right;
-                doorways.Add(new NavMeshDoorwayInfo(
-                    interior.Center, interior.Width, interior.Height,
-                    normal, interior.WallThickness));
+                // DoorwayInfo.Center.y is at mid-door height; NavDoorwayInfo expects Y=0 (floor level)
+                Vector3 center = new Vector3(interior.Center.x, 0f, interior.Center.z);
+                doorways.Add(new NavDoorwayInfo(
+                    center, interior.Width, interior.Height,
+                    normal, interior.WallThickness, isInterior: true));
             }
 
-            return new NavMeshRepairer(
+            return new NavigationBuilder(
                 _root.transform, _roomSize,
-                doorways, agentTypeID, _foundationHeight);
+                doorways, _config.WallThickness, _foundationHeight);
+        }
+
+        /// <summary>
+        /// Flatten terrain under the building footprint.
+        /// Must be called after the building is positioned in the scene.
+        /// </summary>
+        /// <param name="padding">Extra padding around the footprint in meters.</param>
+        /// <param name="clearDetails">Clear grass and detail layers in the flattened region.</param>
+        /// <param name="blendDistance">Distance for smooth transition back to natural terrain.</param>
+        public BuildingBuilder FlattenTerrain(
+            float padding = Constants.Terrain.DefaultFlattenPadding,
+            bool clearDetails = true, float blendDistance = Constants.Terrain.DefaultBlendDistance)
+        {
+            float targetWorldY = _root.transform.position.y - _foundationHeight;
+            TerrainFlattener.FlattenUnder(
+                _root, _roomSize, targetWorldY, padding, clearDetails, blendDistance);
+            return this;
         }
 
         #endregion
@@ -725,6 +743,14 @@ namespace S1MAPI.Building
         /// </summary>
         public BuildingConfig Config => _config;
 
+        /// <summary>
+        /// Grid cell size computed from room dimensions.
+        /// Furniture placement and interior pathfinding both use this value
+        /// so the two grids are always aligned.
+        /// </summary>
+        public float GridCellSize =>
+            BuildingUtilities.ComputeGridCellSize(_roomSize.x, _roomSize.z);
+
         #endregion
 
         #region Private Methods - Builder Access
@@ -800,10 +826,10 @@ namespace S1MAPI.Building
 
         /// <summary>
         /// If <paramref name="opening"/> is a door, compute its center, inward normal,
-        /// and optional stair base position, then append a <see cref="NavMeshDoorwayInfo"/> to <paramref name="list"/>.
+        /// and optional stair base position, then append a <see cref="NavDoorwayInfo"/> to <paramref name="list"/>.
         /// </summary>
         private void TryAddExteriorDoor(
-            WallSide wall, WallOpening? opening, List<NavMeshDoorwayInfo> list)
+            WallSide wall, WallOpening? opening, List<NavDoorwayInfo> list)
         {
             if (opening == null || opening.Type != WallOpeningType.Door) return;
 
@@ -827,7 +853,7 @@ namespace S1MAPI.Building
 
             Vector3? stairBase = ComputeStairBasePosition(wall, center, inward);
 
-            list.Add(new NavMeshDoorwayInfo(
+            list.Add(new NavDoorwayInfo(
                 center, opening.Width, opening.Height,
                 inward, _config.WallThickness, stairBase));
         }
