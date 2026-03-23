@@ -283,7 +283,8 @@ namespace S1MAPI.Building.Structural
                 GameObject target = ResolveLodRoot(t.gameObject);
 
                 // Skip living entities (players, NPCs)
-                if (BuildingUtilities.IsLivingEntity(t, livingRoots, staticRoots)) continue;
+                if (BuildingUtilities.IsLivingEntity(t, livingRoots, staticRoots))
+                    continue;
 
                 // Pass 1: everything inside the building footprint, except protected objects.
                 if (inFootprint && options.ClearSceneObjects)
@@ -307,10 +308,9 @@ namespace S1MAPI.Building.Structural
             }
 
             // Catch-all: scan for renderer-less objects matching vegetation keywords
-            // (e.g. invisible tree rustle audio, vegetation scripts without meshes).
-            // SAFETY: only destroy childless objects whose name matches a vegetation
-            // keyword. AudioSource alone is NOT sufficient — the game attaches audio
-            // components to infrastructure objects that must not be destroyed.
+            // (e.g. FoliageRustleSound trigger colliders, vegetation scripts without meshes).
+            // Objects with children are included if they match a vegetation keyword —
+            // game components like FoliageRustleSound have child Container GameObjects.
             if (options.VegetationKeywords != null && options.VegetationKeywords.Length > 0)
             {
                 Transform[] allTransforms = UnityEngine.Object.FindObjectsOfType<Transform>();
@@ -320,7 +320,6 @@ namespace S1MAPI.Building.Structural
                     if (t.GetComponent<Terrain>() != null) continue;
                     if (t.GetComponent<Renderer>() != null) continue; // Already handled above.
                     if (preserved.Contains(t.GetInstanceID())) continue;
-                    if (t.childCount > 0) continue;
 
                     bool inFootprint = footprintBounds.Contains(t.position);
                     bool inVegetationZone = !inFootprint && vegetationBounds.Contains(t.position);
