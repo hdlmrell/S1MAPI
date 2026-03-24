@@ -107,10 +107,37 @@ namespace S1MAPI.Building.Structural
         /// <param name="buildingRoot">The building root GameObject (must be positioned).</param>
         /// <param name="roomSize">The building's room dimensions.</param>
         /// <param name="options">Clearing configuration. Uses defaults if null.</param>
-        public static void ClearAroundBuilding(
+        /// <returns>True if terrain was available and clearing executed immediately; false if terrain wasn't
+        /// available (a background retry has been queued automatically).</returns>
+        public static bool ClearAroundBuilding(
             GameObject buildingRoot, Vector3 roomSize, ClearingOptions? options = null)
         {
+            try
+            {
+                if (ClearAroundBuildingCore(buildingRoot, roomSize, options))
+                    return true;
+            }
+            catch (System.Exception ex)
+            {
+                // IL2CPP clients can throw TypeInitializationException when terrain
+                // runtime generics aren't initialized yet. Catch and fall through to retry.
+                DebugLog.Warning($"[TerrainClearer] ClearAroundBuilding threw (will retry): {ex.GetType().Name}: {ex.Message}");
+            }
+
+            // Terrain not loaded or threw — queue automatic retry on the building root
+            DebugLog.Info("[TerrainClearer] Terrain not available — queuing retry.");
+            TerrainRetryQueue.Enqueue(buildingRoot,
+                () => ClearAroundBuildingCore(buildingRoot, roomSize, options));
+            return false;
+        }
+
+        private static bool ClearAroundBuildingCore(
+            GameObject buildingRoot, Vector3 roomSize, ClearingOptions? options)
+        {
             ClearingOptions opts = options ?? ClearingOptions.Default;
+
+            if (opts.ClearTerrainTrees && Terrain.activeTerrains.Length == 0)
+                return false;
 
             // Auto-populate Preserved with the building hierarchy if not set,
             // without mutating the caller's options instance.
@@ -131,6 +158,7 @@ namespace S1MAPI.Building.Structural
 
             Bounds bounds = ComputeWorldBounds(buildingRoot.transform, roomSize);
             ClearArea(bounds, opts);
+            return true;
         }
 
         #endregion

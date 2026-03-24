@@ -121,10 +121,35 @@ namespace S1MAPI.Building.Structural
         /// <param name="clearDetails">Clear grass and detail layers in the flattened region.</param>
         /// <param name="blendDistance">Distance in meters over which terrain smoothly transitions
         /// from the flattened height back to natural terrain. 0 = hard edge.</param>
-        public static void FlattenUnder(
+        /// <returns>True if terrain was found and flattened immediately; false if terrain wasn't available
+        /// (a background retry has been queued automatically).</returns>
+        public static bool FlattenUnder(
             GameObject buildingRoot, Vector3 roomSize,
             float targetWorldY, float padding = Constants.Terrain.DefaultFlattenPadding,
             bool clearDetails = true, float blendDistance = 0f)
+        {
+            try
+            {
+                if (FlattenUnderCore(buildingRoot, roomSize, targetWorldY, padding, clearDetails, blendDistance))
+                    return true;
+            }
+            catch (System.Exception ex)
+            {
+                // IL2CPP clients can throw TypeInitializationException when terrain
+                // runtime generics aren't initialized yet. Catch and fall through to retry.
+                DebugLog.Warning($"[TerrainFlattener] FlattenUnder threw (will retry): {ex.GetType().Name}: {ex.Message}");
+            }
+
+            // Terrain not loaded or threw — queue automatic retry on the building root
+            DebugLog.Info("[TerrainFlattener] Terrain not available — queuing retry.");
+            TerrainRetryQueue.Enqueue(buildingRoot,
+                () => FlattenUnderCore(buildingRoot, roomSize, targetWorldY, padding, clearDetails, blendDistance));
+            return false;
+        }
+
+        private static bool FlattenUnderCore(
+            GameObject buildingRoot, Vector3 roomSize,
+            float targetWorldY, float padding, bool clearDetails, float blendDistance)
         {
             Bounds innerBounds = ComputeXZBounds(buildingRoot.transform, roomSize, padding);
 
@@ -135,10 +160,7 @@ namespace S1MAPI.Building.Structural
 
             Terrain? terrain = FindCoveringTerrain(innerBounds);
             if (terrain == null)
-            {
-                DebugLog.Warning("[TerrainFlattener] No terrain found covering building footprint.");
-                return;
-            }
+                return false;
 
             TerrainData tData = terrain.terrainData;
             Vector3 terrainPos = terrain.transform.position;
@@ -157,7 +179,7 @@ namespace S1MAPI.Building.Structural
             if (sampleWidth <= 0 || sampleHeight <= 0)
             {
                 DebugLog.Warning("[TerrainFlattener] Computed zero-size sample region.");
-                return;
+                return false;
             }
 
             // Compute blend zone size in samples for each axis
@@ -188,6 +210,7 @@ namespace S1MAPI.Building.Structural
 
             DebugLog.Info($"[TerrainFlattener] Flattened {sampleWidth}x{sampleHeight} samples " +
                           $"to Y={targetWorldY:F2} on terrain '{terrain.name}'.");
+            return true;
         }
 
         #endregion
