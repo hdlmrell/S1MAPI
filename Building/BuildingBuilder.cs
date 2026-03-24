@@ -33,6 +33,9 @@ namespace S1MAPI.Building
         private BuildingConfig _config;
         private Vector3 _roomSize;
 
+        // Part registry for post-build targeting
+        private readonly BuildingPartRegistry _registry;
+
         // Lazy-initialized builders
         private WallBuilder? _wallBuilder;
         private FurnitureBuilder? _furnitureBuilder;
@@ -68,6 +71,7 @@ namespace S1MAPI.Building
         {
             _name = name;
             _root = new GameObject(name);
+            _registry = _root.AddComponent<BuildingPartRegistry>();
             _config = BuildingConfig.Default;
             _roomSize = _config.Size;
         }
@@ -143,7 +147,8 @@ namespace S1MAPI.Building
                 palette.FloorMaterial = material;
             }
 
-            GetDecorBuilder(palette).AddFloor(_config.FloorThickness);
+            var floor = GetDecorBuilder(palette).AddFloor(_config.FloorThickness);
+            _registry.Register(BuildingPart.Floor, floor);
             return this;
         }
 
@@ -163,7 +168,8 @@ namespace S1MAPI.Building
                 if (material != null) palette.CeilingMaterial = material;
             }
 
-            GetDecorBuilder(palette).AddCeiling(_config.CeilingThickness);
+            var ceiling = GetDecorBuilder(palette).AddCeiling(_config.CeilingThickness);
+            _registry.Register(BuildingPart.Ceiling, ceiling);
             return this;
         }
 
@@ -219,11 +225,12 @@ namespace S1MAPI.Building
                 : (westWindow ? WallOpening.Window() : null);
 
             var builder = GetWallBuilder(palette);
-            builder.BuildWalls(
+            var wallsContainer = builder.BuildWalls(
                 northOpening: _northOpening,
                 southOpening: _southOpening,
                 eastOpening: _eastOpening,
                 westOpening: _westOpening);
+            RegisterWallChildren(wallsContainer);
 
             return this;
         }
@@ -247,7 +254,8 @@ namespace S1MAPI.Building
             _eastOpening = east;
             _westOpening = west;
 
-            GetWallBuilder().BuildWalls(north, south, east, west);
+            var wallsContainer = GetWallBuilder().BuildWalls(north, south, east, west);
+            RegisterWallChildren(wallsContainer);
             return this;
         }
 
@@ -273,7 +281,8 @@ namespace S1MAPI.Building
             _eastOpening = east;
             _westOpening = west;
 
-            GetWallBuilder().BuildWalls(north, south, east, west, wallAppearances);
+            var wallsContainer = GetWallBuilder().BuildWalls(north, south, east, west, wallAppearances);
+            RegisterWallChildren(wallsContainer);
             return this;
         }
 
@@ -311,7 +320,9 @@ namespace S1MAPI.Building
             Color? color = null, Material? material = null)
         {
             var def = new InteriorWallDefinition(axis, position, from, to, opening, color, material);
-            GetInteriorWallBuilder().BuildInteriorWall(def);
+            var wall = GetInteriorWallBuilder().BuildInteriorWall(def);
+            if (wall != null)
+                _registry.Register(BuildingPart.InteriorWalls, wall);
             return this;
         }
 
@@ -403,7 +414,8 @@ namespace S1MAPI.Building
         /// <returns>This builder for chaining</returns>
         public BuildingBuilder AddRoofTrim(float height = 0.3f, Material? material = null)
         {
-            GetDecorBuilder().AddRoofTrim(height, material);
+            var trim = GetDecorBuilder().AddRoofTrim(height, material);
+            _registry.Register(BuildingPart.Trim, trim);
             return this;
         }
 
@@ -417,7 +429,8 @@ namespace S1MAPI.Building
         /// <returns>This builder for chaining</returns>
         public BuildingBuilder AddSecondaryRoofTrim(float height = 0.15f, Material? material = null)
         {
-            GetDecorBuilder().AddSecondaryRoofTrim(height, material);
+            var trim = GetDecorBuilder().AddSecondaryRoofTrim(height, material);
+            _registry.Register(BuildingPart.Accent, trim);
             return this;
         }
 
@@ -450,8 +463,9 @@ namespace S1MAPI.Building
             Color? capColor = null,
             Material? capMaterial = null)
         {
-            GetRoofBuilder().AddParapetRoof(preset, parapetHeight, parapetDepth,
+            var roof = GetRoofBuilder().AddParapetRoof(preset, parapetHeight, parapetDepth,
                 capHeight, capOverhang, parapetColor, parapetMaterial, capColor, capMaterial);
+            _registry.Register(BuildingPart.Roof, roof);
             return this;
         }
 
@@ -478,8 +492,9 @@ namespace S1MAPI.Building
             Material? roofMaterial = null,
             float baseSlabHeight = Constants.Roof.DefaultBaseSlabHeight)
         {
-            GetRoofBuilder().AddHipRoof(ridgeHeight, overhang, ridgeAlongX,
+            var roof = GetRoofBuilder().AddHipRoof(ridgeHeight, overhang, ridgeAlongX,
                 roofColor, roofMaterial, baseSlabHeight);
+            _registry.Register(BuildingPart.Roof, roof);
             return this;
         }
 
@@ -491,7 +506,8 @@ namespace S1MAPI.Building
         /// <returns>This builder for chaining</returns>
         public BuildingBuilder AddCornerPillars(float width = 0.4f, Material? material = null)
         {
-            GetDecorBuilder().AddCornerPillars(width, material);
+            var pillars = GetDecorBuilder().AddCornerPillars(width, material);
+            _registry.Register(BuildingPart.Pillars, pillars);
             return this;
         }
 
@@ -506,7 +522,8 @@ namespace S1MAPI.Building
         /// <returns>This builder for chaining</returns>
         public BuildingBuilder AddCornerTrim(float width = 0.3f, float depth = 0.1f, Material? material = null)
         {
-            GetDecorBuilder().AddCornerTrim(width, depth, material);
+            var cornerTrim = GetDecorBuilder().AddCornerTrim(width, depth, material);
+            _registry.Register(BuildingPart.Trim, cornerTrim);
             return this;
         }
 
@@ -522,7 +539,8 @@ namespace S1MAPI.Building
         public BuildingBuilder AddFoundation(float height = 2.0f, float expandX = 0f, float expandZ = 0f, Color? color = null, Material? material = null)
         {
             _foundationHeight = height;
-            GetDecorBuilder().AddFoundation(height, expandX, expandZ, color, material);
+            var foundation = GetDecorBuilder().AddFoundation(height, expandX, expandZ, color, material);
+            _registry.Register(BuildingPart.Foundation, foundation);
             return this;
         }
 
@@ -557,7 +575,8 @@ namespace S1MAPI.Building
         {
             float lateralOffset = GetDoorOffset(wall);
             _stairs.Add((wall, foundationHeight, width, lateralOffset));
-            GetDecorBuilder().AddStairs(wall, foundationHeight, maxStepHeight, width, stepDepth, color, material, style, flushWithFloor, gap, lateralOffset);
+            var stairs = GetDecorBuilder().AddStairs(wall, foundationHeight, maxStepHeight, width, stepDepth, color, material, style, flushWithFloor, gap, lateralOffset);
+            _registry.Register(BuildingPart.Stairs, stairs);
             return this;
         }
 
@@ -569,8 +588,9 @@ namespace S1MAPI.Building
         /// <returns>This builder for chaining</returns>
         public BuildingBuilder AddDoorFrames(Material? material = null)
         {
-            GetDecorBuilder().AddDoorFrames(
+            var frames = GetDecorBuilder().AddDoorFrames(
                 _northOpening, _southOpening, _eastOpening, _westOpening, material);
+            _registry.Register(BuildingPart.Trim, frames);
             return this;
         }
 
@@ -583,7 +603,10 @@ namespace S1MAPI.Building
         public BuildingBuilder AddInteriorDoorFrames(Material? material = null)
         {
             if (_interiorWallBuilder != null && _interiorWallBuilder.Doorways.Count > 0)
-                GetDecorBuilder().AddInteriorDoorFrames(_interiorWallBuilder.Doorways, material: material);
+            {
+                var frames = GetDecorBuilder().AddInteriorDoorFrames(_interiorWallBuilder.Doorways, material: material);
+                _registry.Register(BuildingPart.Trim, frames);
+            }
             return this;
         }
 
@@ -598,8 +621,9 @@ namespace S1MAPI.Building
         public BuildingBuilder AddBaseMolding(float height = 0.3f, float depth = 0.1f, Material? material = null,
             IEnumerable<WallSide>? skipWalls = null)
         {
-            GetDecorBuilder().AddBaseMolding(height, depth, material,
+            var molding = GetDecorBuilder().AddBaseMolding(height, depth, material,
                 _northOpening, _southOpening, _eastOpening, _westOpening, skipWalls);
+            _registry.Register(BuildingPart.Trim, molding);
             return this;
         }
 
@@ -685,12 +709,36 @@ namespace S1MAPI.Building
         }
 
         /// <summary>
-        /// Add sliding double doors at a door opening.
+        /// Add sliding double doors at a door opening. Server only — returns the builder
+        /// unchanged on clients (the door is replicated via FishNet).
         /// </summary>
+        /// <remarks>
+        /// <para><strong>Multiplayer behavior:</strong></para>
+        /// <list type="bullet">
+        /// <item><description><strong>Server/host:</strong> Instantiates and network-spawns the door.
+        /// FishNet replicates it to all clients. The <paramref name="onCreated"/> callback fires.</description></item>
+        /// <item><description><strong>Client:</strong> Returns immediately — the door is not created locally.
+        /// The server-spawned door arrives via FishNet replication and is automatically parented
+        /// to the building hierarchy with material/text customization applied.</description></item>
+        /// </list>
+        /// <para><strong>DoorController server-gating:</strong> The game's DoorController gates
+        /// ALL proximity sensor callbacks (PlayerVicinityEnter/Exit, NPCVicinityEnter/Exit) and
+        /// auto-close logic behind <c>InstanceFinder.IsServer</c>. This means on clients:</para>
+        /// <list type="bullet">
+        /// <item><description>Doors will NOT auto-open when players/NPCs approach</description></item>
+        /// <item><description>Doors will NOT auto-close when players/NPCs leave</description></item>
+        /// <item><description>Manual interaction (clicking the door handle) DOES work via ServerRpc</description></item>
+        /// </list>
+        /// <para>S1MAPI cannot implement client-side auto-open/close because it requires game assembly
+        /// types (DoorController, EDoorSide, Player) that S1MAPI intentionally does not reference.
+        /// Consumer mods that need this behavior must implement their own proximity polling
+        /// using DoorController.SetIsOpen_Server (public, RequireOwnership=false, RunLocally=true).</para>
+        /// </remarks>
         /// <param name="position">Local position for doors</param>
         /// <param name="rotation">Local rotation</param>
         /// <param name="openingHours">Text for opening hours sign</param>
-        /// <param name="onCreated">Optional callback invoked with the instantiated door GameObject</param>
+        /// <param name="onCreated">Optional callback invoked with the instantiated door GameObject.
+        /// Only fires on the server — will NOT fire on clients.</param>
         /// <returns>This builder for chaining</returns>
         public BuildingBuilder AddSlidingDoors(Vector3 position, Quaternion rotation, string openingHours = "6AM-6PM", Action<GameObject>? onCreated = null)
         {
@@ -742,6 +790,11 @@ namespace S1MAPI.Building
         /// Get the current configuration.
         /// </summary>
         public BuildingConfig Config => _config;
+
+        /// <summary>
+        /// Post-build registry for targeting specific building parts (walls, floor, trim, etc.).
+        /// </summary>
+        public BuildingPartRegistry Registry => _registry;
 
         /// <summary>
         /// Grid cell size computed from room dimensions.
@@ -818,6 +871,28 @@ namespace S1MAPI.Building
                 _ => null
             };
             return opening?.Offset ?? 0f;
+        }
+
+        private void RegisterWallChildren(GameObject wallsContainer)
+        {
+            for (int i = 0; i < wallsContainer.transform.childCount; i++)
+            {
+                Transform child = wallsContainer.transform.GetChild(i);
+                WallSide? side = ParseWallSide(child.name);
+                if (side.HasValue)
+                    _registry.Register(side.Value, child.gameObject);
+                else
+                    _registry.Register(BuildingPart.ExteriorWalls, child.gameObject);
+            }
+        }
+
+        private static WallSide? ParseWallSide(string name)
+        {
+            if (name.StartsWith("North")) return WallSide.North;
+            if (name.StartsWith("South")) return WallSide.South;
+            if (name.StartsWith("East")) return WallSide.East;
+            if (name.StartsWith("West")) return WallSide.West;
+            return null;
         }
 
         #endregion
