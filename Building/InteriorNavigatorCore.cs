@@ -53,8 +53,11 @@ namespace S1MAPI.Building
             public Vector3 LerpStart;
             public Vector3 LerpEnd;
             public Vector3? PendingExteriorDestination; // set when NPC exits to resume navigation
+            public Vector3? SavedChasePosition;       // chase target position saved before exit
             public float RepathTimer;     // fallback re-pathfind timer for all NPCs
             public float StuckTimer;      // time NPC hasn't moved
+            public Vector3 StuckStartPos; // position when stuck timer began
+            public Vector3 LastChaseTargetLocal; // last chase target used for repath (avoids redundant recompute)
             public float ApproachStartTime; // Time.time when Approaching state began
 
             // Cached reflection results
@@ -105,7 +108,6 @@ namespace S1MAPI.Building
         private readonly Dictionary<Component, TrackedNPC> _tracked =
             new Dictionary<Component, TrackedNPC>();
         private readonly List<Component> _removeQueue = new List<Component>();
-        private readonly Dictionary<Component, Vector3> _lastPositions = new Dictionary<Component, Vector3>();
         private float _doorwayScanTimer;
         private float _approachLogTimer;
         private static readonly Collider[] _scanBuffer = new Collider[32];
@@ -297,7 +299,10 @@ namespace S1MAPI.Building
                     existing.TargetLocal = localPos;
                     existing.OnArrival = null;
                     if (chaseTarget != null)
+                    {
                         existing.ChaseTarget = chaseTarget;
+                        existing.LastChaseTargetLocal = localPos;
+                    }
 
                     if (existing.State == NPCNavState.Inside)
                         nav.ComputePathToTarget(existing);
@@ -647,7 +652,6 @@ namespace S1MAPI.Building
             {
                 _globallyManaged.Remove(npc);
                 _tracked.Remove(npc);
-                _lastPositions.Remove(npc);
             }
         }
 
@@ -935,8 +939,19 @@ namespace S1MAPI.Building
                 if (data.ChaseRepathTimer <= 0f)
                 {
                     data.ChaseRepathTimer = Constants.InteriorNav.ChaseRepathInterval;
-                    data.TargetLocal = targetLocal;
-                    ComputePathToTarget(data);
+
+                    // Only recompute if the target has moved more than one grid cell.
+                    // This avoids resetting PathIndex every 0.2s when the target barely moved,
+                    // which was causing NPCs to repeatedly re-traverse waypoint 0.
+                    float targetMovedSq = (targetLocal.x - data.LastChaseTargetLocal.x) * (targetLocal.x - data.LastChaseTargetLocal.x) +
+                                          (targetLocal.z - data.LastChaseTargetLocal.z) * (targetLocal.z - data.LastChaseTargetLocal.z);
+                    float cellThreshold = _grid.CellSize * 2f;
+                    if (targetMovedSq > cellThreshold * cellThreshold || data.Path == null)
+                    {
+                        data.TargetLocal = targetLocal;
+                        data.LastChaseTargetLocal = targetLocal;
+                        ComputePathToTarget(data);
+                    }
                 }
             }
 
@@ -955,26 +970,34 @@ namespace S1MAPI.Building
                 }
             }
 
-            // Stuck detection — if NPC hasn't moved for 2s, recompute path
+            // Stuck detection — if NPC hasn't moved meaningfully over 2 seconds, recompute path.
+            // Uses cumulative displacement (not per-frame delta) to avoid false positives
+            // at high framerates where per-frame movement is tiny but NPC IS progressing.
             if (data.Path != null && data.PathIndex < data.Path.Count)
             {
-                float movedSq = (pos - _lastPositions.GetValueOrDefault(npc, pos)).sqrMagnitude;
-                if (movedSq < 0.01f) // less than 0.1m moved
-                {
-                    data.StuckTimer += Time.deltaTime;
-                    if (data.StuckTimer > 1.5f)
-                    {
-                        data.StuckTimer = 0f;
-                        DebugLog.Warning($"[InteriorNavigator] NPC stuck, recomputing path. speed={data.Speed:F1}");
-                        ComputePathToTarget(data);
-                    }
-                }
-                else
+                if (data.StuckTimer == 0f)
+                    data.StuckStartPos = pos;
+
+                data.StuckTimer += Time.deltaTime;
+
+                float displacementSq = (pos.x - data.StuckStartPos.x) * (pos.x - data.StuckStartPos.x) +
+                                       (pos.z - data.StuckStartPos.z) * (pos.z - data.StuckStartPos.z);
+
+                if (displacementSq > 0.25f) // moved > 0.5m from start → making progress
                 {
                     data.StuckTimer = 0f;
                 }
+                else if (data.StuckTimer > 2.0f)
+                {
+                    data.StuckTimer = 0f;
+                    Vector3 waypoint = data.Path[data.PathIndex];
+                    DebugLog.Warning($"[InteriorNavigator] NPC stuck (displaced {Mathf.Sqrt(displacementSq):F2}m in 2s). " +
+                                      $"speed={data.Speed:F1}, pathIdx={data.PathIndex}/{data.Path.Count}, " +
+                                      $"npcWorld=({pos.x:F1},{pos.y:F1},{pos.z:F1}), " +
+                                      $"waypoint=({waypoint.x:F1},{waypoint.y:F1},{waypoint.z:F1})");
+                    ComputePathToTarget(data);
+                }
             }
-            _lastPositions[npc] = pos;
 
             UpdatePathFollow(npc, data, onComplete: () =>
             {
@@ -1000,6 +1023,14 @@ namespace S1MAPI.Building
             data.TargetDoorway = door;
             ComputeDoorwayPoints(data, door);
 
+            // Save chase target position before clearing — used by ReleaseNPC to
+            // resume pursuit on exterior NavMesh after the NPC exits the building.
+            if (data.ChaseTarget != null)
+            {
+                try { data.SavedChasePosition = data.ChaseTarget.position; }
+                catch { /* destroyed */ }
+            }
+
             // Pathfind to doorway interior point
             data.Path = _grid.FindPath(currentLocal, _buildingRoot.InverseTransformPoint(data.DoorwayInteriorWorld));
             data.PathIndex = 0;
@@ -1021,6 +1052,11 @@ namespace S1MAPI.Building
 
             // Refresh speed each frame (catches walk→run transitions in chase mode)
             data.Speed = GetNPCSpeed(data);
+            if (data.Speed < 0.1f)
+            {
+                DebugLog.Warning($"[InteriorNavigator] NPC speed near zero ({data.Speed:F3}), forcing minimum.");
+                data.Speed = 1.8f; // fallback to walk speed
+            }
 
             Vector3 target = data.Path[data.PathIndex];
             Vector3 pos = npc.transform.position;
@@ -1073,6 +1109,20 @@ namespace S1MAPI.Building
             {
                 DebugLog.Warning("[InteriorNavigator] No path found to target " +
                                   $"({data.TargetLocal.x:F1}, {data.TargetLocal.z:F1})");
+                return;
+            }
+
+            // Skip the first waypoint if it's at the NPC's current position.
+            // FindPath always starts from the NPC's current grid cell, so waypoint 0
+            // is nearly always right where we stand — advancing past it avoids wasting
+            // a frame on a zero-distance move after every repath.
+            if (data.Path.Count > 1)
+            {
+                Vector3 wp0 = data.Path[0];
+                Vector3 pos = data.NpcComponent.transform.position;
+                float distSq = (pos.x - wp0.x) * (pos.x - wp0.x) + (pos.z - wp0.z) * (pos.z - wp0.z);
+                if (distSq < _grid.CellSize * _grid.CellSize)
+                    data.PathIndex = 1;
             }
         }
 
@@ -1275,14 +1325,26 @@ namespace S1MAPI.Building
 
             EnableAgent(data);
 
+            // Restore HasDestination — we cleared it in BeginDoorwayEntry to prevent
+            // UpdateDestination from overwriting our agent destination. If not restored,
+            // the game's pursuit AI stops generating SetDestination calls and the NPC
+            // stands idle forever (won't re-enter building if player goes back inside).
+            if (data.MovementRef != null && _hasDestinationAccessor.IsValid)
+            {
+                try { _hasDestinationAccessor.SetValue(data.MovementRef, true); }
+                catch (Exception ex) { DebugLog.Warning($"[InteriorNavigator] RestoreHasDestination failed: {ex.Message}"); }
+            }
+
             // Must remove from global set BEFORE invoking SetDestination
             // so the Harmony prefix lets the call through to the original method.
             _globallyManaged.Remove(npc);
             _removeQueue.Add(npc);
 
-            // Resume navigation to pending exterior destination if one was set
-            // (e.g. game called SetDestination(outside) while NPC was inside)
-            if (data.PendingExteriorDestination.HasValue &&
+            // Resume navigation: prefer pending exterior destination (game called
+            // SetDestination(outside) while NPC was inside), then saved chase position
+            // (NPC exited because chase target left building).
+            Vector3? resumeDestination = data.PendingExteriorDestination ?? data.SavedChasePosition;
+            if (resumeDestination.HasValue &&
                 data.MovementRef != null &&
                 _originalSetDestination != null)
             {
@@ -1291,15 +1353,19 @@ namespace S1MAPI.Building
                     // Parameters: (Vector3 destination, Action<WalkResult> callback, float walkSpeedMult, float runSpeedMult)
                     _originalSetDestination.Invoke(
                         data.MovementRef,
-                        new object?[] { data.PendingExteriorDestination.Value, null, 1f, 1f });
+                        new object?[] { resumeDestination.Value, null, 1f, 1f });
+                    DebugLog.Info($"[InteriorNavigator] NPC released, resuming navigation to " +
+                                  $"({resumeDestination.Value.x:F1}, {resumeDestination.Value.z:F1})");
                 }
                 catch (Exception ex)
                 {
-                    DebugLog.Warning($"[InteriorNavigator] Failed to set pending destination: {ex.Message}");
+                    DebugLog.Warning($"[InteriorNavigator] Failed to set resume destination: {ex.Message}");
                 }
             }
-
-            DebugLog.Info("[InteriorNavigator] NPC released from building.");
+            else
+            {
+                DebugLog.Info("[InteriorNavigator] NPC released from building (no resume destination).");
+            }
         }
 
         private void DisableAgent(TrackedNPC data)

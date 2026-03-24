@@ -236,10 +236,11 @@ namespace S1MAPI.Building
                             alongDist = Mathf.Abs(local.z - center.z);
                         }
 
-                        // Half-cell buffer on width ensures cells whose center is
-                        // at the doorway edge get opened (strict < would miss them).
+                        // Full-cell buffer on width ensures NPCs can path through
+                        // without clipping the door frame edges. NPC capsule radius
+                        // (~0.35m) needs clearance beyond the nominal doorway width.
                         if (perpDist < door.WallThickness / 2f + _cellSize &&
-                            alongDist < halfWidth + _cellSize * 0.5f)
+                            alongDist < halfWidth + _cellSize)
                         {
                             _walkable[gz * _gridWidth + gx] = true;
                         }
