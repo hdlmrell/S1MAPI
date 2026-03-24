@@ -16,7 +16,7 @@ namespace S1MAPI.ProceduralMesh.Generators.Organic
     /// <code>
     /// public class PetMeshGenerator : OrganicShapeGenerator
     /// {
-    ///     protected override void GenerateGeometry(List&lt;Vector3&gt; vertices, List&lt;int&gt; triangles)
+    ///     protected override void GenerateGeometry(List{Vector3} vertices, List{int} triangles)
     ///     {
     ///         // Use helper methods like AddRing, AddJointRing, ConnectRings
     ///         AddRing(vertices, position: Vector3.zero, radius: 1f, segments: 12);
