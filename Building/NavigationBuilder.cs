@@ -197,6 +197,7 @@ namespace S1MAPI.Building
         /// <summary>
         /// Check if an NPC is currently being managed by this building's interior navigator.
         /// </summary>
+        /// <param name="npc">The NPC component to check.</param>
         public bool IsNPCInside(Component npc)
         {
             return _navCore != null && _navCore.IsTracking(npc);
@@ -206,6 +207,7 @@ namespace S1MAPI.Building
         /// Show or hide the interior pathfinding grid visualization.
         /// Green cells are walkable, red cells are blocked.
         /// </summary>
+        /// <param name="show">True to show the grid, false to hide it.</param>
         public void VisualizePathGrid(bool show = true)
         {
             _navCore?.VisualizeGrid(show);
@@ -216,6 +218,8 @@ namespace S1MAPI.Building
         /// (wall margin, interior wall, physics collider name) to the console.
         /// Cell coordinates are visible in the visualization quad names (Cell_X_Z).
         /// </summary>
+        /// <param name="gridX">The X coordinate on the interior grid.</param>
+        /// <param name="gridZ">The Z coordinate on the interior grid.</param>
         public void DiagnoseCell(int gridX, int gridZ)
         {
             _navCore?.DiagnoseCell(gridX, gridZ);

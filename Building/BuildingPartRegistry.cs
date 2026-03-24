@@ -47,6 +47,7 @@ namespace S1MAPI.Building
         /// <summary>
         /// Get all renderers for a building part category.
         /// </summary>
+        /// <param name="part">The building part category to query.</param>
         public Renderer[] GetRenderers(BuildingPart part)
         {
             if (!_parts.TryGetValue(part, out var list))
@@ -64,6 +65,7 @@ namespace S1MAPI.Building
         /// <summary>
         /// Get all renderers for a specific wall direction.
         /// </summary>
+        /// <param name="side">The specific wall side to query.</param>
         public Renderer[] GetRenderers(WallSide side)
         {
             if (!_wallsByDirection.TryGetValue(side, out var list))
@@ -85,6 +87,7 @@ namespace S1MAPI.Building
         /// <summary>
         /// Get all GameObjects for a building part category.
         /// </summary>
+        /// <param name="part">The building part category to query.</param>
         public GameObject[] GetParts(BuildingPart part)
         {
             if (!_parts.TryGetValue(part, out var list))
@@ -102,6 +105,7 @@ namespace S1MAPI.Building
         /// <summary>
         /// Get all GameObjects for a specific wall direction.
         /// </summary>
+        /// <param name="side">The specific wall side to query.</param>
         public GameObject[] GetParts(WallSide side)
         {
             if (!_wallsByDirection.TryGetValue(side, out var list))
@@ -123,6 +127,8 @@ namespace S1MAPI.Building
         /// <summary>
         /// Set the material on all renderers for a building part category.
         /// </summary>
+        /// <param name="part">The building part category to modify.</param>
+        /// <param name="material">The material to apply.</param>
         public void SetMaterial(BuildingPart part, Material material)
         {
             var renderers = GetRenderers(part);
@@ -133,6 +139,8 @@ namespace S1MAPI.Building
         /// <summary>
         /// Set the material on all renderers for a specific wall direction.
         /// </summary>
+        /// <param name="side">The specific wall side to modify.</param>
+        /// <param name="material">The material to apply.</param>
         public void SetMaterial(WallSide side, Material material)
         {
             var renderers = GetRenderers(side);
