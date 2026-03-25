@@ -148,6 +148,68 @@ namespace S1MAPI.Building
                 renderers[i].material = material;
         }
 
+        /// <summary>
+        /// Set the material on a specific submesh index across all renderers for a building part.
+        /// Use submesh 0 for exterior faces, submesh 1 for interior faces on dual-material walls.
+        /// Renderers with fewer submeshes than <paramref name="submeshIndex"/> are skipped.
+        /// </summary>
+        /// <param name="part">The building part category to modify.</param>
+        /// <param name="material">The material to apply.</param>
+        /// <param name="submeshIndex">The submesh index to target (0 = exterior, 1 = interior).</param>
+        public void SetMaterial(BuildingPart part, Material material, int submeshIndex)
+        {
+            var renderers = GetRenderers(part);
+            SetSubmeshMaterial(renderers, material, submeshIndex);
+        }
+
+        /// <summary>
+        /// Set the material on a specific submesh index across all renderers for a wall direction.
+        /// Use submesh 0 for exterior faces, submesh 1 for interior faces on dual-material walls.
+        /// Renderers with fewer submeshes than <paramref name="submeshIndex"/> are skipped.
+        /// </summary>
+        /// <param name="side">The specific wall side to modify.</param>
+        /// <param name="material">The material to apply.</param>
+        /// <param name="submeshIndex">The submesh index to target (0 = exterior, 1 = interior).</param>
+        public void SetMaterial(WallSide side, Material material, int submeshIndex)
+        {
+            var renderers = GetRenderers(side);
+            SetSubmeshMaterial(renderers, material, submeshIndex);
+        }
+
+        /// <summary>
+        /// Set the exterior face material on all exterior wall renderers (submesh 0).
+        /// Only affects dual-material walls created with <see cref="Config.BuildingPalette.InteriorWallMaterial"/>.
+        /// Single-material walls are updated normally.
+        /// </summary>
+        /// <param name="material">The material to apply to exterior faces.</param>
+        public void SetExteriorWallMaterial(Material material)
+        {
+            SetMaterial(BuildingPart.ExteriorWalls, material, 0);
+        }
+
+        /// <summary>
+        /// Set the interior (room-facing) material on all exterior wall renderers (submesh 1).
+        /// Only affects dual-material walls. Renderers with a single material are skipped.
+        /// </summary>
+        /// <param name="material">The material to apply to interior faces.</param>
+        public void SetInteriorFaceMaterial(Material material)
+        {
+            SetMaterial(BuildingPart.ExteriorWalls, material, 1);
+        }
+
+        private static void SetSubmeshMaterial(Renderer[] renderers, Material material, int submeshIndex)
+        {
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                Material[] mats = renderers[i].materials;
+                if (submeshIndex < mats.Length)
+                {
+                    mats[submeshIndex] = material;
+                    renderers[i].materials = mats;
+                }
+            }
+        }
+
         #endregion
     }
 }

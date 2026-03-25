@@ -231,6 +231,18 @@ namespace S1MAPI.Utils
             /// Margin subtracted from the available side width when sizing the door strip.
             /// </summary>
             public const float DoorStripMargin = 0.4f;
+
+            /// <summary>
+            /// Name prefix used for window frame GameObjects.
+            /// Used by registration to exclude frames from wall material swaps.
+            /// </summary>
+            public const string FrameNamePrefix = "Frame";
+
+            /// <summary>
+            /// Substring present in window glass GameObject names.
+            /// Used by registration to exclude glass from wall material swaps.
+            /// </summary>
+            public const string GlassNameSubstring = "Glass";
         }
 
         /// <summary>

@@ -879,10 +879,31 @@ namespace S1MAPI.Building
             {
                 Transform child = wallsContainer.transform.GetChild(i);
                 WallSide? side = ParseWallSide(child.name);
-                if (side.HasValue)
-                    _registry.Register(side.Value, child.gameObject);
-                else
-                    _registry.Register(BuildingPart.ExteriorWalls, child.gameObject);
+
+                // Solid wall — the child itself is the wall segment (has a Renderer)
+                if (child.GetComponent<Renderer>() != null)
+                {
+                    if (side.HasValue)
+                        _registry.Register(side.Value, child.gameObject);
+                    else
+                        _registry.Register(BuildingPart.ExteriorWalls, child.gameObject);
+                    continue;
+                }
+
+                // Container (wall with door/window) — register individual wall segments,
+                // skipping window frames and glass so they don't get material-swapped
+                for (int j = 0; j < child.childCount; j++)
+                {
+                    Transform segment = child.GetChild(j);
+                    string segName = segment.name;
+                    if (segName.StartsWith(Constants.Window.FrameNamePrefix) || segName.Contains(Constants.Window.GlassNameSubstring))
+                        continue;
+
+                    if (side.HasValue)
+                        _registry.Register(side.Value, segment.gameObject);
+                    else
+                        _registry.Register(BuildingPart.ExteriorWalls, segment.gameObject);
+                }
             }
         }
 
