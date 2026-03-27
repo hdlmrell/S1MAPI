@@ -365,6 +365,30 @@ namespace S1MAPI.Utils
             /// stops short of the exact exterior point due to carving boundary erosion.</summary>
             public const float DoorwayApproachThreshold = 4.0f;
 
+            /// <summary>Approach threshold for stair doorways. Tighter than
+            /// <see cref="DoorwayApproachThreshold"/> so the NPC walks all the way
+            /// to the stair base before the lerp takes over.</summary>
+            public const float StairApproachThreshold = 1.5f;
+
+            /// <summary>Distance threshold for phase transitions during doorway entry/exit.
+            /// If the NPC is closer than this to the next phase target, skip to the following phase.</summary>
+            public const float PhaseTransitionThreshold = 0.15f;
+
+            /// <summary>Max horizontal distance from doorway for agent-done entry on stair doorways.
+            /// Tighter than non-stair (8m) to avoid triggering entry from the sidewalk.</summary>
+            public const float StairMaxEntryDistance = 3f;
+
+            /// <summary>Distance threshold for non-stair Phase 1 (angle correction).
+            /// If the NPC is farther than this from the exterior point, Phase 1 walks
+            /// to the exterior first to correct approach angle before entering.</summary>
+            public const float ExteriorAngleCorrectionThreshold = 1.0f;
+
+            /// <summary>Time in seconds before an NPC in the Exiting state is considered stuck.</summary>
+            public const float ExitStuckTimeout = 3.0f;
+
+            /// <summary>Squared displacement below which the stuck timer accumulates during exit.</summary>
+            public const float ExitStuckDisplacementSq = 0.25f;
+
             /// <summary>Rotation speed in degrees per second for NPC facing direction.</summary>
             public const float RotationSpeed = 360f;
         }

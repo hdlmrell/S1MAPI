@@ -204,6 +204,40 @@ namespace S1MAPI.Building
         }
 
         /// <summary>
+        /// Send an NPC to a position inside the building. The NPC walks to the nearest
+        /// doorway on exterior NavMesh, enters via lerp, then follows A* path to target.
+        /// </summary>
+        /// <param name="npc">The NPC's NPCMovement component.</param>
+        /// <param name="localTarget">Target position in building-local coordinates (0,0 = building corner).</param>
+        /// <param name="onArrival">Optional callback invoked when the NPC reaches the destination.</param>
+        public void SendNPCToPosition(Component npc, Vector3 localTarget, Action? onArrival = null)
+            => _navCore?.SendNPCToPosition(npc, localTarget, onArrival);
+
+        /// <summary>
+        /// Recall an NPC from the building. If inside, begins exit via A* path to doorway.
+        /// If still approaching, releases immediately. The NPC's NavMeshAgent is re-enabled on exit.
+        /// </summary>
+        /// <param name="npc">The NPC's NPCMovement component.</param>
+        public void RecallNPC(Component npc)
+            => _navCore?.RecallNPC(npc);
+
+        /// <summary>
+        /// Convert a world-space position to building-local coordinates.
+        /// Use this to convert world positions (e.g. furniture transforms) to the local
+        /// coordinates expected by <see cref="SendNPCToPosition"/>.
+        /// </summary>
+        /// <param name="worldPosition">The world-space position to convert.</param>
+        public Vector3 WorldToLocal(Vector3 worldPosition)
+            => _buildingRoot.InverseTransformPoint(worldPosition);
+
+        /// <summary>
+        /// Convert a building-local position to world-space coordinates.
+        /// </summary>
+        /// <param name="localPosition">The building-local position to convert.</param>
+        public Vector3 LocalToWorld(Vector3 localPosition)
+            => _buildingRoot.TransformPoint(localPosition);
+
+        /// <summary>
         /// Show or hide the interior pathfinding grid visualization.
         /// Green cells are walkable, red cells are blocked.
         /// </summary>

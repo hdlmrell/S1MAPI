@@ -39,7 +39,8 @@ namespace S1MAPI.Building
             public Component NpcComponent;
             public NPCNavState State;
             public NavDoorwayInfo TargetDoorway;
-            public Vector3 DoorwayExteriorWorld;
+            public Vector3 DoorwayExteriorWorld;   // stair base (ground level) — NavMeshAgent target
+            public Vector3 DoorwayThresholdWorld;  // just outside doorway at floor level — lerp phase 1 target
             public Vector3 DoorwayInteriorWorld;
             public List<Vector3>? Path;
             public int PathIndex;
@@ -52,6 +53,7 @@ namespace S1MAPI.Building
             public float LerpDuration;
             public Vector3 LerpStart;
             public Vector3 LerpEnd;
+            public bool Arrived;           // directed mode: true once OnArrival has fired
             public Vector3? PendingExteriorDestination; // set when NPC exits to resume navigation
             public Vector3? SavedChasePosition;       // chase target position saved before exit
             public float RepathTimer;     // fallback re-pathfind timer for all NPCs
@@ -59,6 +61,7 @@ namespace S1MAPI.Building
             public Vector3 StuckStartPos; // position when stuck timer began
             public Vector3 LastChaseTargetLocal; // last chase target used for repath (avoids redundant recompute)
             public float ApproachStartTime; // Time.time when Approaching state began
+            public bool IsStairLerp;       // true during stair climb/descent lerp (Y follows ramp slope)
 
             // Cached reflection results
             public object? MovementRef;    // NPCMovement instance
@@ -132,6 +135,12 @@ namespace S1MAPI.Building
         private static MethodInfo? _originalSetDestination;
         private static Harmony? _harmony;
 
+        // Chase detection: NPCMovement.npc → NPC.Behaviour → activeBehaviour, check if CombatBehaviour
+        private static MemberAccessor _movementNpcAccessor;        // NPCMovement.npc (protected field)
+        private static MemberAccessor _npcBehaviourAccessor;       // NPC.Behaviour
+        private static MemberAccessor _activeBehaviourAccessor;    // NPCBehaviour.activeBehaviour
+        private static Type? _combatBehaviourType;
+
         #endregion
 
         #region Constructor
@@ -193,6 +202,33 @@ namespace S1MAPI.Building
             _speedScaleAccessor = new MemberAccessor(_npcMovementType, "MovementSpeedScale", pub);
             _moveSpeedMultAccessor = new MemberAccessor(_npcMovementType, "MoveSpeedMultiplier", pub);
             _hasDestinationAccessor = new MemberAccessor(_npcMovementType, "HasDestination", pub);
+
+            // Chase detection: NPCMovement.npc → NPC.Behaviour → activeBehaviour → CombatBehaviour
+            const BindingFlags nonPub = BindingFlags.NonPublic | BindingFlags.Instance;
+            _movementNpcAccessor = new MemberAccessor(_npcMovementType, "npc", nonPub | BindingFlags.Public);
+#if IL2CPP
+            const string npcTypeName = "Il2CppScheduleOne.NPCs.NPC";
+            const string behaviourTypeName = "Il2CppScheduleOne.NPCs.Behaviour.NPCBehaviour";
+            const string combatTypeName = "Il2CppScheduleOne.Combat.CombatBehaviour";
+#else
+            const string npcTypeName = "ScheduleOne.NPCs.NPC";
+            const string behaviourTypeName = "ScheduleOne.NPCs.Behaviour.NPCBehaviour";
+            const string combatTypeName = "ScheduleOne.Combat.CombatBehaviour";
+#endif
+            Type? npcType = null;
+            Type? npcBehaviourType = null;
+            foreach (Assembly asm2 in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                npcType ??= asm2.GetType(npcTypeName);
+                npcBehaviourType ??= asm2.GetType(behaviourTypeName);
+                _combatBehaviourType ??= asm2.GetType(combatTypeName);
+                if (npcType != null && npcBehaviourType != null && _combatBehaviourType != null)
+                    break;
+            }
+            if (npcType != null)
+                _npcBehaviourAccessor = new MemberAccessor(npcType, "Behaviour", pub);
+            if (npcBehaviourType != null)
+                _activeBehaviourAccessor = new MemberAccessor(npcBehaviourType, "activeBehaviour", pub);
         }
 
         private static void ApplyPatchIfNeeded()
@@ -278,11 +314,15 @@ namespace S1MAPI.Building
                 if (nav == null || nav._buildingRoot == null) continue;
 
                 Vector3 localPos = nav._buildingRoot.InverseTransformPoint(pos);
-                if (!nav.IsInsideBuilding(localPos, margin: 0.5f))
+                if (!nav.IsInsideBuilding(localPos))
                 {
-                    // Extended: combat AI resolves targets inside the building to NavMesh
-                    // points at the carving boundary (~0.8m outside). Catch when player is inside.
-                    if (!nav.IsInsideBuilding(localPos, margin: 3f) || !nav.IsPlayerInside())
+                    // Extended: combat AI resolves targets to carving boundary points
+                    // (~0.8m outside). Only intercept if the NPC is in combat — prevents
+                    // false interception of consumer NPCs walking to exterior positions
+                    // near the building (e.g. stair approach points).
+                    if (!IsNPCInCombat(movement) ||
+                        !nav.IsInsideBuilding(localPos, margin: 3f) ||
+                        !nav.IsPlayerInside())
                         continue;
                 }
 
@@ -290,8 +330,11 @@ namespace S1MAPI.Building
                 localPos.x = Mathf.Clamp(localPos.x, 0f, nav._roomSize.x);
                 localPos.z = Mathf.Clamp(localPos.z, 0f, nav._roomSize.z);
 
-                // Detect chase: if destination is near the player, set up continuous tracking
-                Transform? chaseTarget = DetectChaseTarget(pos);
+                // Chase detection: only enable continuous player tracking when the
+                // NPC's active behaviour is combat (PursuitBehaviour, CombatBehaviour, etc.).
+                // This avoids false positives from consumer mods sending NPCs to positions
+                // near the player (e.g. consumer NPCs walking to interior positions).
+                Transform? chaseTarget = IsNPCInCombat(movement) ? DetectChaseTarget(pos) : null;
 
                 // Already tracked by this building — update target, always block original
                 if (nav._tracked.TryGetValue(movement, out TrackedNPC? existing))
@@ -302,6 +345,10 @@ namespace S1MAPI.Building
                     {
                         existing.ChaseTarget = chaseTarget;
                         existing.LastChaseTargetLocal = localPos;
+                    }
+                    else
+                    {
+                        existing.ChaseTarget = null;
                     }
 
                     if (existing.State == NPCNavState.Inside)
@@ -399,6 +446,36 @@ namespace S1MAPI.Building
         }
 
         /// <summary>
+        /// Check if the NPC's active behaviour is a CombatBehaviour (or subclass like PursuitBehaviour).
+        /// Uses reflection to read NPCMovement.npc → NPC.Behaviour.activeBehaviour without
+        /// compile-time ScheduleOne dependencies. Returns false if reflection fails (graceful fallback: no chase).
+        /// </summary>
+        private static bool IsNPCInCombat(Component movement)
+        {
+            if (_combatBehaviourType == null || !_movementNpcAccessor.IsValid ||
+                !_npcBehaviourAccessor.IsValid || !_activeBehaviourAccessor.IsValid)
+                return false;
+
+            try
+            {
+                object? npc = _movementNpcAccessor.GetValue(movement);
+                if (npc == null) return false;
+
+                object? behaviourComp = _npcBehaviourAccessor.GetValue(npc);
+                if (behaviourComp == null) return false;
+
+                object? activeBehaviour = _activeBehaviourAccessor.GetValue(behaviourComp);
+                if (activeBehaviour == null) return false;
+
+                return _combatBehaviourType.IsInstanceOfType(activeBehaviour);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Check if the destination is near any player (indicating a chase scenario).
         /// Returns the nearest player's Transform if so, null otherwise.
         /// Uses <see cref="Camera.allCameras"/> to support multiplayer.
@@ -435,6 +512,7 @@ namespace S1MAPI.Building
             {
                 existing.TargetLocal = localTarget;
                 existing.OnArrival = onArrival;
+                existing.Arrived = false;
                 existing.ChaseTarget = null;
                 if (existing.State == NPCNavState.Inside)
                     ComputePathToTarget(existing);
@@ -452,10 +530,50 @@ namespace S1MAPI.Building
             tracked.OnArrival = onArrival;
             tracked.ChaseTarget = null;
 
-            BeginApproach(tracked);
-            SendAgentToDoorway(tracked);
+            // Check if NPC is already near a doorway — skip approach if close enough.
+            // For stair doorways, check proximity to the stair base (not door center)
+            // so the NPC doesn't skip the stair climb from the sidewalk.
+            Vector3 npcPos = npc.transform.position;
+            NavDoorwayInfo? nearDoor = null;
+            for (int i = 0; i < _doorways.Count; i++)
+            {
+                NavDoorwayInfo door = _doorways[i];
+                if (door.IsInterior) continue;
+
+                Vector3 checkPoint;
+                float checkThreshold;
+                if (door.StairBasePosition.HasValue)
+                {
+                    checkPoint = _buildingRoot.TransformPoint(door.StairBasePosition.Value);
+                    checkThreshold = Constants.InteriorNav.StairApproachThreshold;
+                }
+                else
+                {
+                    checkPoint = _buildingRoot.TransformPoint(door.Center);
+                    checkThreshold = Constants.InteriorNav.DoorwayApproachThreshold;
+                }
+
+                if (HorizontalDistance(npcPos, checkPoint) < checkThreshold)
+                {
+                    nearDoor = door;
+                    break;
+                }
+            }
+
             _tracked[npc] = tracked;
             _globallyManaged.Add(npc);
+
+            if (nearDoor != null)
+            {
+                tracked.TargetDoorway = nearDoor;
+                ComputeDoorwayPoints(tracked, nearDoor);
+                BeginDoorwayEntry(npc, tracked);
+            }
+            else
+            {
+                BeginApproach(tracked);
+                SendAgentToDoorway(tracked);
+            }
 
             DebugLog.Info($"[InteriorNavigator] Sending NPC to local ({localTarget.x:F1}, {localTarget.z:F1})");
         }
@@ -615,9 +733,10 @@ namespace S1MAPI.Building
                             // Check if we still need phase 2 (through doorway)
                             float distToInterior = Vector3.Distance(
                                 npc.transform.position, data.DoorwayInteriorWorld);
-                            if (distToInterior > 0.5f)
+                            if (distToInterior > Constants.InteriorNav.PhaseTransitionThreshold)
                             {
                                 // Phase 1 complete — now lerp through the doorway
+                                data.IsStairLerp = false;
                                 data.Speed = GetNPCSpeed(data);
                                 data.LerpStart = npc.transform.position;
                                 data.LerpEnd = data.DoorwayInteriorWorld;
@@ -629,7 +748,6 @@ namespace S1MAPI.Building
                             else
                             {
                                 data.State = NPCNavState.Inside;
-                                DebugLog.Info("[InteriorNavigator] NPC entered building, computing A* path...");
                                 ComputePathToTarget(data);
                             }
                         });
@@ -638,12 +756,50 @@ namespace S1MAPI.Building
                         UpdateInside(npc, data);
                         break;
                     case NPCNavState.Exiting:
+                    {
+                        // Stuck detection for exit — force doorway leave if NPC
+                        // hasn't made progress in 3 seconds
+                        Vector3 exitPos = npc.transform.position;
+                        if (data.StuckTimer == 0f)
+                            data.StuckStartPos = exitPos;
+                        data.StuckTimer += Time.deltaTime;
+                        float exitDisplSq = (exitPos.x - data.StuckStartPos.x) * (exitPos.x - data.StuckStartPos.x) +
+                                            (exitPos.z - data.StuckStartPos.z) * (exitPos.z - data.StuckStartPos.z);
+                        if (exitDisplSq > Constants.InteriorNav.ExitStuckDisplacementSq)
+                            data.StuckTimer = 0f;
+                        else if (data.StuckTimer > Constants.InteriorNav.ExitStuckTimeout)
+                        {
+                            DebugLog.Warning("[InteriorNavigator] NPC stuck during exit, forcing doorway leave.");
+                            BeginDoorwayLeave(npc, data);
+                            break;
+                        }
+
                         UpdatePathFollow(npc, data, onComplete: () =>
                             BeginDoorwayLeave(npc, data));
                         break;
+                    }
                     case NPCNavState.LeavingDoorway:
                         UpdateLerp(npc, data, onComplete: () =>
-                            ReleaseNPC(npc, data, warpToExterior: false));
+                        {
+                            // If not yet at stair base, descend stairs
+                            float distToExt = Vector3.Distance(
+                                npc.transform.position, data.DoorwayExteriorWorld);
+                            if (distToExt > Constants.InteriorNav.PhaseTransitionThreshold)
+                            {
+                                data.IsStairLerp = data.TargetDoorway.StairBasePosition.HasValue;
+                                data.Speed = GetNPCSpeed(data);
+                                data.LerpStart = npc.transform.position;
+                                data.LerpEnd = data.DoorwayExteriorWorld;
+                                float dist = Vector3.Distance(data.LerpStart, data.LerpEnd);
+                                data.LerpDuration = Mathf.Max(
+                                    dist / Mathf.Max(data.Speed, 1f), 0.1f);
+                                data.LerpProgress = 0f;
+                            }
+                            else
+                            {
+                                ReleaseNPC(npc, data, warpToExterior: false);
+                            }
+                        });
                         break;
                 }
             }
@@ -740,7 +896,11 @@ namespace S1MAPI.Building
         private void UpdateApproaching(Component npc, TrackedNPC data)
         {
             Vector3 npcPos = npc.transform.position;
-            float threshold = Constants.InteriorNav.DoorwayApproachThreshold;
+            // Stair doorways: use a tight threshold so the NPC walks all the way
+            // to the stair base before we take over and lerp up the stairs.
+            float threshold = data.TargetDoorway.StairBasePosition.HasValue
+                ? Constants.InteriorNav.StairApproachThreshold
+                : Constants.InteriorNav.DoorwayApproachThreshold;
 
             // Check distance to target doorway
             float distXZ = HorizontalDistance(npcPos, data.DoorwayExteriorWorld);
@@ -800,7 +960,9 @@ namespace S1MAPI.Building
             bool remainingValid = !float.IsInfinity(remaining) && !float.IsNaN(remaining);
 
             // Agent finished its path near-ish to doorway — enter
-            if (!pathPending && remainingValid && remaining < 0.5f && distXZ < 8f)
+            float maxEntryDist = data.TargetDoorway.StairBasePosition.HasValue
+                ? Constants.InteriorNav.StairMaxEntryDistance : 8f;
+            if (!pathPending && remainingValid && remaining < 0.5f && distXZ < maxEntryDist)
             {
                 DebugLog.Info($"[InteriorNavigator] Agent path done near doorway (distXZ={distXZ:F2}), entering...");
                 BeginDoorwayEntry(npc, data);
@@ -855,13 +1017,29 @@ namespace S1MAPI.Building
             data.Speed = GetNPCSpeed(data);
             data.LerpStart = npc.transform.position;
 
-            // 2-phase entry: if NPC is far from the doorway exterior, first walk to the
-            // exterior point (phase 1), then through the doorway (phase 2). This prevents
-            // wall clipping when entry triggers from an angle.
-            float distToExterior = Vector3.Distance(npc.transform.position, data.DoorwayExteriorWorld);
-            data.LerpEnd = distToExterior > 1.0f
-                ? data.DoorwayExteriorWorld   // Phase 1: walk to exterior
-                : data.DoorwayInteriorWorld;  // Already near exterior, go straight through
+            // Entry phasing depends on whether doorway has stairs:
+            //   Stair doorways: Phase 1 climbs to DoorwayThresholdWorld (ramp top),
+            //                   Phase 2 enters through doorway to DoorwayInteriorWorld.
+            //   Non-stair doorways: Phase 1 walks to DoorwayExteriorWorld (corrects approach angle),
+            //                       Phase 2 enters through doorway to DoorwayInteriorWorld.
+            bool hasStairs = data.TargetDoorway.StairBasePosition.HasValue;
+            if (hasStairs)
+            {
+                float distToThreshold = Vector3.Distance(npc.transform.position, data.DoorwayThresholdWorld);
+                bool climbPhase = distToThreshold > Constants.InteriorNav.PhaseTransitionThreshold;
+                data.LerpEnd = climbPhase
+                    ? data.DoorwayThresholdWorld
+                    : data.DoorwayInteriorWorld;
+                data.IsStairLerp = climbPhase;
+            }
+            else
+            {
+                float distToExterior = Vector3.Distance(npc.transform.position, data.DoorwayExteriorWorld);
+                data.LerpEnd = distToExterior > Constants.InteriorNav.ExteriorAngleCorrectionThreshold
+                    ? data.DoorwayExteriorWorld
+                    : data.DoorwayInteriorWorld;
+                data.IsStairLerp = false;
+            }
 
             float distance = Vector3.Distance(data.LerpStart, data.LerpEnd);
             data.LerpDuration = Mathf.Max(distance / Mathf.Max(data.Speed, 1f), 0.1f);
@@ -873,10 +1051,15 @@ namespace S1MAPI.Building
         {
             data.Speed = GetNPCSpeed(data);
             data.LerpStart = npc.transform.position;
-            data.LerpEnd = data.DoorwayExteriorWorld;
+            // Stair doorways: lerp to threshold first, then LeavingDoorway completion
+            // descends to stair base. Non-stair: go directly to exterior (single phase).
+            data.LerpEnd = data.TargetDoorway.StairBasePosition.HasValue
+                ? data.DoorwayThresholdWorld
+                : data.DoorwayExteriorWorld;
             float distance = Vector3.Distance(data.LerpStart, data.LerpEnd);
             data.LerpDuration = Mathf.Max(distance / Mathf.Max(data.Speed, 1f), 0.1f);
             data.LerpProgress = 0f;
+            data.IsStairLerp = false; // interior→threshold/exterior is through doorway, not on stairs
             data.State = NPCNavState.LeavingDoorway;
         }
 
@@ -885,7 +1068,26 @@ namespace S1MAPI.Building
             data.LerpProgress += Time.deltaTime / data.LerpDuration;
             float t = Mathf.Clamp01(data.LerpProgress);
             float smooth = t * t * (3f - 2f * t); // smoothstep
-            npc.transform.position = Vector3.Lerp(data.LerpStart, data.LerpEnd, smooth);
+            Vector3 pos = Vector3.Lerp(data.LerpStart, data.LerpEnd, smooth);
+
+            // During stair climb/descent, project Y linearly based on horizontal
+            // progress from LerpStart to LerpEnd. This avoids the smoothstep arc
+            // that causes floating, and handles street-to-stair elevation differences
+            // since LerpStart.y is the NPC's actual Y (may be at street level).
+            if (data.IsStairLerp)
+            {
+                float dx = data.LerpEnd.x - data.LerpStart.x;
+                float dz = data.LerpEnd.z - data.LerpStart.z;
+                float lenSq = dx * dx + dz * dz;
+                if (lenSq > 0.001f)
+                {
+                    float dot = (pos.x - data.LerpStart.x) * dx + (pos.z - data.LerpStart.z) * dz;
+                    float rampT = Mathf.Clamp01(dot / lenSq);
+                    pos.y = Mathf.Lerp(data.LerpStart.y, data.LerpEnd.y, rampT);
+                }
+            }
+
+            npc.transform.position = pos;
 
             // Face movement direction
             RotateToward(npc.transform, data.LerpEnd - data.LerpStart);
@@ -958,15 +1160,20 @@ namespace S1MAPI.Building
             // Fallback: re-pathfind periodically even without chase target.
             // This handles the case where the game stops calling SetDestination
             // after we cleared HasDestination (NPC would otherwise stand forever).
-            data.RepathTimer -= Time.deltaTime;
-            if (data.RepathTimer <= 0f)
+            // Skip when Arrived — the NPC reached its destination and should idle
+            // until the consumer sets a new target or recalls.
+            if (!data.Arrived)
             {
-                data.RepathTimer = 0.5f;
-                if (data.Path == null || data.PathIndex >= data.Path.Count)
+                data.RepathTimer -= Time.deltaTime;
+                if (data.RepathTimer <= 0f)
                 {
-                    ComputePathToTarget(data);
-                    if (data.Path != null)
-                        DebugLog.Info($"[InteriorNavigator] Fallback re-path found {data.Path.Count} waypoints, speed={data.Speed:F1}");
+                    data.RepathTimer = 0.5f;
+                    if (data.Path == null || data.PathIndex >= data.Path.Count)
+                    {
+                        ComputePathToTarget(data);
+                        if (data.Path != null)
+                            DebugLog.Info($"[InteriorNavigator] Fallback re-path found {data.Path.Count} waypoints, speed={data.Speed:F1}");
+                    }
                 }
             }
 
@@ -1004,6 +1211,7 @@ namespace S1MAPI.Building
                 if (data.ChaseTarget == null)
                 {
                     // Directed mode: arrived at destination
+                    data.Arrived = true;
                     data.OnArrival?.Invoke();
                     data.OnArrival = null;
                     // NPC stays until RecallNPC
@@ -1031,11 +1239,23 @@ namespace S1MAPI.Building
                 catch { /* destroyed */ }
             }
 
+            data.ChaseTarget = null;
+
             // Pathfind to doorway interior point
             data.Path = _grid.FindPath(currentLocal, _buildingRoot.InverseTransformPoint(data.DoorwayInteriorWorld));
             data.PathIndex = 0;
+            data.StuckTimer = 0f;
+
+            if (data.Path == null)
+            {
+                // No path to doorway — skip directly to leave lerp rather than
+                // getting stuck forever. NPC will lerp through walls if needed.
+                DebugLog.Warning("[InteriorNavigator] Exit pathfind failed, forcing doorway leave.");
+                BeginDoorwayLeave(npc, data);
+                return;
+            }
+
             data.State = NPCNavState.Exiting;
-            data.ChaseTarget = null;
         }
 
         #endregion
@@ -1193,14 +1413,21 @@ namespace S1MAPI.Building
 
         private void ComputeDoorwayPoints(TrackedNPC data, NavDoorwayInfo door)
         {
-            // Exterior point: well outside the carving zone on surviving NavMesh.
-            // Must be far enough that the NavMesh agent can path to it without
-            // routing along the carving boundary (which causes corner-sticking).
-            float extOffset = door.WallThickness / 2f + 2.5f;
-            Vector3 extLocal = door.Center - door.InwardNormal * extOffset;
-            extLocal.y = door.StairBasePosition.HasValue
-                ? door.StairBasePosition.Value.y
-                : -_foundationHeight;
+            // Exterior point: where the NavMesh agent walks to before we take control.
+            Vector3 extLocal;
+            if (door.StairBasePosition.HasValue)
+            {
+                // Stair doorway: use actual stair base so the NPC walks to the
+                // bottom of the stairs and the lerp climbs the stair surface.
+                extLocal = door.StairBasePosition.Value;
+            }
+            else
+            {
+                // Non-stair: well outside the carving zone on surviving NavMesh.
+                float extOffset = door.WallThickness / 2f + 2.5f;
+                extLocal = door.Center - door.InwardNormal * extOffset;
+                extLocal.y = -_foundationHeight;
+            }
 
             Vector3 extWorld = _buildingRoot.TransformPoint(extLocal);
 
@@ -1208,12 +1435,20 @@ namespace S1MAPI.Building
             // corners, causing the agent to route along the carving boundary and get stuck.
             // The agent's SetDestination internally snaps to the nearest reachable NavMesh.
 
+            // Threshold point: just outside the doorway at floor level.
+            // For stair doorways this is the ramp top — Phase 1 climbs from the
+            // stair base to here, Phase 2 passes through the doorway.
+            float threshOffset = door.WallThickness / 2f + 0.3f;
+            Vector3 threshLocal = door.Center - door.InwardNormal * threshOffset;
+            threshLocal.y = door.StairBasePosition.HasValue ? 0f : extLocal.y;
+
             // Interior point: inside the wall on the floor
             float intOffset = door.WallThickness / 2f + 0.3f;
             Vector3 intLocal = door.Center + door.InwardNormal * intOffset;
             intLocal.y = 0f;
 
             data.DoorwayExteriorWorld = extWorld;
+            data.DoorwayThresholdWorld = _buildingRoot.TransformPoint(threshLocal);
             data.DoorwayInteriorWorld = _buildingRoot.TransformPoint(intLocal);
         }
 
