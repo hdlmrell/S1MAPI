@@ -11,7 +11,7 @@ namespace S1MAPI.Building
     /// Consumers use this to target specific parts (all exterior walls, just the north wall,
     /// the floor, trim, etc.) and get their renderers for material swaps.
     /// </summary>
-    public sealed class BuildingPartRegistry : MonoBehaviour
+    public sealed class BuildingPartRegistry
     {
         private readonly Dictionary<BuildingPart, List<GameObject>> _parts = new Dictionary<BuildingPart, List<GameObject>>();
         private readonly Dictionary<WallSide, List<GameObject>> _wallsByDirection = new Dictionary<WallSide, List<GameObject>>();

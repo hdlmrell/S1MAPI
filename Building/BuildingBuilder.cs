@@ -71,7 +71,7 @@ namespace S1MAPI.Building
         {
             _name = name;
             _root = new GameObject(name);
-            _registry = _root.AddComponent<BuildingPartRegistry>();
+            _registry = new BuildingPartRegistry();
             _config = BuildingConfig.Default;
             _roomSize = _config.Size;
         }
