@@ -134,20 +134,10 @@ namespace S1MAPI.Building
         /// <returns>This builder for chaining</returns>
         public BuildingBuilder AddFloor(Color? color = null, Material? material = null)
         {
-            var palette = color.HasValue || material != null 
-                ? _config.Palette.Clone().WithFloor(material!) 
-                : _config.Palette;
-            
-            if (color.HasValue)
-            {
-                palette.FloorColor = color.Value;
-            }
-            if (material != null)
-            {
-                palette.FloorMaterial = material;
-            }
+            if (color.HasValue) _config.Palette.FloorColor = color.Value;
+            if (material != null) _config.Palette.FloorMaterial = material;
 
-            var floor = GetDecorBuilder(palette).AddFloor(_config.FloorThickness);
+            var floor = GetDecorBuilder().AddFloor(_config.FloorThickness);
             _registry.Register(BuildingPart.Floor, floor);
             return this;
         }
@@ -160,15 +150,10 @@ namespace S1MAPI.Building
         /// <returns>This builder for chaining</returns>
         public BuildingBuilder AddCeiling(Color? color = null, Material? material = null)
         {
-            var palette = _config.Palette;
-            if (color.HasValue || material != null)
-            {
-                palette = palette.Clone();
-                if (color.HasValue) palette.CeilingColor = color.Value;
-                if (material != null) palette.CeilingMaterial = material;
-            }
+            if (color.HasValue) _config.Palette.CeilingColor = color.Value;
+            if (material != null) _config.Palette.CeilingMaterial = material;
 
-            var ceiling = GetDecorBuilder(palette).AddCeiling(_config.CeilingThickness);
+            var ceiling = GetDecorBuilder().AddCeiling(_config.CeilingThickness);
             _registry.Register(BuildingPart.Ceiling, ceiling);
             return this;
         }
@@ -849,9 +834,9 @@ namespace S1MAPI.Building
             return _lightingBuilder ??= new LightingBuilder(_root.transform, _roomSize, _config.Palette);
         }
 
-        private DecorBuilder GetDecorBuilder(BuildingPalette? palette = null)
+        private DecorBuilder GetDecorBuilder()
         {
-            return _decorBuilder ??= new DecorBuilder(_root.transform, _roomSize, palette ?? _config.Palette);
+            return _decorBuilder ??= new DecorBuilder(_root.transform, _roomSize, _config.Palette);
         }
 
         private RoofBuilder GetRoofBuilder()
