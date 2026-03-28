@@ -62,6 +62,7 @@ namespace S1MAPI.Building
             public Vector3 LastChaseTargetLocal; // last chase target used for repath (avoids redundant recompute)
             public float ApproachStartTime; // Time.time when Approaching state began
             public bool IsStairLerp;       // true during stair climb/descent lerp (Y follows ramp slope)
+            public Vector3 LastValidPos;   // last position set by our code (restored if agent warps NPC)
 
             // Cached reflection results
             public object? MovementRef;    // NPCMovement instance
@@ -722,6 +723,17 @@ namespace S1MAPI.Building
                     continue;
                 }
 
+                // The game may re-enable the NavMeshAgent at any time (e.g. NPC.SetVisible
+                // toggles Agent.enabled). A re-enabled agent on carved NavMesh snaps the NPC
+                // to ground level, overriding our position control. Disable it and restore
+                // the last known good position to undo the warp.
+                if (data.State != NPCNavState.Approaching && data.Agent != null && data.Agent.enabled)
+                {
+                    data.Agent.enabled = false;
+                    if (data.LastValidPos != Vector3.zero)
+                        npc.transform.position = data.LastValidPos;
+                }
+
                 switch (data.State)
                 {
                     case NPCNavState.Approaching:
@@ -802,6 +814,11 @@ namespace S1MAPI.Building
                         });
                         break;
                 }
+
+                // Save position after our code sets it, so we can restore if the
+                // game's NavMeshAgent warps the NPC next frame.
+                if (data.State != NPCNavState.Approaching)
+                    data.LastValidPos = npc.transform.position;
             }
 
             foreach (Component npc in _removeQueue)
@@ -998,6 +1015,10 @@ namespace S1MAPI.Building
 
         private void BeginDoorwayEntry(Component npc, TrackedNPC data)
         {
+            // Snapshot position before disabling agent — this is the last known good
+            // position for warp-back if the game re-enables the agent later.
+            data.LastValidPos = npc.transform.position;
+
             // Stop the agent directly (avoid NPCMovement.Stop() which fires stale callbacks)
             if (data.Agent != null)
             {
