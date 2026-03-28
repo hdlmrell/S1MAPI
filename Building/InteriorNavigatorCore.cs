@@ -687,6 +687,14 @@ namespace S1MAPI.Building
                     EnableAgent(data);
                 }
 
+                // Restore HasDestination so the game's pursuit AI resumes generating
+                // SetDestination calls (mirrors ReleaseNPC logic)
+                if (data.MovementRef != null && _hasDestinationAccessor.IsValid)
+                {
+                    try { _hasDestinationAccessor.SetValue(data.MovementRef, true); }
+                    catch (Exception ex) { DebugLog.Warning($"[InteriorNavigator] RestoreHasDestination failed: {ex.Message}"); }
+                }
+
                 _globallyManaged.Remove(kvp.Key);
             }
             _tracked.Clear();
