@@ -730,8 +730,7 @@ namespace S1MAPI.Building
                 if (data.State != NPCNavState.Approaching && data.Agent != null && data.Agent.enabled)
                 {
                     data.Agent.enabled = false;
-                    if (data.LastValidPos != Vector3.zero)
-                        npc.transform.position = data.LastValidPos;
+                    npc.transform.position = data.LastValidPos;
                 }
 
                 switch (data.State)
