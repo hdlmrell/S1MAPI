@@ -293,7 +293,7 @@ namespace S1MAPI.Building.Structural
             Color foundationColor = color ?? new Color(0.4f, 0.4f, 0.4f);
             GameObject container = BuildingUtilities.CreateFolder("Foundation", _parent);
 
-            float padding = 0.1f;
+            float padding = Constants.Spatial.FoundationPadding;
             float yOffset = -0.001f; // Avoid z-fighting with floor
 
             // Store clearance so AddStairs can auto-clear the foundation edge

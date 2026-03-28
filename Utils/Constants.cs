@@ -144,9 +144,11 @@ namespace S1MAPI.Utils
             public const float DefaultStepDepth = 0.3f;
 
             /// <summary>
-            /// Clearance gap between the top stair step and the foundation edge in meters.
+            /// Base padding around the foundation block in meters.
+            /// Used by DecorBuilder to offset the foundation beyond room bounds
+            /// and by BuildingBuilder to compute stair clearance for navigation.
             /// </summary>
-            public const float StairTopClearance = 0.2f;
+            public const float FoundationPadding = 0.1f;
 
             /// <summary>
             /// GameObject folder name for stair geometry under the building root.

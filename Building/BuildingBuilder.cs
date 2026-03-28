@@ -50,8 +50,39 @@ namespace S1MAPI.Building
 
         // Foundation and stair tracking for NavMesh link computation
         private float _foundationHeight;
-        private readonly List<(WallSide Wall, float FoundationHeight, float Width, float Offset)> _stairs =
-            new List<(WallSide, float, float, float)>();
+        private float _foundationExpandX;
+        private float _foundationExpandZ;
+        private readonly List<StairSpec> _stairs = new List<StairSpec>();
+
+        /// <summary>
+        /// Internal record capturing the full stair specification so
+        /// <see cref="ComputeStairBasePosition"/> can reproduce the exact run distance.
+        /// </summary>
+        private readonly struct StairSpec
+        {
+            public readonly WallSide Wall;
+            public readonly float FoundationHeight;
+            public readonly float Width;
+            public readonly float LateralOffset;
+            public readonly float MaxStepHeight;
+            public readonly float StepDepth;
+            public readonly StairStyle Style;
+            public readonly bool FlushWithFloor;
+
+            public StairSpec(WallSide wall, float foundationHeight, float width,
+                float lateralOffset, float maxStepHeight, float stepDepth,
+                StairStyle style, bool flushWithFloor)
+            {
+                Wall = wall;
+                FoundationHeight = foundationHeight;
+                Width = width;
+                LateralOffset = lateralOffset;
+                MaxStepHeight = maxStepHeight;
+                StepDepth = stepDepth;
+                Style = style;
+                FlushWithFloor = flushWithFloor;
+            }
+        }
 
         // Stored wall openings for cross-builder communication (e.g., base molding gap)
         private WallOpening? _northOpening;
@@ -534,6 +565,8 @@ namespace S1MAPI.Building
         public BuildingBuilder AddFoundation(float height = 2.0f, float expandX = 0f, float expandZ = 0f, Color? color = null, Material? material = null)
         {
             _foundationHeight = height;
+            _foundationExpandX = expandX;
+            _foundationExpandZ = expandZ;
             var foundation = GetDecorBuilder().AddFoundation(height, expandX, expandZ, color, material);
             _registry.Register(BuildingPart.Foundation, foundation);
             return this;
@@ -569,7 +602,8 @@ namespace S1MAPI.Building
             float gap = 0f)
         {
             float lateralOffset = GetDoorOffset(wall);
-            _stairs.Add((wall, foundationHeight, width, lateralOffset));
+            _stairs.Add(new StairSpec(wall, foundationHeight, width, lateralOffset,
+                maxStepHeight, stepDepth, style, flushWithFloor));
             var stairs = GetDecorBuilder().AddStairs(wall, foundationHeight, maxStepHeight, width, stepDepth, color, material, style, flushWithFloor, gap, lateralOffset);
             _registry.Register(BuildingPart.Stairs, stairs);
             return this;
@@ -957,22 +991,29 @@ namespace S1MAPI.Building
         {
             if (_foundationHeight <= 0f) return null;
 
-            // Find stair entry for this wall
-            foreach ((WallSide stairWall, float foundationHeight, float width, float offset) in _stairs)
+            foreach (StairSpec spec in _stairs)
             {
-                if (stairWall != wall) continue;
+                if (spec.Wall != wall) continue;
 
-                // Compute stair run from foundation height using default step parameters
-                int stepCount = Mathf.Max(2, Mathf.CeilToInt(foundationHeight / Constants.Spatial.DefaultMaxStepHeight));
-                int visibleSteps = stepCount - 1;
-                float clearance = Constants.Spatial.StairTopClearance;
-                float stairRun = visibleSteps * Constants.Spatial.DefaultStepDepth
-                                 + Constants.Spatial.DefaultStepDepth / 2f + clearance;
+                // Mirror the step count and visible steps logic from DecorBuilder stair builders
+                int stepCount = Mathf.Max(2, Mathf.CeilToInt(spec.FoundationHeight / spec.MaxStepHeight));
+                int visibleSteps = spec.Style == StairStyle.ClosedRiser || spec.FlushWithFloor
+                    ? stepCount
+                    : stepCount - 1;
+
+                // Match the clearance used by DecorBuilder: padding + foundation expand
+                bool isNorthSouth = wall == WallSide.North || wall == WallSide.South;
+                float foundationClearance = Constants.Spatial.FoundationPadding
+                    + (isNorthSouth ? _foundationExpandZ : _foundationExpandX);
+
+                // Bottom step far edge distance from wall = visibleSteps * stepDepth + clearance
+                // Add half a step depth as standing buffer beyond the stair edge
+                float stairRun = visibleSteps * spec.StepDepth + spec.StepDepth / 2f + foundationClearance;
 
                 Vector3 outward = -inwardNormal;
                 Vector3 stairBaseXZ = doorCenter + outward * stairRun;
 
-                return new Vector3(stairBaseXZ.x, -foundationHeight, stairBaseXZ.z);
+                return new Vector3(stairBaseXZ.x, -spec.FoundationHeight, stairBaseXZ.z);
             }
 
             return null;
