@@ -151,23 +151,23 @@ namespace S1MAPI.Building
 
         /// <summary>
         /// Check whether a transform belongs to a living entity (player/NPC) by
-        /// looking for an <see cref="Animator"/> anywhere in its root hierarchy.
+        /// looking for a <see cref="NavMeshAgent"/> or <see cref="CharacterController"/>
+        /// anywhere in its root hierarchy.
         /// Results are cached in the provided sets for efficiency.
         /// </summary>
-        /// <returns>true if the transform's root contains an Animator.</returns>
+        /// <returns>true if the transform's root contains a NavMeshAgent or CharacterController.</returns>
         internal static bool IsLivingEntity(Transform t, HashSet<int> livingRoots, HashSet<int> staticRoots)
         {
             int rootId = t.root.GetInstanceID();
             if (livingRoots.Contains(rootId)) return true;
             if (staticRoots.Contains(rootId)) return false;
 
-            if (t.root.GetComponentInChildren<Animator>() != null)
-            {
-                livingRoots.Add(rootId);
-                return true;
-            }
-            staticRoots.Add(rootId);
-            return false;
+            Transform root = t.root;
+            bool isLiving = root.GetComponentInChildren<NavMeshAgent>() != null
+                         || root.GetComponentInChildren<CharacterController>() != null;
+
+            (isLiving ? livingRoots : staticRoots).Add(rootId);
+            return isLiving;
         }
 
         #endregion
