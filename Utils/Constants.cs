@@ -24,7 +24,9 @@ namespace S1MAPI.Utils
         /// </summary>
         public static class Layers
         {
+            /// <summary>Default Unity layer.</summary>
             public const string DEFAULT = "Default";
+            /// <summary>Ignore Raycast Unity layer.</summary>
             public const string IGNORE_RAYCAST = "Ignore Raycast";
         }
 
@@ -33,6 +35,7 @@ namespace S1MAPI.Utils
         /// </summary>
         public static class Tags
         {
+            /// <summary>Default Unity tag for untagged objects.</summary>
             public const string UNTAGGED = "Untagged";
         }
 
@@ -305,11 +308,11 @@ namespace S1MAPI.Utils
             /// </summary>
             public const string RoofSlopeMaterialName = "mansion_roof_mat";
 
-            /// <summary>
-            /// Fallback roof color RGB values when material is not found.
-            /// </summary>
+            /// <summary>Fallback roof color red component.</summary>
             public const float DefaultRoofColorR = 0.45f;
+            /// <summary>Fallback roof color green component.</summary>
             public const float DefaultRoofColorG = 0.35f;
+            /// <summary>Fallback roof color blue component.</summary>
             public const float DefaultRoofColorB = 0.3f;
         }
 
