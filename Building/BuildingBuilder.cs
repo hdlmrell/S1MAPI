@@ -378,6 +378,16 @@ namespace S1MAPI.Building
                     normal, interior.WallThickness, isInterior: true));
             }
 
+            bool hasExterior = false;
+            for (int i = 0; i < doorways.Count; i++)
+            {
+                if (!doorways[i].IsInterior) { hasExterior = true; break; }
+            }
+            if (!hasExterior)
+                throw new System.InvalidOperationException(
+                    "[BuildingBuilder.CreateNavigationBuilder] No exterior doorways found. " +
+                    "NavigationBuilder requires at least one exterior door (AddWalls with a door opening).");
+
             return new NavigationBuilder(
                 _root.transform, _roomSize,
                 doorways, _config.WallThickness, _foundationHeight);
