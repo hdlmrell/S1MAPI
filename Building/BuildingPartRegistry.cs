@@ -202,7 +202,7 @@ namespace S1MAPI.Building
             for (int i = 0; i < renderers.Length; i++)
             {
                 Material[] mats = renderers[i].materials;
-                if (submeshIndex < mats.Length)
+                if (submeshIndex >= 0 && submeshIndex < mats.Length)
                 {
                     mats[submeshIndex] = material;
                     renderers[i].materials = mats;
