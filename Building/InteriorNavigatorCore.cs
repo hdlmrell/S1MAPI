@@ -104,6 +104,8 @@ namespace S1MAPI.Building
         #region Fields
 
         private readonly InteriorPathGrid _grid;
+        /// <summary>Exposes the walkability grid to NavigationBuilder pass-through queries.</summary>
+        internal InteriorPathGrid PathGrid => _grid;
         private readonly IReadOnlyList<NavDoorwayInfo> _doorways;
         private readonly Transform _buildingRoot;
         private readonly Vector3 _roomSize;

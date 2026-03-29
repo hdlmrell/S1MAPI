@@ -295,6 +295,36 @@ namespace S1MAPI.Building
 
         #endregion
 
+        #region Public API — Walkability
+
+        /// <summary>
+        /// Check if a local-space position is on a walkable grid cell.
+        /// Returns false when the navigation system has not been built yet.
+        /// </summary>
+        /// <param name="localPos">Position in building-local coordinates.</param>
+        /// <returns>True if the cell at <paramref name="localPos"/> is walkable.</returns>
+        public bool IsWalkable(Vector3 localPos)
+            => _navCore?.PathGrid?.IsWalkable(localPos) ?? false;
+
+        /// <summary>
+        /// Get the center of the nearest walkable grid cell in local coordinates.
+        /// Returns <paramref name="localPos"/> unchanged when the navigation system has not been built yet.
+        /// </summary>
+        /// <param name="localPos">Position in building-local coordinates.</param>
+        /// <returns>The center of the nearest walkable cell, or <paramref name="localPos"/> if unavailable.</returns>
+        public Vector3 NearestWalkableCell(Vector3 localPos)
+            => _navCore?.PathGrid?.NearestWalkableCell(localPos) ?? localPos;
+
+        /// <summary>
+        /// Grid cell size in meters. Matches the resolution used by interior pathfinding
+        /// so callers can iterate cells at the same spacing.
+        /// Returns 0.5 when the navigation system has not been built yet.
+        /// </summary>
+        public float CellSize
+            => _navCore?.PathGrid?.CellSize ?? 0.5f;
+
+        #endregion
+
         #region Private — NavMesh Carving
 
         /// <summary>
