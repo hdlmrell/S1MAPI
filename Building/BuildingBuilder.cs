@@ -424,8 +424,12 @@ namespace S1MAPI.Building
             bool clearDetails = true, float blendDistance = Constants.Terrain.DefaultBlendDistance)
         {
             float targetWorldY = _root.transform.position.y - _foundationHeight;
+            Vector3 footprint = new Vector3(
+                _roomSize.x + _foundationExpandX * 2f,
+                _roomSize.y,
+                _roomSize.z + _foundationExpandZ * 2f);
             TerrainFlattener.FlattenUnder(
-                _root, _roomSize, targetWorldY, padding, clearDetails, blendDistance);
+                _root, footprint, targetWorldY, padding, clearDetails, blendDistance);
             return this;
         }
 
