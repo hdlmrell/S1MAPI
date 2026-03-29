@@ -1136,12 +1136,13 @@ namespace S1MAPI.Building
             Vector3 pos = npc.transform.position;
 
             // Chase mode: periodically re-pathfind toward moving target.
-            // Two-stage null check: first tests C# reference (was a target assigned?),
-            // second tests Unity's operator== (was the GameObject destroyed at runtime?).
-            if (data.ChaseTarget != null)
+            // ReferenceEquals bypasses Unity's overloaded == to test "was a target assigned?"
+            // Then Unity's == detects destroyed objects (native pointer gone, proxy alive).
+            if (!ReferenceEquals(data.ChaseTarget, null))
             {
                 if (data.ChaseTarget == null)
                 {
+                    // Target was assigned but Unity object was destroyed — exit building
                     BeginExit(npc, data);
                     return;
                 }
