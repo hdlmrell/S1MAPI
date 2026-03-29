@@ -348,12 +348,18 @@ namespace S1MAPI.Building.Structural
             float wallHeight = wallSize.y;
             float doorWidth = opening.Width;
             float doorHeight = opening.Height;
-            float offset = opening.Offset;
+
+            float halfMargin = (wallWidth - doorWidth) / 2f;
+            float offset = Mathf.Clamp(opening.Offset, -halfMargin, halfMargin);
+            if (!Mathf.Approximately(offset, opening.Offset))
+                DebugLog.Warning(
+                    $"[WallBuilder] {_currentSide} wall: door offset {opening.Offset:F2}m " +
+                    $"exceeds wall margin (±{halfMargin:F2}m) and was clamped to {offset:F2}m.");
 
             // Positive offset shifts door toward positive axis (right/forward)
             // Left (negative direction) gets bigger, right gets smaller
-            float leftWidth = (wallWidth - doorWidth) / 2f + offset;
-            float rightWidth = (wallWidth - doorWidth) / 2f - offset;
+            float leftWidth = halfMargin + offset;
+            float rightWidth = halfMargin - offset;
 
             // Door center shifted by offset along the wall axis
             Vector3 doorShift = isVertical ? Vector3.forward * offset : Vector3.right * offset;
@@ -545,10 +551,17 @@ namespace S1MAPI.Building.Structural
             float halfHeight = sectionHeight / 2f;
             float windowCenterY = (windowBottom + windowHeight / 2f) - halfHeight;
 
+            // Clamp window offset so the window cannot extend past the section bounds
+            float clampedOffset = Mathf.Clamp(windowOffset, -sideWidth, sideWidth);
+            if (!Mathf.Approximately(clampedOffset, windowOffset))
+                DebugLog.Warning(
+                    $"[WallBuilder] {_currentSide} wall: window offset {windowOffset:F2}m " +
+                    $"exceeds section margin (±{sideWidth:F2}m) and was clamped to {clampedOffset:F2}m.");
+
             // Window center shifted along wall axis (positive = +Z for vertical, +X for horizontal)
             Vector3 winShift = isVertical
-                ? new Vector3(0f, 0f, windowOffset)
-                : new Vector3(windowOffset, 0f, 0f);
+                ? new Vector3(0f, 0f, clampedOffset)
+                : new Vector3(clampedOffset, 0f, 0f);
             Vector3 windowCenter = sectionCenter + winShift;
 
             // Bottom segment (sill) — full section width, no shift
@@ -574,8 +587,8 @@ namespace S1MAPI.Building.Structural
             // Side segments — asymmetric widths when window is offset
             // For isVertical: +Z side = sideWidth - offset, -Z side = sideWidth + offset
             // For non-vertical: -X side = sideWidth + offset, +X side = sideWidth - offset
-            float posSideWidth = sideWidth - windowOffset;
-            float negSideWidth = sideWidth + windowOffset;
+            float posSideWidth = sideWidth - clampedOffset;
+            float negSideWidth = sideWidth + clampedOffset;
             float leftSideWidth = isVertical ? posSideWidth : negSideWidth;
             float rightSideWidth = isVertical ? negSideWidth : posSideWidth;
 
