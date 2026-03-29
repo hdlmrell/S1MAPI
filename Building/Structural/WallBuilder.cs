@@ -183,6 +183,7 @@ namespace S1MAPI.Building.Structural
         private WallSide _currentSide;
         private Material? _currentInteriorMaterial;
         private Color _currentInteriorColor;
+        private bool _hasInteriorOverride;
 
         #endregion
 
@@ -281,6 +282,7 @@ namespace S1MAPI.Building.Structural
             _currentSide = side;
             _currentInteriorMaterial = GetWallInteriorMaterial(side);
             _currentInteriorColor = GetWallInteriorColor(side);
+            _hasInteriorOverride = _currentInteriorMaterial != null || HasExplicitInteriorColor(side);
 
             var (position, size, isVertical) = GetWallTransform(side);
             string wallName = $"{side}Wall";
@@ -768,15 +770,24 @@ namespace S1MAPI.Building.Structural
             return _palette.InteriorWallColor ?? _palette.WallColor;
         }
 
+        private bool HasExplicitInteriorColor(WallSide side)
+        {
+            if (_wallOverrides != null &&
+                _wallOverrides.TryGetValue(side, out WallAppearance? appearance) &&
+                appearance.InteriorColor.HasValue)
+                return true;
+            return _palette.InteriorWallColor.HasValue;
+        }
+
         /// <summary>
-        /// Unified wall segment creation. When an interior material is active,
+        /// Unified wall segment creation. When an interior override is active,
         /// creates a dual-material mesh; otherwise delegates to the standard
         /// <see cref="PrimitiveBuilder.CreateBox"/> path.
         /// </summary>
         private GameObject CreateWallSegment(string name, Vector3 position, Vector3 size,
             Color wallColor, Material? wallMaterial, Transform parent)
         {
-            if (_currentInteriorMaterial != null)
+            if (_hasInteriorOverride)
                 return CreateDualMaterialBox(name, position, size, wallColor, wallMaterial, parent);
 
             GameObject wall = PrimitiveBuilder.CreateBox(name, position, size, wallColor, parent);
