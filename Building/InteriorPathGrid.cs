@@ -108,8 +108,8 @@ namespace S1MAPI.Building
         /// </summary>
         public bool IsWalkable(Vector3 localPos)
         {
-            int gx = LocalToGridX(localPos.x);
-            int gz = LocalToGridZ(localPos.z);
+            int gx = Mathf.FloorToInt(localPos.x / _cellSize);
+            int gz = Mathf.FloorToInt(localPos.z / _cellSize);
             return IsWalkableCell(gx, gz);
         }
 
