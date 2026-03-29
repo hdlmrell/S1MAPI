@@ -315,6 +315,9 @@ namespace S1MAPI.Building
         /// <returns>This builder for chaining</returns>
         public BuildingBuilder WithInteriorWallLayer(int layer)
         {
+            if (_interiorWallBuilder != null)
+                throw new System.InvalidOperationException(
+                    "[BuildingBuilder.WithInteriorWallLayer] Must be called before AddInteriorWall.");
             _interiorWallLayer = layer;
             return this;
         }
