@@ -112,14 +112,29 @@ namespace S1MAPI.Building.Components
         /// <param name="localRotation">Local rotation</param>
         /// <param name="openingHoursText">Text to display for opening hours</param>
         /// <param name="doorMaterial">Optional material for door panels</param>
+        /// <param name="onServerReady">Optional callback invoked on the door GameObject before activation,
+        /// server-only. Runs after internal customization (material, opening hours text) but before
+        /// Awake/OnEnable fire, so sensors see configured values. Does not fire on clients.</param>
         /// <returns>The door instance on server, or null on clients / if prefab not found</returns>
-        public GameObject? PlaceSlidingDoors(Vector3 localPosition, Quaternion localRotation, string openingHoursText = "6AM-6PM", Material? doorMaterial = null)
+        public GameObject? PlaceSlidingDoors(Vector3 localPosition, Quaternion localRotation, string openingHoursText = "6AM-6PM", Material? doorMaterial = null, Action<GameObject>? onServerReady = null)
         {
             Material? mat = doorMaterial;
             string text = openingHoursText;
 
-            return PlaceInternal(Prefabs.SlidingDoors, localPosition, localRotation, networked: true,
-                (go) => CustomizeSlidingDoors(go, mat, text));
+            // Internal customization fires on both server and client (via deferred linker).
+            // Consumer callback fires server-only, still pre-activation.
+            bool deferActivation = onServerReady != null;
+            GameObject? instance = PlaceInternal(Prefabs.SlidingDoors, localPosition, localRotation, networked: true,
+                (go) => CustomizeSlidingDoors(go, mat, text), activate: !deferActivation);
+
+            if (instance != null && deferActivation)
+            {
+                onServerReady!(instance);
+                if (!instance.activeSelf)
+                    instance.SetActive(true);
+            }
+
+            return instance;
         }
 
         /// <summary>
@@ -171,7 +186,7 @@ namespace S1MAPI.Building.Components
         /// so the FishNet-replicated object is parented and customized when it arrives.
         /// </summary>
         private GameObject? PlaceInternal(PrefabRef prefab, Vector3 localPosition, Quaternion localRotation,
-            bool networked, Action<GameObject>? onReady)
+            bool networked, Action<GameObject>? onReady, bool activate = true)
         {
             // For networked prefabs, instantiate WITHOUT activating so onReady can
             // configure components before Awake/OnEnable fire. This prevents sensors
@@ -222,7 +237,7 @@ namespace S1MAPI.Building.Components
             onReady?.Invoke(instance);
 
             // Activate AFTER onReady so sensors/triggers see configured values, not prefab defaults.
-            if (networked && !instance.activeSelf)
+            if (activate && networked && !instance.activeSelf)
                 instance.SetActive(true);
 
             return instance;

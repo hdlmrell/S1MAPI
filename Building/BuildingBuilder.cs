@@ -769,16 +769,14 @@ namespace S1MAPI.Building
         /// <param name="position">Local position for doors</param>
         /// <param name="rotation">Local rotation</param>
         /// <param name="openingHours">Text for opening hours sign</param>
-        /// <param name="onCreated">Optional callback invoked with the instantiated door GameObject.
+        /// <param name="onCreated">Optional callback invoked with the instantiated door GameObject
+        /// before activation. Runs after internal customization (material, opening hours text) but
+        /// before Awake/OnEnable fire, so sensors see configured values.
         /// Only fires on the server — will NOT fire on clients.</param>
         /// <returns>This builder for chaining</returns>
         public BuildingBuilder AddSlidingDoors(Vector3 position, Quaternion rotation, string openingHours = "6AM-6PM", Action<GameObject>? onCreated = null)
         {
-            GameObject? instance = GetPrefabPlacer().PlaceSlidingDoors(position, rotation, openingHours, Materials.MetalDarkGrey);
-            if (instance != null)
-            {
-                onCreated?.Invoke(instance);
-            }
+            GetPrefabPlacer().PlaceSlidingDoors(position, rotation, openingHours, Materials.MetalDarkGrey, onCreated);
             return this;
         }
 
