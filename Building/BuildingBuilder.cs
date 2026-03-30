@@ -48,6 +48,9 @@ namespace S1MAPI.Building
         // Interior wall physics layer (-1 = default layer, no change)
         private int _interiorWallLayer = -1;
 
+        // Cached interior doorway metadata survives InvalidateBuilders()
+        private IReadOnlyList<DoorwayInfo>? _interiorDoorwaysCache;
+
         // Foundation and stair tracking for NavMesh link computation
         private float _foundationHeight;
         private float _foundationExpandX;
@@ -368,7 +371,7 @@ namespace S1MAPI.Building
         /// Each entry provides center, dimensions, and orientation for future NavMesh link generation.
         /// </summary>
         public IReadOnlyList<DoorwayInfo> InteriorDoorways =>
-            _interiorWallBuilder?.Doorways ?? (IReadOnlyList<DoorwayInfo>)System.Array.Empty<DoorwayInfo>();
+            _interiorWallBuilder?.Doorways ?? _interiorDoorwaysCache ?? (IReadOnlyList<DoorwayInfo>)System.Array.Empty<DoorwayInfo>();
 
         /// <summary>
         /// Create a <see cref="NavigationBuilder"/> configured for this building.
@@ -844,6 +847,10 @@ namespace S1MAPI.Building
 
         private void InvalidateBuilders()
         {
+            // Preserve interior doorway metadata before clearing the builder
+            if (_interiorWallBuilder != null && _interiorWallBuilder.Doorways.Count > 0)
+                _interiorDoorwaysCache = _interiorWallBuilder.Doorways;
+
             _wallBuilder = null;
             _furnitureBuilder = null;
             _lightingBuilder = null;
